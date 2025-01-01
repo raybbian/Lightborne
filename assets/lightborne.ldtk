@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 111,
+	"nextUid": 112,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "LinearHorizontal",
@@ -1707,6 +1707,41 @@
 			"pivotX": 0.5,
 			"pivotY": 1,
 			"fieldDefs": []
+		},
+		{
+			"identifier": "Door",
+			"uid": 111,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 8,
+			"height": 8,
+			"resizableX": true,
+			"resizableY": true,
+			"minWidth": 8,
+			"maxWidth": null,
+			"minHeight": 8,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 0.08,
+			"lineOpacity": 0,
+			"hollow": false,
+			"color": "#D77643",
+			"renderMode": "Tile",
+			"showName": true,
+			"tilesetId": 9,
+			"tileRenderMode": "Repeat",
+			"tileRect": { "tilesetUid": 9, "x": 0, "y": 120, "w": 8, "h": 8 },
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0.5,
+			"pivotY": 1,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -1853,6 +1888,20 @@
 							"height": 19,
 							"defUid": 106,
 							"px": [36,160],
+							"fieldInstances": []
+						},
+						{
+							"__identifier": "Door",
+							"__grid": [7,10],
+							"__pivot": [0.5,1],
+							"__tags": [],
+							"__tile": { "tilesetUid": 9, "x": 0, "y": 120, "w": 8, "h": 8 },
+							"__smartColor": "#D77643",
+							"iid": "c0d88c20-c210-11ef-b0bf-e1cb0d10890a",
+							"width": 8,
+							"height": 16,
+							"defUid": 111,
+							"px": [60,88],
 							"fieldInstances": []
 						}
 					]
