@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 733,
+	"nextUid": 734,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -4448,15 +4448,15 @@
 			"maxHeight": null,
 			"keepAspectRatio": false,
 			"tileOpacity": 1,
-			"fillOpacity": 1,
-			"lineOpacity": 1,
+			"fillOpacity": 0.08,
+			"lineOpacity": 0,
 			"hollow": false,
 			"color": "#BE4A2F",
-			"renderMode": "Rectangle",
+			"renderMode": "Tile",
 			"showName": true,
-			"tilesetId": null,
+			"tilesetId": 105,
 			"tileRenderMode": "FitInside",
-			"tileRect": null,
+			"tileRect": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
 			"uiTileRect": null,
 			"nineSliceBorders": [],
 			"maxCount": 0,
@@ -4466,7 +4466,7 @@
 			"pivotY": 0,
 			"fieldDefs": [
 				{
-					"identifier": "Path",
+					"identifier": "path",
 					"doc": "Holds the locations of points along the platform's path",
 					"__type": "Array<Point>",
 					"uid": 731,
@@ -4503,7 +4503,7 @@
 					"tilesetUid": null
 				},
 				{
-					"identifier": "DefaultState",
+					"identifier": "default_state",
 					"doc": "Controls the initial state of the platform. If true, platform moves by default",
 					"__type": "Bool",
 					"uid": 732,
@@ -4533,6 +4533,43 @@
 						"id": "V_Bool",
 						"params": [ false ]
 					},
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "speed",
+					"doc": "Sets the speed of the platform's motion",
+					"__type": "Float",
+					"uid": 733,
+					"type": "F_Float",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "NameAndValue",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": 0,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": { "id": "V_Float", "params": [5] },
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -6615,7 +6652,7 @@
 							"__grid": [18,19],
 							"__pivot": [0,0],
 							"__tags": [],
-							"__tile": null,
+							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
 							"__smartColor": "#BE4A2F",
 							"iid": "8a4a3c30-e920-11ef-8ea2-5145a41b5639",
 							"width": 16,
@@ -6623,20 +6660,121 @@
 							"defUid": 730,
 							"px": [144,152],
 							"fieldInstances": [
-								{ "__identifier": "Path", "__type": "Array<Point>", "__value": [ { "cx": 22, "cy": 19 }, { "cx": 22, "cy": 12 } ], "__tile": null, "defUid": 731, "realEditorValues": [ {
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [ { "cx": 22, "cy": 19 }, { "cx": 22, "cy": 12 } ], "__tile": null, "defUid": 731, "realEditorValues": [ {
 									"id": "V_String",
 									"params": ["22,19"]
 								}, {
 									"id": "V_String",
 									"params": ["22,12"]
 								} ] },
-								{ "__identifier": "DefaultState", "__type": "Bool", "__value": true, "__tile": null, "defUid": 732, "realEditorValues": [{
+								{ "__identifier": "default_state", "__type": "Bool", "__value": true, "__tile": null, "defUid": 732, "realEditorValues": [{
 									"id": "V_Bool",
 									"params": [ true ]
-								}] }
+								}] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [5] }] }
 							],
 							"__worldX": 144,
 							"__worldY": 152
+						},
+						{
+							"__identifier": "MovingPlatform",
+							"__grid": [14,12],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
+							"__smartColor": "#BE4A2F",
+							"iid": "3a4ddea0-e920-11ef-a942-4b1a1a8d6cc0",
+							"width": 8,
+							"height": 8,
+							"defUid": 730,
+							"px": [112,96],
+							"fieldInstances": [
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
+								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
+							],
+							"__worldX": 112,
+							"__worldY": 96
+						},
+						{
+							"__identifier": "MovingPlatform",
+							"__grid": [17,11],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
+							"__smartColor": "#BE4A2F",
+							"iid": "3ad58530-e920-11ef-a942-f3fe4f775458",
+							"width": 8,
+							"height": 8,
+							"defUid": 730,
+							"px": [136,88],
+							"fieldInstances": [
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
+								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
+							],
+							"__worldX": 136,
+							"__worldY": 88
+						},
+						{
+							"__identifier": "MovingPlatform",
+							"__grid": [12,10],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
+							"__smartColor": "#BE4A2F",
+							"iid": "3b57d490-e920-11ef-a942-8fb546eb096d",
+							"width": 8,
+							"height": 8,
+							"defUid": 730,
+							"px": [96,80],
+							"fieldInstances": [
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
+								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
+							],
+							"__worldX": 96,
+							"__worldY": 80
+						},
+						{
+							"__identifier": "MovingPlatform",
+							"__grid": [21,8],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
+							"__smartColor": "#BE4A2F",
+							"iid": "3b944150-e920-11ef-a942-1949a1fcc501",
+							"width": 8,
+							"height": 8,
+							"defUid": 730,
+							"px": [168,64],
+							"fieldInstances": [
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
+								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
+							],
+							"__worldX": 168,
+							"__worldY": 64
+						},
+						{
+							"__identifier": "MovingPlatform",
+							"__grid": [27,11],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
+							"__smartColor": "#BE4A2F",
+							"iid": "3bde69b0-e920-11ef-a942-e375bfcf96b4",
+							"width": 8,
+							"height": 8,
+							"defUid": 730,
+							"px": [216,88],
+							"fieldInstances": [
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
+								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
+							],
+							"__worldX": 216,
+							"__worldY": 88
 						}
 					]
 				},
