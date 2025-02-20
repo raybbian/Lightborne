@@ -19,7 +19,8 @@ impl Plugin for CameraPlugin {
         app.add_event::<MoveCameraEvent>()
             .add_systems(Startup, setup_camera)
             .add_systems(FixedUpdate, move_camera.after(PhysicsSet::Writeback))
-            .add_systems(Update, handle_move_camera);
+            .add_systems(Update, handle_move_camera)
+            .add_systems(FixedUpdate, sync_with_main_camera.after(move_camera));
         // update after physics writeback to prevent jittering
     }
 }
@@ -37,6 +38,12 @@ pub struct MainCamera;
 /// rendered on this Camera, it must be given the `RenderLayers::layer(1)` component.
 #[derive(Component, Default)]
 pub struct BackgroundCamera;
+
+#[derive(Component, Default)]
+pub struct ForegroundCamera;
+
+#[derive(Component, Default)]
+pub struct SyncWithMainCamera;
 
 const CAMERA_WIDTH: f32 = 320.;
 const CAMERA_HEIGHT: f32 = 180.;
@@ -71,6 +78,20 @@ fn setup_camera(mut commands: Commands) {
 
     commands.spawn((
         Camera2d,
+        ForegroundCamera,
+        Camera {
+            hdr: true,
+            order: 2,
+            clear_color: ClearColorConfig::None,
+            ..default()
+        },
+        projection.clone(),
+        RenderLayers::layer(7),
+        Transform::default(),
+    ));
+
+    commands.spawn((
+        Camera2d,
         BackgroundCamera,
         Camera {
             hdr: true, // If Cameras mix HDR and non-HDR, then weird ass stuff happens. Seems like
@@ -81,6 +102,18 @@ fn setup_camera(mut commands: Commands) {
         RenderLayers::layer(1),
         Transform::default(),
     ));
+}
+
+fn sync_with_main_camera(
+    q_camera: Query<&Transform, With<MainCamera>>,
+    mut q_sync: Query<&mut Transform, (With<SyncWithMainCamera>, Without<MainCamera>)>,
+) {
+    let Ok(camera) = q_camera.get_single() else {
+        return;
+    };
+    for mut entity in q_sync.iter_mut() {
+        entity.translation = camera.translation.xy().extend(entity.translation.z);
+    }
 }
 
 #[derive(Event)]

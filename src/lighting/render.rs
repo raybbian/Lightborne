@@ -6,8 +6,7 @@ use bevy::{
 };
 
 use super::material::{
-    BackgroundMaterial, BlurMaterial, CombineFramesMaterial, FrameMaskMaterial,
-    GradientLightMaterial,
+    BlurMaterial, CombineFramesMaterial, FrameMaskMaterial, GradientLightMaterial,
 };
 
 #[derive(Resource)]
@@ -21,12 +20,13 @@ pub struct LightingRenderData {
     pub blur_mesh: Handle<Mesh>,
     pub blur_material: Handle<BlurMaterial>,
 
-    pub background_mesh: Handle<Mesh>,
-    pub background_material: Handle<BackgroundMaterial>,
-
     pub combined_frames_image: Handle<Image>,
-    pub frames_image: Handle<Image>,
+    pub intensity_mask: Handle<Image>,
     pub blurred_image: Handle<Image>,
+
+    pub foreground_mask: Handle<Image>,
+    pub background_mask: Handle<Image>,
+    pub occluder_mask: Handle<Image>,
 
     pub default_occluder_mesh: Handle<Mesh>,
 
@@ -54,20 +54,26 @@ fn new_render_image(width: u32, height: u32) -> Image {
 impl FromWorld for LightingRenderData {
     fn from_world(world: &mut World) -> Self {
         let mut meshes = world.resource_mut::<Assets<Mesh>>();
+        let frame_count = UVec2::new(4, 4);
 
         let gradient_mesh = meshes
-            .add(Mesh::from(Rectangle::new(320. * 4., 180. * 4.)))
+            .add(Mesh::from(Rectangle::new(
+                320. * frame_count.x as f32,
+                180. * frame_count.y as f32,
+            )))
             .into();
         let combine_frames_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.))).into();
         let blur_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.))).into();
-        let background_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.))).into();
         let default_occluder_mesh = meshes.add(Mesh::from(Rectangle::new(1., 1.))).into();
 
         let mut images = world.resource_mut::<Assets<Image>>();
 
         let combined_frames_image = images.add(new_render_image(320, 180));
         let blurred_image = images.add(new_render_image(320, 180));
-        let frames_image = images.add(new_render_image(320 * 4, 180 * 4));
+        let foreground_mask = images.add(new_render_image(320, 180));
+        let background_mask = images.add(new_render_image(320, 180));
+        let occluder_mask = images.add(new_render_image(320 * frame_count.x, 180 * frame_count.y));
+        let intensity_mask = images.add(new_render_image(320 * frame_count.x, 180 * frame_count.y));
 
         let mut materials = world.resource_mut::<Assets<GradientLightMaterial>>();
 
@@ -75,12 +81,16 @@ impl FromWorld for LightingRenderData {
             light_points: [Vec4::splat(10000000.0); 16], // Position (normalized to screen space)
             light_radiuses: [Vec4::splat(0.0); 16],      // Light radius in pixels
             mesh_transform: Vec4::new(320., 180., 0., 0.),
+            frame_count,
         });
 
         let mut materials = world.resource_mut::<Assets<CombineFramesMaterial>>();
 
         let combine_frames_material = materials.add(CombineFramesMaterial {
-            image: frames_image.clone(),
+            occluder_mask: occluder_mask.clone(),
+            intensity_mask: intensity_mask.clone(),
+            foreground_mask: foreground_mask.clone(),
+            frame_count,
             light_colors: [Vec4::new(0., 1.0, 0., 1.0); 16],
         });
 
@@ -102,29 +112,20 @@ impl FromWorld for LightingRenderData {
             image: combined_frames_image.clone(),
         });
 
-        let background_image: Handle<Image> = world
-            .resource::<AssetServer>()
-            .load("levels/background.png");
-
-        let mut materials = world.resource_mut::<Assets<BackgroundMaterial>>();
-        let background_material = materials.add(BackgroundMaterial {
-            light_image: blurred_image.clone(),
-            background_image,
-        });
-
         LightingRenderData {
             gradient_material,
             combine_frames_material,
             gradient_mesh,
             combine_frames_mesh,
             combined_frames_image,
-            frames_image,
+            foreground_mask,
+            background_mask,
+            occluder_mask,
+            intensity_mask,
             frame_mask_materials: frame_mask_materials.try_into().unwrap(),
             blur_mesh,
             blur_material,
             blurred_image,
-            background_material,
-            background_mesh,
             default_occluder_mesh,
         }
     }

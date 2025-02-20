@@ -11,7 +11,7 @@ use super::{
     combine_lights,
     light::{draw_lights, LineLighting, PointLighting},
     material::FrameMaskMaterial,
-    CombinedLighting, LightingRenderData, FRAMES_LAYER,
+    CombinedLighting, LightingRenderData, FRAMES_LAYER, OCCLUDER_LAYER,
 };
 
 /// [`Component`] that automatically attaches [`Occluder`] components as children of an entity based on the shape of its [`Collider`].
@@ -79,7 +79,7 @@ impl OccluderRendererBundle {
                 frame_index,
                 occluder,
             },
-            render_layers: FRAMES_LAYER,
+            render_layers: OCCLUDER_LAYER,
             material: MeshMaterial2d(render.frame_mask_materials[frame_index].clone()),
             mesh: Mesh2d(render.default_occluder_mesh.clone()),
             transform: Transform::default(),

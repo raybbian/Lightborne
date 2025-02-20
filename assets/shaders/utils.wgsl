@@ -8,6 +8,20 @@ fn hash3(p: vec2f) -> vec3f {
     return fract(sin(q) * 43758.5453);
 }
 
+fn lighting_uv_to_world(frame_x: u32, frame_y: u32, uv: vec2<f32>, frame_count: vec2<u32>) -> vec2<f32> {
+    let super_uv = uv * vec2<f32>(frame_count);
+    return super_uv - vec2<f32>(f32(frame_x), f32(frame_y));
+}
+
+fn world_uv_to_lighting(frame_x: u32, frame_y: u32, uv: vec2<f32>, frame_count: vec2<u32>) -> vec2<f32> {
+    let frame_uv_min = vec2<f32>(
+        f32(frame_x) / f32(frame_count.x),
+        f32(frame_y) / f32(frame_count.y),
+    );
+    let frame_uv_max = frame_uv_min + 1.0 / vec2<f32>(frame_count);
+    return mix(frame_uv_min, frame_uv_max, uv);
+}
+
 fn voro_noise(x: vec2f, u: f32, v: f32) -> f32 {
     let p = floor(x);
     let f = fract(x);

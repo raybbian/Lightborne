@@ -10,6 +10,8 @@ pub struct GradientLightMaterial {
     pub light_radiuses: [Vec4; 16],
     #[uniform(2)]
     pub mesh_transform: Vec4,
+    #[uniform(3)]
+    pub frame_count: UVec2,
 }
 
 impl Material2d for GradientLightMaterial {
@@ -25,9 +27,17 @@ impl Material2d for GradientLightMaterial {
 pub struct CombineFramesMaterial {
     #[texture(0)]
     #[sampler(1)]
-    pub image: Handle<Image>,
-    #[uniform(2)]
+    pub occluder_mask: Handle<Image>,
+    #[texture(2)]
+    #[sampler(3)]
+    pub intensity_mask: Handle<Image>,
+    #[texture(4)]
+    #[sampler(5)]
+    pub foreground_mask: Handle<Image>,
+    #[uniform(6)]
     pub light_colors: [Vec4; 16],
+    #[uniform(7)]
+    pub frame_count: UVec2,
 }
 
 impl Material2d for CombineFramesMaterial {
@@ -70,25 +80,6 @@ pub struct BlurMaterial {
 impl Material2d for BlurMaterial {
     fn fragment_shader() -> ShaderRef {
         "shaders/blur.wgsl".into()
-    }
-    fn alpha_mode(&self) -> AlphaMode2d {
-        AlphaMode2d::Blend
-    }
-}
-
-#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
-pub struct BackgroundMaterial {
-    #[texture(0)]
-    #[sampler(1)]
-    pub light_image: Handle<Image>,
-    #[texture(2)]
-    #[sampler(3)]
-    pub background_image: Handle<Image>,
-}
-
-impl Material2d for BackgroundMaterial {
-    fn fragment_shader() -> ShaderRef {
-        "shaders/background.wgsl".into()
     }
     fn alpha_mode(&self) -> AlphaMode2d {
         AlphaMode2d::Blend

@@ -2,20 +2,17 @@ use core::f32;
 
 use bevy::{prelude::*, render::view::RenderLayers, sprite::Material2dPlugin};
 use light::{draw_lights, LineLighting, PointLighting};
-use material::{
-    BackgroundMaterial, BlurMaterial, CombineFramesMaterial, FrameMaskMaterial,
-    GradientLightMaterial,
-};
+use material::{BlurMaterial, CombineFramesMaterial, FrameMaskMaterial, GradientLightMaterial};
 
 use occluder::OccluderPlugin;
 use render::LightingRenderData;
 
 use crate::{
-    camera::{move_camera, MainCamera},
+    camera::{move_camera, SyncWithMainCamera},
     player::match_player::MatchPlayerZ,
 };
 
-const SHOW_DEBUG_FRAMES_SPRITE: bool = false;
+const SHOW_DEBUG_FRAMES_SPRITE: bool = true;
 
 pub mod light;
 mod material;
@@ -29,11 +26,10 @@ impl Plugin for LightingPlugin {
             .add_plugins(Material2dPlugin::<CombineFramesMaterial>::default())
             .add_plugins(Material2dPlugin::<FrameMaskMaterial>::default())
             .add_plugins(Material2dPlugin::<BlurMaterial>::default())
-            .add_plugins(Material2dPlugin::<BackgroundMaterial>::default())
             .add_plugins(OccluderPlugin)
             .init_resource::<LightingRenderData>()
             .add_systems(Startup, setup)
-            .add_systems(PostUpdate, update_debug_frames_sprite.after(move_camera))
+            .add_systems(Update, debug_controls)
             .add_systems(PostUpdate, draw_lights.after(move_camera));
     }
 }
@@ -41,13 +37,35 @@ impl Plugin for LightingPlugin {
 #[derive(Component)]
 pub struct DebugFramesSprite;
 
-#[derive(Component)]
-pub struct BackgroundMarker;
-
-const BACKGROUND_LAYER: RenderLayers = RenderLayers::layer(1);
 const FRAMES_LAYER: RenderLayers = RenderLayers::layer(2);
 const COMBINED_FRAMES_LAYER: RenderLayers = RenderLayers::layer(3);
 const BLURRED_LAYER: RenderLayers = RenderLayers::layer(4);
+const OCCLUDER_LAYER: RenderLayers = RenderLayers::layer(6);
+
+fn debug_controls(
+    mut q_debug: Query<&mut Sprite, With<DebugFramesSprite>>,
+    keys: Res<ButtonInput<KeyCode>>,
+    render_data: Res<LightingRenderData>,
+) {
+    let Ok(mut debug) = q_debug.get_single_mut() else {
+        return;
+    };
+
+    if keys.just_pressed(KeyCode::Digit1) {
+        debug.image = render_data.foreground_mask.clone();
+    } else if keys.just_pressed(KeyCode::Digit2) {
+        debug.image = render_data.background_mask.clone();
+    } else if keys.just_pressed(KeyCode::Digit3) {
+        debug.image = render_data.intensity_mask.clone();
+    } else if keys.just_pressed(KeyCode::Digit4) {
+        debug.image = render_data.combined_frames_image.clone();
+    } else if keys.just_pressed(KeyCode::Digit5) {
+        debug.image = render_data.blurred_image.clone();
+    } else if keys.just_pressed(KeyCode::Digit6) {
+        debug.image = render_data.occluder_mask.clone();
+    }
+}
+
 fn setup(mut commands: Commands, lighting_render_data: Res<LightingRenderData>) {
     commands.spawn((
         Camera2d::default(),
@@ -57,7 +75,30 @@ fn setup(mut commands: Commands, lighting_render_data: Res<LightingRenderData>) 
             ..default()
         },
         Transform::default(),
-        BLURRED_LAYER.clone(),
+        BLURRED_LAYER,
+    ));
+
+    commands.spawn((
+        Camera2d,
+        SyncWithMainCamera,
+        Camera {
+            target: lighting_render_data.foreground_mask.clone().into(),
+            clear_color: Color::NONE.into(),
+            ..default()
+        },
+        RenderLayers::layer(5),
+        Transform::default(),
+    ));
+
+    commands.spawn((
+        Camera2d,
+        Camera {
+            target: lighting_render_data.occluder_mask.clone().into(),
+            clear_color: Color::NONE.into(),
+            ..default()
+        },
+        OCCLUDER_LAYER,
+        Transform::default(),
     ));
 
     commands.spawn((
@@ -68,40 +109,33 @@ fn setup(mut commands: Commands, lighting_render_data: Res<LightingRenderData>) 
             ..default()
         },
         Transform::default(),
-        COMBINED_FRAMES_LAYER.clone(),
+        COMBINED_FRAMES_LAYER,
     ));
 
     commands.spawn((
         Camera2d::default(),
         Camera {
-            target: lighting_render_data.frames_image.clone().into(),
+            target: lighting_render_data.intensity_mask.clone().into(),
             clear_color: Color::NONE.into(),
             ..default()
         },
         Transform::default(),
-        FRAMES_LAYER.clone(),
+        FRAMES_LAYER,
     ));
 
     if SHOW_DEBUG_FRAMES_SPRITE {
         commands.spawn((
             Sprite {
-                image: lighting_render_data.frames_image.clone(),
+                image: lighting_render_data.intensity_mask.clone(),
                 custom_size: Some(Vec2::new(320.0 / 4.0, 180.0 / 4.0)),
                 ..default()
             },
             Transform::default(),
+            SyncWithMainCamera,
             DebugFramesSprite,
             MatchPlayerZ { offset: 2.0 },
         ));
     }
-
-    commands.spawn((
-        Mesh2d(lighting_render_data.background_mesh.clone()),
-        MeshMaterial2d(lighting_render_data.background_material.clone()),
-        Transform::default(),
-        BACKGROUND_LAYER.clone(),
-        BackgroundMarker,
-    ));
 
     commands.spawn((
         Mesh2d(lighting_render_data.gradient_mesh.clone()),
@@ -123,20 +157,13 @@ fn setup(mut commands: Commands, lighting_render_data: Res<LightingRenderData>) 
         Transform::default(),
         BLURRED_LAYER.clone(),
     ));
-}
 
-fn update_debug_frames_sprite(
-    q_camera: Query<&Transform, With<MainCamera>>,
-    mut q_light_layer: Query<&mut Transform, (With<DebugFramesSprite>, Without<MainCamera>)>,
-) {
-    let Ok(camera_pos) = q_camera.get_single() else {
-        return;
-    };
-    let Ok(mut light_layer_pos) = q_light_layer.get_single_mut() else {
-        return;
-    };
-
-    light_layer_pos.translation = camera_pos.translation.with_z(light_layer_pos.translation.z);
+    commands.spawn((
+        Sprite::from_image(lighting_render_data.combined_frames_image.clone()),
+        RenderLayers::layer(7),
+        Visibility::Visible,
+        Transform::default(),
+    ));
 }
 
 /// Struct used to represent both LineLighting and PointLighting in a unified way when drawing lights and shadows.

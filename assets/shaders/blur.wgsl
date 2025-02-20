@@ -49,5 +49,5 @@ fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
     // let target_brightness = 0.8;
     // let ret = final_color.xyz * (target_brightness / current_brightness);
     // var brightness = current_brightness * 3.1;
-    return vec4<f32>(final_color.xyz, 1.0);
+    return vec4<f32>(final_color);
 }

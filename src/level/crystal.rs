@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::RenderLayers};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rapier2d::prelude::*;
@@ -218,9 +218,13 @@ impl Default for CrystalBundle {
 
 fn add_crystal_colliders(
     mut commands: Commands,
-    q_crystals: Query<(Entity, &IntGridCell), Added<Crystal>>,
+    q_crystals: Query<(Entity, &Parent, &IntGridCell), Added<Crystal>>,
 ) {
-    for (entity, cell) in q_crystals.iter() {
+    for (entity, parent, cell) in q_crystals.iter() {
+        commands
+            .entity(**parent)
+            .insert(RenderLayers::from_layers(&[0, 5]));
+
         if crystal_color(*cell) == LightColor::Blue {
             let mut collider = commands.entity(entity);
             collider.insert(CollisionGroups::new(

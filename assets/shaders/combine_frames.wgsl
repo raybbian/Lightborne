@@ -1,42 +1,46 @@
-
 #import bevy_render::globals::Globals
 #import bevy_sprite::mesh2d_vertex_output::VertexOutput
+#import "shaders/utils.wgsl"::world_uv_to_lighting
 
-@group(2) @binding(0) var texture_image: texture_2d<f32>;
-@group(2) @binding(1) var texture_sampler: sampler;
-@group(2) @binding(2) var<uniform> light_colors: array<vec4<f32>, 16>; // RGB color of the light
-
-
-
-const frame_size: vec2<f32> = vec2<f32>(320.0, 180.0);
-const texture_size: vec2<f32> = vec2<f32>(1280.0, 720.0);
-const frame_count: vec2<i32> = vec2<i32>(4, 4);
-
-fn calculate_uv(frame_index: i32, uv: vec2<f32>) -> vec2<f32> {
-    let frame_uv_min = vec2<f32>(
-        f32(frame_index % frame_count.x) * frame_size.x / texture_size.x,
-        f32(frame_index / frame_count.x) * frame_size.y / texture_size.y
-    );
-
-    let frame_uv_max = frame_uv_min + frame_size / texture_size;
-
-    // Map UV to the current frame's region
-    return mix(frame_uv_min, frame_uv_max, uv);
-}
+@group(2) @binding(0) var occluder_mask: texture_2d<f32>;
+@group(2) @binding(1) var occluder_sampler: sampler;
+@group(2) @binding(2) var intensity_mask: texture_2d<f32>;
+@group(2) @binding(3) var intensity_sampler: sampler;
+@group(2) @binding(4) var foreground_mask: texture_2d<f32>;
+@group(2) @binding(5) var foreground_sampler: sampler;
+@group(2) @binding(6) var<uniform> light_colors: array<vec4<f32>, 16>; // RGB color of the light
+@group(2) @binding(7) var<uniform> frame_count: vec2<u32>; // RGB color of the light
 
 fn color_at_uv(uv: vec2<f32>) -> vec4<f32> {
-    var final_color = vec4<f32>(0.0); // Initialize as transparent black
+    var final_opacity = 0.6;
 
-    for (var i = 0; i < frame_count.x * frame_count.y; i++) {
-        let mesh_uv: vec2<f32> = uv;
-        let frame_uv = calculate_uv(i, mesh_uv);
-        let frame_color = textureSample(texture_image, texture_sampler, frame_uv);
+    for (var i: u32 = 0; i < frame_count.x; i++) {
+        for (var j: u32 = 0; j < frame_count.y; j++) {
+            let mesh_uv: vec2<f32> = uv;
+            let frame_uv = world_uv_to_lighting(i, j, mesh_uv, frame_count);
 
-        // Additive blending (adjust as needed)
-        final_color += vec4f(frame_color.y * light_colors[i].xyz * 0.1, 1.0);
+            // if on foreground + occluder, then render at lower intensity
+            // if on only occluder, do not render
+            // if on nothing, then render at standard intensity
+
+            let occluder_val = textureSample(occluder_mask, occluder_sampler, frame_uv).a;
+            let intensity_val = textureSample(intensity_mask, intensity_sampler, frame_uv).x;
+            let foregound_val = textureSample(foreground_mask, foreground_sampler, mesh_uv).a;
+
+            var light_intensity: f32 = 0.0;
+            if foregound_val > 0.01 && occluder_val > 0.01 {
+                light_intensity = 1.0 - pow(1.0 - max(0.0, intensity_val - 0.5), 9.0);
+            } else if occluder_val > 0.01 {
+                light_intensity = 0.0;
+            } else {
+                light_intensity = 1.0 - pow(1.0 - intensity_val, 6.0);
+            }
+
+            final_opacity = min(final_opacity, 1 - light_intensity);
+        }
     }
 
-    return final_color;
+    return vec4<f32>(0.0, 0.0, 0.0, final_opacity);
 }
 
 @fragment

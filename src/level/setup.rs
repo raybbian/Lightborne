@@ -1,5 +1,5 @@
 use crate::config::Config;
-use bevy::prelude::*;
+use bevy::{prelude::*, render::view::RenderLayers};
 use bevy_ecs_ldtk::prelude::*;
 
 pub struct LevelSetupPlugin;
@@ -14,8 +14,17 @@ impl Plugin for LevelSetupPlugin {
                 level_background: LevelBackground::Nonexistent,
                 ..default()
             })
-            .add_systems(Startup, setup_level);
+            .add_systems(Startup, (setup_level, spawn_background));
     }
+}
+
+fn spawn_background(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn((
+        Sprite::from_image(asset_server.load("levels/background.png")),
+        Transform::default(),
+        Visibility::Visible,
+        RenderLayers::layer(1),
+    ));
 }
 
 fn setup_level(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<Config>) {
