@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Used to implement `ShaderType` for structs"><title>ShaderType in encase - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="encase" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc derive"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../encase/index.html"><img src="https://raw.githubusercontent.com/teoxoy/encase/3d6d2e4d7670863e97463a15ceeafac6d13ee73e/logo.svg" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../encase/index.html"><img src="https://raw.githubusercontent.com/teoxoy/encase/3d6d2e4d7670863e97463a15ceeafac6d13ee73e/logo.svg" alt="logo"></a><h2><a href="../encase/index.html">encase</a><span class="version">0.10.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Shader<wbr>Type</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#attributes" title="Attributes">Attributes</a></li><li><a href="#note-about-generics" title="Note about generics">Note about generics</a></li><li><a href="#examples" title="Examples">Examples</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate encase</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="index.html">encase</a></span><h1>Derive Macro <span class="derive">ShaderType</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/encase_derive/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/encase_derive_impl-0.10.0/src/lib.rs.html#18">Source</a> </span></div><pre class="rust item-decl"><code>#[derive(ShaderType)]
+{
+    <span class="comment">// Attributes available to this derive:</span>
+    #[align]
+    #[size]
+}
+</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Used to implement <code>ShaderType</code> for structs</p>
+<h2 id="attributes"><a class="doc-anchor" href="#attributes">§</a>Attributes</h2>
+<p>Field attributes</p>
+<ul>
+<li>
+<p><code>#[align(X)]</code> where <code>X</code> is a power of 2 <a href="https://doc.rust-lang.org/1.85.0/std/primitive.u32.html" title="primitive u32"><code>u32</code></a> literal (equivalent to <a href="https://gpuweb.github.io/gpuweb/wgsl/#attribute-align">WGSL align attribute</a>)</p>
+<p>Used to increase the alignment of the field</p>
+</li>
+<li>
+<p><code>#[size(X)]</code> where <code>X</code> is a <a href="https://doc.rust-lang.org/1.85.0/std/primitive.u32.html" title="primitive u32"><code>u32</code></a> literal (equivalent to <a href="https://gpuweb.github.io/gpuweb/wgsl/#attribute-size">WGSL size attribute</a>)</p>
+<p>Used to increase the size of the field</p>
+</li>
+<li>
+<p><code>#[size(runtime)]</code> can only be attached to the last field of the struct</p>
+<p>Used to denote the fact that the field it is attached to is a runtime-sized array</p>
+</li>
+</ul>
+<h2 id="note-about-generics"><a class="doc-anchor" href="#note-about-generics">§</a>Note about generics</h2>
+<p>While structs using generic type parameters are supported by this derive macro</p>
+<ul>
+<li>the <code>#[align(X)]</code> and <code>#[size(X)]</code> attributes will only work
+if they are attached to fields whose type contains no generic type parameters</li>
+</ul>
+<h2 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h2>
+<p>Simple</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(ShaderType)]
+</span><span class="kw">struct </span>AffineTransform2D {
+    matrix: mint::ColumnMatrix2&lt;f32&gt;,
+    translate: mint::Vector2&lt;f32&gt;
+}</code></pre></div>
+<p>Contains a runtime-sized array</p>
+<p><em>The <a href="struct.ArrayLength.html" title="struct encase::ArrayLength"><code>ArrayLength</code></a> type can be used to explicitly write or read the length of the contained runtime-sized array</em></p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(ShaderType)]
+</span><span class="kw">struct </span>Positions {
+    length: ArrayLength,
+    <span class="attr">#[size(runtime)]
+    </span>positions: Vec&lt;mint::Point2&lt;f32&gt;&gt;
+}</code></pre></div>
+<p>Complex</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(ShaderType)]
+</span><span class="kw">struct </span>Complex&lt;
+    <span class="lifetime">'a</span>,
+    <span class="lifetime">'b</span>: <span class="lifetime">'a</span>,
+    E: <span class="lifetime">'a </span>+ ShaderType + ShaderSize,
+    T: <span class="lifetime">'b </span>+ ShaderType + ShaderSize,
+    <span class="kw">const </span>N: usize,
+&gt; {
+    array: [<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>E; N],
+    <span class="attr">#[size(runtime)]
+    </span>rts_array: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">'b </span>T&gt;,
+}</code></pre></div>
+</div></details></section></div></main></body></html>

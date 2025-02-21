@@ -1,0 +1,1 @@
+searchState.loadedDescShard("derive_getters", 0, "This library provides two derive macros. One, <code>Getters</code> for …\nProduce a <code>dissolve</code> method that consumes the named struct …\nGenerate getter methods for all named struct fields in a …")

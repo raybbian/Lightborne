@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["min_allocator_size"]};

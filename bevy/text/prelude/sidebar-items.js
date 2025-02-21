@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["JustifyText","LineBreak","TextError"],"struct":["Font","Text2d","Text2dBundle","TextColor","TextFont","TextLayout","TextSpan"],"type":["Text2dReader","Text2dWriter"]};

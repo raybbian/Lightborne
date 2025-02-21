@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ColliderDebug"],"struct":["ColliderDebugColor","DebugRenderContext","DebugRenderMode","DebugRenderStyle","RapierDebugRenderPlugin"]};

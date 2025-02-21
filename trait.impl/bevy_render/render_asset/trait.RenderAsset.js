@@ -1,0 +1,9 @@
+(function() {
+    var implementors = Object.fromEntries([["bevy",[]],["bevy_pbr",[["impl&lt;M: <a class=\"trait\" href=\"bevy_pbr/trait.Material.html\" title=\"trait bevy_pbr::Material\">Material</a>&gt; <a class=\"trait\" href=\"bevy_render/render_asset/trait.RenderAsset.html\" title=\"trait bevy_render::render_asset::RenderAsset\">RenderAsset</a> for <a class=\"struct\" href=\"bevy_pbr/struct.PreparedMaterial.html\" title=\"struct bevy_pbr::PreparedMaterial\">PreparedMaterial</a>&lt;M&gt;"]]],["bevy_render",[]],["bevy_sprite",[["impl&lt;M: <a class=\"trait\" href=\"bevy_sprite/trait.Material2d.html\" title=\"trait bevy_sprite::Material2d\">Material2d</a>&gt; <a class=\"trait\" href=\"bevy_render/render_asset/trait.RenderAsset.html\" title=\"trait bevy_render::render_asset::RenderAsset\">RenderAsset</a> for <a class=\"struct\" href=\"bevy_sprite/struct.PreparedMaterial2d.html\" title=\"struct bevy_sprite::PreparedMaterial2d\">PreparedMaterial2d</a>&lt;M&gt;"]]],["bevy_ui",[["impl&lt;M: <a class=\"trait\" href=\"bevy_ui/ui_material/trait.UiMaterial.html\" title=\"trait bevy_ui::ui_material::UiMaterial\">UiMaterial</a>&gt; <a class=\"trait\" href=\"bevy_render/render_asset/trait.RenderAsset.html\" title=\"trait bevy_render::render_asset::RenderAsset\">RenderAsset</a> for <a class=\"struct\" href=\"bevy_ui/struct.PreparedUiMaterial.html\" title=\"struct bevy_ui::PreparedUiMaterial\">PreparedUiMaterial</a>&lt;M&gt;"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[11,431,19,458,463]}

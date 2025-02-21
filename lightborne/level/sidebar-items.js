@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["LevelSystems"],"fn":["switch_level"],"mod":["crystal","entity","misc","setup","walls"],"struct":["CurrentLevel","LevelManagementPlugin"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["AssetInspectorPlugin","FilterQueryInspectorPlugin","ResourceInspectorPlugin","StateInspectorPlugin","WorldInspectorPlugin"]};

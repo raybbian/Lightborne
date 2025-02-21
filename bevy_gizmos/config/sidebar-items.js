@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"derive":["GizmoConfigGroup"],"enum":["GizmoLineJoint","GizmoLineStyle"],"struct":["DefaultGizmoConfigGroup","GizmoConfig","GizmoConfigStore"],"trait":["GizmoConfigGroup"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["PlayerRootStrandType"],"fn":["add_player_hair_and_cloth","add_player_strand","update_player_strand_offsets","update_strand"],"struct":["Strand","StrandLayerGroup"]};

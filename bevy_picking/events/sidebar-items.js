@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["pointer_events"],"struct":["Cancel","Click","Down","Drag","DragDrop","DragEnd","DragEnter","DragEntry","DragLeave","DragOver","DragStart","Move","Out","Over","PickingEventWriters","Pointer","PointerButtonState","PointerState","Up"]};

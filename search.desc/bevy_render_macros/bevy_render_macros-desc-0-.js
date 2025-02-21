@@ -1,0 +1,1 @@
+searchState.loadedDescShard("bevy_render_macros", 0, "Implements <code>ExtractComponent</code> trait for a component.\nDerive macro generating an impl of the trait <code>RenderLabel</code>.\nDerive macro generating an impl of the trait <code>RenderSubGraph</code>…")

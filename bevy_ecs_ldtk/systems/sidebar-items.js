@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["apply_level_selection","apply_level_set","clean_respawn_entities","detect_level_spawned_events","fire_level_transformed_events","process_ldtk_assets","process_ldtk_levels","worldly_adoption"]};

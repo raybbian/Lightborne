@@ -1,0 +1,396 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A handle to a directed edge of the Voronoi diagram."><title>DirectedVoronoiEdge in spade::handles - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="spade" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc type"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../spade/index.html">spade</a><span class="version">2.13.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Directed<wbr>Voronoi<wbr>Edge</a></h2><h3><a href="#aliased-type">Aliased type</a></h3><h3><a href="#implementations">Methods</a></h3><ul class="block method"><li><a href="#method.as_delaunay_edge" title="as_delaunay_edge">as_delaunay_edge</a></li><li><a href="#method.as_undirected" title="as_undirected">as_undirected</a></li><li><a href="#method.direction_vector" title="direction_vector">direction_vector</a></li><li><a href="#method.face" title="face">face</a></li><li><a href="#method.from" title="from">from</a></li><li><a href="#method.next" title="next">next</a></li><li><a href="#method.prev" title="prev">prev</a></li><li><a href="#method.rev" title="rev">rev</a></li><li><a href="#method.to" title="to">to</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In spade::<wbr>handles</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">spade</a>::<wbr><a href="index.html">handles</a></span><h1>Type Alias <span class="type">DirectedVoronoiEdge</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#161-162">Source</a> </span></div><pre class="rust item-decl"><code>pub type DirectedVoronoiEdge&lt;'a, V, DE, UE, F&gt; = <a class="struct" href="../internals/struct.DynamicHandleImpl.html" title="struct spade::internals::DynamicHandleImpl">DynamicHandleImpl</a>&lt;'a, V, DE, UE, F, DirectedVoronoiEdgeTag, <a class="struct" href="struct.InnerTag.html" title="struct spade::handles::InnerTag">InnerTag</a>&gt;;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A handle to a directed edge of the Voronoi diagram.</p>
+<p>Several methods are defined to explore adjacent edges, faces and vertices:</p>
+<svg viewBox="-17.7 -35.7 80.4 68.4" width="400" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<pattern height="1" id="voronoi_edge_details_pattern0001" patternTransform="rotate(63.512 0 0) scale(2)" patternUnits="userSpaceOnUse" width="1">
+<line stroke="rgb(255 255 255)" stroke-width="1.01" x1="0" x2="0" y1="-0.1" y2="1.1"/>
+<line stroke="rgb(211 211 211)" stroke-width="1.01" x1="1" x2="1" y1="-0.1" y2="1.1"/>
+</pattern>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0002" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0003" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0004" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0005" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0006" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0007" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0008" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0009" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0010" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0011" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0012" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0013" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0014" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0015" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0016" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0017" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0018" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0019" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0020" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0021" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0022" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0023" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0024" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0025" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0026" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0027" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0028" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0029" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0030" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0031" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0032" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0033" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0034" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0035" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0036" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0037" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0038" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0039" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0040" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0041" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0042" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0043" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0044" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="voronoi_edge_details_filled_arrow0045" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+</defs>
+<rect height="100%" style="fill: url(#voronoi_edge_details_pattern0001)" width="100%" x="-17.7" y="-35.7"/>
+<g>
+<path d="M-41,61 L-50,-50 L-30,25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-41,-60 L-40,-40 L-50,-50 z" style="fill: rgb(211 211 211)"/>
+<path d="M-40,-40 L-30,25 L-50,-50 z" style="fill: rgb(211 211 211)"/>
+<path d="M-30,25 L-40,-40 L30,0 z" style="fill: rgb(211 211 211)"/>
+<path d="M-41,61 L-30,25 L40,20 z" style="fill: rgb(211 211 211)"/>
+<path d="M30,0 L-40,-40 L41,-20 z" style="fill: rgb(211 211 211)"/>
+<path d="M30,0 L40,20 L-30,25 z" style="fill: rgb(211 211 211)"/>
+<path d="M40,20 L30,0 L41,-20 z" style="fill: rgb(211 211 211)"/>
+<path d="M-41,-60 L41,-70 L-40,-40 z" style="fill: rgb(211 211 211)"/>
+<path d="M41,-80 L41,-70 L-41,-60 z" style="fill: rgb(211 211 211)"/>
+<path d="M41,-70 L41,-20 L-40,-40 z" style="fill: rgb(211 211 211)"/>
+<path d="M107,-20 L40,20 L41,-20 z" style="fill: rgb(211 211 211)"/>
+<path d="M107,-20 L41,-20 L90,-40 z" style="fill: rgb(211 211 211)"/>
+<path d="M41,-70 L90,-40 L41,-20 z" style="fill: rgb(211 211 211)"/>
+<path d="M41,-80 L90,-40 L41,-70 z" style="fill: rgb(211 211 211)"/>
+<path d="M90,60 L40,20 L107,-20 z" style="fill: rgb(211 211 211)"/>
+<path d="M40,20 L90,60 L-41,61 z" style="fill: rgb(211 211 211)"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-50" x2="-41" y1="-50" y2="-60"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-50" x2="-40" y1="-50" y2="-40"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-41" x2="-50" y1="61" y2="-50"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-41" x2="-40" y1="-60" y2="-40"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-50" x2="-30" y1="-50" y2="25"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-40" x2="-30" y1="-40" y2="25"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-30" x2="-41" y1="25" y2="61"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-40" x2="30" y1="-40" y2="0"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-30" x2="30" y1="25" y2="0"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-30" x2="40" y1="25" y2="20"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-40" x2="41" y1="-40" y2="-70"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="30" x2="40" y1="0" y2="20"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="40" x2="-41" y1="20" y2="61"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="41" x2="-40" y1="-20" y2="-40"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="30" x2="41" y1="0" y2="-20"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-41" x2="41" y1="-60" y2="-70"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="-41" x2="41" y1="-60" y2="-80"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="41" x2="41" y1="-80" y2="-70"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="41" x2="41" y1="-70" y2="-20"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="41" x2="40" y1="-20" y2="20"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="41" x2="107" y1="-20" y2="-20"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="107" x2="40" y1="-20" y2="20"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="41" x2="90" y1="-20" y2="-40"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="41" x2="90" y1="-70" y2="-40"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="41" x2="90" y1="-80" y2="-40"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="90" x2="107" y1="-40" y2="-20"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="107" x2="90" y1="-20" y2="60"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="90" x2="40" y1="60" y2="20"/>
+<line style="stroke-width: 1; stroke: rgb(169 169 169); fill: none" x1="90" x2="-41" y1="60" y2="61"/>
+<circle cx="-50" cy="-50" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="-41" cy="-60" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="-41" cy="61" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="-40" cy="-40" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="-30" cy="25" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="30" cy="0" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="40" cy="20" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="41" cy="-70" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="41" cy="-80" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="41" cy="-20" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="107" cy="-20" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="90" cy="-40" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="90" cy="60" r="2" style="stroke-width: 0.5; stroke: rgb(169 169 169); fill: rgb(128 128 128)"/>
+<circle cx="-134.575" cy="12.725" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="-39.975" cy="-50.025" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="-91.125" cy="1.125" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="-9.95" cy="-11.35" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="7.4" cy="56.1" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="0.325" cy="-29.35" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="5.175" cy="24.925" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="54.3" cy="0.35" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="1.575" cy="-52.1" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="-1.225" cy="-75" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="4.2" cy="-45" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="74" cy="0.825" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="74" cy="-9.175" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="59.375" cy="-45" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="77.75" cy="-75" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="83.55" cy="16.825" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<circle cx="24.725" cy="90.35" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(65 105 225)"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0002); fill: none" x1="-87.025" x2="-41.175" y1="-1.825" y2="-47.7"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0003); fill: none" x1="-44.075" x2="-89.925" y1="-47.05" y2="-1.2"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0004); fill: none" x1="-34.95" x2="-0.875" y1="-49.475" y2="-51.175"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0005); fill: none" x1="-3.45" x2="-37.525" y1="-52.65" y2="-50.95"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0006); fill: none" x1="-129.55" x2="-93.35" y1="12.2" y2="2.55"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0007); fill: none" x1="-96.175" x2="-132.375" y1="1.65" y2="11.3"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0008); fill: none" x1="-86.075" x2="-12.3" y1="1.175" y2="-10.175"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0009); fill: none" x1="-15" x2="-88.775" y1="-11.375" y2="-0.025"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0010); fill: none" x1="-130.05" x2="4.775" y1="14.95" y2="56.15"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0011); fill: none" x1="2.85" x2="-131.975" y1="53.875" y2="12.7"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0012); fill: none" x1="7.85" x2="6.15" y1="51.075" y2="27.35"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0013); fill: none" x1="4.725" x2="6.425" y1="29.95" y2="53.675"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0014); fill: none" x1="3.225" x2="3.2" y1="-49.975" y2="-50.025"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0015); fill: none" x1="2.55" x2="2.575" y1="-47.125" y2="-47.075"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0016); fill: none" x1="8.95" x2="22.875" y1="60.925" y2="88.475"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0017); fill: none" x1="23.175" x2="9.25" y1="85.525" y2="57.975"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0018); fill: none" x1="2.225" x2="0.15" y1="-40.35" y2="-31.95"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0019); fill: none" x1="2.3" x2="4.375" y1="-34" y2="-42.375"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0020); fill: none" x1="1.75" x2="-0.125" y1="-57.175" y2="-72.625"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0021); fill: none" x1="-1.4" x2="0.475" y1="-69.95" y2="-54.5"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0022); fill: none" x1="3.775" x2="75.25" y1="-74.2" y2="-74.2"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0023); fill: none" x1="72.75" x2="1.275" y1="-75.8" y2="-75.8"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0024); fill: none" x1="9.2" x2="56.875" y1="-44.2" y2="-44.2"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0025); fill: none" x1="54.375" x2="6.7" y1="-45.8" y2="-45.8"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0026); fill: none" x1="59.3" x2="71.475" y1="1.275" y2="1.575"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0027); fill: none" x1="69.025" x2="56.825" y1="-0.075" y2="-0.4"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0028); fill: none" x1="74.8" x2="74.8" y1="-4.175" y2="-6.675"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0029); fill: none" x1="73.2" x2="73.2" y1="-4.175" y2="-1.675"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0030); fill: none" x1="75.875" x2="81.575" y1="5.55" y2="15.075"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0031); fill: none" x1="81.675" x2="75.975" y1="12.125" y2="2.575"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0032); fill: none" x1="72.85" x2="61.075" y1="-14.1" y2="-43"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0033); fill: none" x1="60.525" x2="72.325" y1="-40.075" y2="-11.175"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0034); fill: none" x1="62.675" x2="77.125" y1="-48.85" y2="-72.45"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0035); fill: none" x1="74.45" x2="60" y1="-71.15" y2="-47.55"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0036); fill: none" x1="79.8" x2="25.675" y1="20.225" y2="87.9"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0037); fill: none" x1="28.475" x2="82.6" y1="86.925" y2="19.275"/>
+<text dy="-3.3" font-size="5" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (29.74096880131363 12.629515599343184) rotate (-26.56505117707799) translate(-29.74096880131363 -12.629515599343184)" x="29.74096880131363" y="12.629515599343184">
+edge
+</text>
+<text dy="5.7" font-size="5" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (29.74096880131363 12.629515599343184) rotate (-26.56505117707799) translate(-29.74096880131363 -12.629515599343184)" x="29.74096880131363" y="12.629515599343184">
+edge.rev()
+</text>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0038); fill: none" x1="10" x2="52.425" y1="23.4" y2="2.175"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0039); fill: none" x1="49.475" x2="7.05" y1="1.875" y2="23.075"/>
+<text dy="5.3" font-size="5" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (27.323240165631468 -14.497217908902693) rotate (28.81079374297306) translate(-27.323240165631468 14.497217908902693)" x="27.323240165631468" y="-14.497217908902693">
+edge.next()
+</text>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0040); fill: none" x1="50.325" x2="2.925" y1="-2.775" y2="-28.825"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0041); fill: none" x1="4.325" x2="51.725" y1="-26.225" y2="-0.15"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0042); fill: none" x1="-2.85" x2="-9.4" y1="-25.4" y2="-13.925"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0043); fill: none" x1="-6.775" x2="-0.2" y1="-15.3" y2="-26.775"/>
+<text dy="-3.2" font-size="5" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (-2.3836726215205637 6.779185708350644) rotate (67.38013505195957) translate(2.3836726215205637 -6.779185708350644)" x="-2.3836726215205637" y="6.779185708350644">
+edge.prev()
+</text>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0044); fill: none" x1="-8.75" x2="3.475" y1="-6.425" y2="22.925"/>
+<line style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#voronoi_edge_details_filled_arrow0045); fill: none" x1="4" x2="-8.25" y1="20" y2="-9.35"/>
+</g>
+</svg></div></details><h2 id="aliased-type" class="section-header">Aliased Type<a href="#aliased-type" class="anchor">§</a></h2><pre class="rust item-decl"><code>struct DirectedVoronoiEdge&lt;'a, V, DE, UE, F&gt; { <span class="comment">/* private fields */</span> }</code></pre><h2 id="implementations" class="section-header">Implementations<a href="#implementations" class="anchor">§</a></h2><div id="implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-DynamicHandleImpl%3C'a,+V,+DE,+UE,+F,+DirectedVoronoiEdgeTag,+InnerTag%3E" class="impl"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#288-344">Source</a><a href="#impl-DynamicHandleImpl%3C'a,+V,+DE,+UE,+F,+DirectedVoronoiEdgeTag,+InnerTag%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'a, V, DE, UE, F&gt; <a class="type" href="type.DirectedVoronoiEdge.html" title="type spade::handles::DirectedVoronoiEdge">DirectedVoronoiEdge</a>&lt;'a, V, DE, UE, F&gt;</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.to" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#290-292">Source</a><h4 class="code-header">pub fn <a href="#method.to" class="fn">to</a>(&amp;self) -&gt; <a class="enum" href="enum.VoronoiVertex.html" title="enum spade::handles::VoronoiVertex">VoronoiVertex</a>&lt;'a, V, DE, UE, F&gt;</h4></section></summary><div class="docblock"><p>Returns the voronoi edge’s destination.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.from" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#295-301">Source</a><h4 class="code-header">pub fn <a href="#method.from" class="fn">from</a>(&amp;self) -&gt; <a class="enum" href="enum.VoronoiVertex.html" title="enum spade::handles::VoronoiVertex">VoronoiVertex</a>&lt;'a, V, DE, UE, F&gt;</h4></section></summary><div class="docblock"><p>Returns the voronoi vertex from which this edge originates.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.face" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#304-306">Source</a><h4 class="code-header">pub fn <a href="#method.face" class="fn">face</a>(&amp;self) -&gt; <a class="type" href="type.VoronoiFace.html" title="type spade::handles::VoronoiFace">VoronoiFace</a>&lt;'a, V, DE, UE, F&gt;</h4></section></summary><div class="docblock"><p>Returns the Voronoi face to the left of this Voronoi edge</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.as_undirected" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#311-313">Source</a><h4 class="code-header">pub fn <a href="#method.as_undirected" class="fn">as_undirected</a>(&amp;self) -&gt; <a class="type" href="type.UndirectedVoronoiEdge.html" title="type spade::handles::UndirectedVoronoiEdge">UndirectedVoronoiEdge</a>&lt;'a, V, DE, UE, F&gt;</h4></section></summary><div class="docblock"><p>Converts this directed edge handle into an undirected edge handle.</p>
+<p><em>See also the <a href="index.html" title="mod spade::handles">handles</a> module for more information.</em></p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.as_delaunay_edge" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#322-324">Source</a><h4 class="code-header">pub fn <a href="#method.as_delaunay_edge" class="fn">as_delaunay_edge</a>(&amp;self) -&gt; <a class="type" href="type.DirectedEdgeHandle.html" title="type spade::handles::DirectedEdgeHandle">DirectedEdgeHandle</a>&lt;'a, V, DE, UE, F&gt;</h4></section></summary><div class="docblock"><p>Returns the directed dual edge of the underlying Delaunay triangulation.</p>
+<p>The dual edge is always orthogonal to this edge.</p>
+<svg viewBox="-83.7 -64.8 176.4 129.6" width="500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<pattern height="1" id="dual_edges_pattern0001" patternTransform="rotate(63.512 0 0) scale(2)" patternUnits="userSpaceOnUse" width="1">
+<line stroke="rgb(255 255 255)" stroke-width="1.01" x1="0" x2="0" y1="-0.1" y2="1.1"/>
+<line stroke="rgb(211 211 211)" stroke-width="1.01" x1="1" x2="1" y1="-0.1" y2="1.1"/>
+</pattern>
+</defs>
+<rect height="100%" style="fill: url(#dual_edges_pattern0001)" width="100%" x="-83.7" y="-64.8"/>
+<g>
+<path d="M-2,-24 L5,-12 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L33,-30 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L30,2 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L-35,32 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L-5,-42 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M30,2 L5,-12 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L-30,-25 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L15,39 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L-35,5 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L30,2 L50,50 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L30,2 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-5,-42 L33,-30 L-2,-24 z" style="fill: rgb(211 211 211)"/>
+<path d="M5,-12 L12,10 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L5,-12 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-35,32 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-30,-25 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M33,-30 L-5,-42 L45,-47 z" style="fill: rgb(211 211 211)"/>
+<path d="M-30,-25 L-35,5 L-55,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-55,-25 L-14,-52 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-67,52 L-55,-25 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M50,50 L-67,52 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L50,50 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M45,-47 L76,10 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L45,-47 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="12" y1="5" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-2" x2="33" y1="-24" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(250 128 114); fill: none" x1="30" x2="15" y1="2" y2="39"/>
+<line style="stroke-width: 1; stroke: rgb(250 128 114); fill: none" x1="5" x2="33" y1="-12" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(250 128 114); fill: none" x1="30" x2="5" y1="2" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(250 128 114); fill: none" x1="12" x2="-35" y1="10" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-35" y1="39" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-30" y1="-42" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-35" y1="-12" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-2" y1="-42" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-2" y1="-12" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-67" y1="32" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="5" y1="-25" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-67" y1="39" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-30" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="-5" y1="-52" y2="-42"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="76" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="50" y1="2" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="33" y1="2" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="33" y1="-42" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="12" y1="39" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="12" y1="-12" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="12" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-35" y1="32" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-35" y1="52" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-2" y1="-25" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="45" y1="-42" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="76" y1="-30" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-55" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-55" y1="-25" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-55" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-55" y1="52" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="50" y1="39" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="50" x2="-67" y1="50" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="76" x2="50" y1="10" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="45" y1="-30" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="45" x2="76" y1="-47" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="45" y1="-52" y2="-47"/>
+<circle cx="15" cy="39" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-5" cy="-42" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="30" cy="2" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="5" cy="-12" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="32" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-2" cy="-24" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-67" cy="52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-14" cy="-52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="76" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="12" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="5" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="33" cy="-30" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-30" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-55" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="50" cy="50" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="45" cy="-47" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<line style="stroke-width: 1.3; stroke: rgb(65 105 225); fill: none" x1="28.525" x2="38.05" y1="22.95" y2="26.8"/>
+<circle cx="28.525" cy="22.95" r="1.3" style="stroke-width: 1; stroke: rgb(0 0 0); fill: rgb(173 216 230)"/>
+<circle cx="38.05" cy="26.8" r="1.3" style="stroke-width: 1; stroke: rgb(0 0 0); fill: rgb(173 216 230)"/>
+<line style="stroke-width: 1.3; stroke: rgb(65 105 225); fill: none" x1="22.975" x2="15.625" y1="-14.8" y2="-26.25"/>
+<circle cx="22.975" cy="-14.8" r="1.3" style="stroke-width: 1; stroke: rgb(0 0 0); fill: rgb(173 216 230)"/>
+<circle cx="15.625" cy="-26.25" r="1.3" style="stroke-width: 1; stroke: rgb(0 0 0); fill: rgb(173 216 230)"/>
+<line style="stroke-width: 1.3; stroke: rgb(65 105 225); fill: none" x1="22.975" x2="16.725" y1="-14.8" y2="-3.625"/>
+<circle cx="22.975" cy="-14.8" r="1.3" style="stroke-width: 1; stroke: rgb(0 0 0); fill: rgb(173 216 230)"/>
+<circle cx="16.725" cy="-3.625" r="1.3" style="stroke-width: 1; stroke: rgb(0 0 0); fill: rgb(173 216 230)"/>
+<line style="stroke-width: 1.3; stroke: rgb(65 105 225); fill: none" x1="-12.675" x2="-8.775" y1="18.5" y2="26.8"/>
+<circle cx="-12.675" cy="18.5" r="1.3" style="stroke-width: 1; stroke: rgb(0 0 0); fill: rgb(173 216 230)"/>
+<circle cx="-8.775" cy="26.8" r="1.3" style="stroke-width: 1; stroke: rgb(0 0 0); fill: rgb(173 216 230)"/>
+</g>
+</svg>
+<p><em>Shows various inner voronoi edges (blue) and their dual Delaunay edges (orange)</em></p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.rev" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#327-329">Source</a><h4 class="code-header">pub fn <a href="#method.rev" class="fn">rev</a>(&amp;self) -&gt; Self</h4></section></summary><div class="docblock"><p>Returns this edge with its direction reversed.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.next" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#334-336">Source</a><h4 class="code-header">pub fn <a href="#method.next" class="fn">next</a>(&amp;self) -&gt; <a class="type" href="type.DirectedVoronoiEdge.html" title="type spade::handles::DirectedVoronoiEdge">DirectedVoronoiEdge</a>&lt;'a, V, DE, UE, F&gt;</h4></section></summary><div class="docblock"><p>Returns the edge that is connected to this edge in counterclockwise order.</p>
+<p>See also <a href="../internals/struct.DynamicHandleImpl.html#method.prev" title="method spade::internals::DynamicHandleImpl::prev">prev</a></p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.prev" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#341-343">Source</a><h4 class="code-header">pub fn <a href="#method.prev" class="fn">prev</a>(&amp;self) -&gt; <a class="type" href="type.DirectedVoronoiEdge.html" title="type spade::handles::DirectedVoronoiEdge">DirectedVoronoiEdge</a>&lt;'a, V, DE, UE, F&gt;</h4></section></summary><div class="docblock"><p>Returns the edge that is connected to this edge in clockwise order.</p>
+<p>See also <a href="../internals/struct.DynamicHandleImpl.html#method.next" title="method spade::internals::DynamicHandleImpl::next">next</a></p>
+</div></details></div></details><details class="toggle implementors-toggle" open><summary><section id="impl-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+DirectedVoronoiEdgeTag,+InnerTag%3E" class="impl"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#346-361">Source</a><a href="#impl-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+DirectedVoronoiEdgeTag,+InnerTag%3E" class="anchor">§</a><h3 class="code-header">impl&lt;V, DE, UE, F&gt; <a class="type" href="type.DirectedVoronoiEdge.html" title="type spade::handles::DirectedVoronoiEdge">DirectedVoronoiEdge</a>&lt;'_, V, DE, UE, F&gt;<div class="where">where
+    V: <a class="trait" href="../trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.direction_vector" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#354-360">Source</a><h4 class="code-header">pub fn <a href="#method.direction_vector" class="fn">direction_vector</a>(&amp;self) -&gt; <a class="struct" href="../struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;V::<a class="associatedtype" href="../trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;</h4></section></summary><div class="docblock"><p>Returns a vector that is parallel to the voronoi edge.</p>
+<p>This vector is obtained by rotating the dual Delaunay edge by 90° degree
+The returned vector is not necessarily normalized.</p>
+</div></details></div></details></div><script src="../../type.impl/spade/internals/struct.DynamicHandleImpl.js" data-self-path="spade::delaunay_core::handles::public_handles::DirectedVoronoiEdge" async></script></section></div></main></body></html>

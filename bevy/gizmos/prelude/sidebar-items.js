@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"derive":["GizmoConfigGroup"],"enum":["GizmoLineJoint","GizmoLineStyle","LightGizmoColor"],"struct":["AabbGizmoConfigGroup","DefaultGizmoConfigGroup","GizmoConfig","GizmoConfigStore","Gizmos","LightGizmoConfigGroup","ShowAabbGizmo","ShowLightGizmo"],"trait":["AppGizmoBuilder","GizmoConfigGroup","GizmoPrimitive2d","GizmoPrimitive3d"]};

@@ -1,0 +1,151 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="An extension trait for `EntityCommands` for reflection related functions"><title>ReflectCommandExt in bevy_ecs::reflect - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bevy_ecs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../bevy_ecs/index.html"><img src="https://bevyengine.org/assets/icon.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../bevy_ecs/index.html"><img src="https://bevyengine.org/assets/icon.png" alt="logo"></a><h2><a href="../../bevy_ecs/index.html">bevy_<wbr>ecs</a><span class="version">0.15.2</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Reflect<wbr>Command<wbr>Ext</a></h2><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.insert_reflect" title="insert_reflect">insert_reflect</a></li><li><a href="#tymethod.insert_reflect_with_registry" title="insert_reflect_with_registry">insert_reflect_with_registry</a></li><li><a href="#tymethod.remove_reflect" title="remove_reflect">remove_reflect</a></li><li><a href="#tymethod.remove_reflect_with_registry" title="remove_reflect_with_registry">remove_reflect_with_registry</a></li></ul><h3><a href="#dyn-compatibility">Dyn Compatibility</a></h3><h3><a href="#implementors">Implementors</a></h3></section><div id="rustdoc-modnav"><h2><a href="index.html">In bevy_<wbr>ecs::<wbr>reflect</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">bevy_ecs</a>::<wbr><a href="index.html">reflect</a></span><h1>Trait <span class="trait">ReflectCommandExt</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/bevy_ecs/reflect/entity_commands.rs.html#13-169">Source</a> </span></div><pre class="rust item-decl"><code>pub trait ReflectCommandExt {
+    // Required methods
+    fn <a href="#tymethod.insert_reflect" class="fn">insert_reflect</a>(
+        &amp;mut self,
+        component: <a class="struct" href="https://doc.rust-lang.org/1.85.0/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="../../bevy_reflect/reflect/trait.PartialReflect.html" title="trait bevy_reflect::reflect::PartialReflect">PartialReflect</a>&gt;,
+    ) -&gt; &amp;mut Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.insert_reflect_with_registry" class="fn">insert_reflect_with_registry</a>&lt;T: <a class="trait" href="../system/trait.Resource.html" title="trait bevy_ecs::system::Resource">Resource</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="struct" href="../../bevy_reflect/type_registry/struct.TypeRegistry.html" title="struct bevy_reflect::type_registry::TypeRegistry">TypeRegistry</a>&gt;&gt;(
+        &amp;mut self,
+        component: <a class="struct" href="https://doc.rust-lang.org/1.85.0/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="../../bevy_reflect/reflect/trait.PartialReflect.html" title="trait bevy_reflect::reflect::PartialReflect">PartialReflect</a>&gt;,
+    ) -&gt; &amp;mut Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.remove_reflect" class="fn">remove_reflect</a>(
+        &amp;mut self,
+        component_type_name: impl <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="enum" href="https://doc.rust-lang.org/1.85.0/alloc/borrow/enum.Cow.html" title="enum alloc::borrow::Cow">Cow</a>&lt;'static, <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.str.html">str</a>&gt;&gt;,
+    ) -&gt; &amp;mut Self;
+<span class="item-spacer"></span>    fn <a href="#tymethod.remove_reflect_with_registry" class="fn">remove_reflect_with_registry</a>&lt;T: <a class="trait" href="../system/trait.Resource.html" title="trait bevy_ecs::system::Resource">Resource</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="struct" href="../../bevy_reflect/type_registry/struct.TypeRegistry.html" title="struct bevy_reflect::type_registry::TypeRegistry">TypeRegistry</a>&gt;&gt;(
+        &amp;mut self,
+        component_type_name: impl <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="enum" href="https://doc.rust-lang.org/1.85.0/alloc/borrow/enum.Cow.html" title="enum alloc::borrow::Cow">Cow</a>&lt;'static, <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.str.html">str</a>&gt;&gt;,
+    ) -&gt; &amp;mut Self;
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>An extension trait for <a href="../system/struct.EntityCommands.html" title="struct bevy_ecs::system::EntityCommands"><code>EntityCommands</code></a> for reflection related functions</p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.insert_reflect" class="method"><a class="src rightside" href="../../src/bevy_ecs/reflect/entity_commands.rs.html#88">Source</a><h4 class="code-header">fn <a href="#tymethod.insert_reflect" class="fn">insert_reflect</a>(&amp;mut self, component: <a class="struct" href="https://doc.rust-lang.org/1.85.0/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="../../bevy_reflect/reflect/trait.PartialReflect.html" title="trait bevy_reflect::reflect::PartialReflect">PartialReflect</a>&gt;) -&gt; &amp;mut Self</h4></section></summary><div class="docblock"><p>Adds the given boxed reflect component or bundle to the entity using the reflection data in
+<a href="struct.AppTypeRegistry.html" title="struct bevy_ecs::reflect::AppTypeRegistry"><code>AppTypeRegistry</code></a>.</p>
+<p>This will overwrite any previous component(s) of the same type.</p>
+<h5 id="panics"><a class="doc-anchor" href="#panics">§</a>Panics</h5>
+<ul>
+<li>If the entity doesn’t exist.</li>
+<li>If <a href="struct.AppTypeRegistry.html" title="struct bevy_ecs::reflect::AppTypeRegistry"><code>AppTypeRegistry</code></a> does not have the reflection data for the given
+<a href="../component/trait.Component.html" title="trait bevy_ecs::component::Component"><code>Component</code></a> or <a href="../bundle/trait.Bundle.html" title="trait bevy_ecs::bundle::Bundle"><code>Bundle</code></a>.</li>
+<li>If the component or bundle data is invalid. See <a href="../../bevy_reflect/reflect/trait.PartialReflect.html#method.apply" title="method bevy_reflect::reflect::PartialReflect::apply"><code>PartialReflect::apply</code></a> for further details.</li>
+<li>If <a href="struct.AppTypeRegistry.html" title="struct bevy_ecs::reflect::AppTypeRegistry"><code>AppTypeRegistry</code></a> is not present in the <a href="../world/struct.World.html" title="struct bevy_ecs::world::World"><code>World</code></a>.</li>
+</ul>
+<h5 id="note"><a class="doc-anchor" href="#note">§</a>Note</h5>
+<p>Prefer to use the typed <a href="../system/struct.EntityCommands.html#method.insert" title="method bevy_ecs::system::EntityCommands::insert"><code>EntityCommands::insert</code></a> if possible. Adding a reflected component
+is much slower.</p>
+<h5 id="example"><a class="doc-anchor" href="#example">§</a>Example</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// Note that you need to register the component type in the AppTypeRegistry prior to using
+// reflection. You can use the helpers on the App with `app.register_type::&lt;ComponentA&gt;()`
+// or write to the TypeRegistry directly to register all your components
+
+// A resource that can hold any component that implements reflect as a boxed reflect component
+</span><span class="attr">#[derive(Resource)]
+</span><span class="kw">struct </span>Prefab {
+    data: Box&lt;<span class="kw">dyn </span>Reflect&gt;,
+}
+<span class="attr">#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+</span><span class="kw">struct </span>ComponentA(u32);
+
+<span class="attr">#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+</span><span class="kw">struct </span>ComponentB(String);
+
+<span class="attr">#[derive(Bundle, Reflect, Default)]
+#[reflect(Bundle)]
+</span><span class="kw">struct </span>BundleA {
+    a: ComponentA,
+    b: ComponentB,
+}
+
+<span class="kw">fn </span>insert_reflect_component(
+    <span class="kw-2">mut </span>commands: Commands,
+    <span class="kw-2">mut </span>prefab: ResMut&lt;Prefab&gt;
+    ) {
+    <span class="comment">// Create a set of new boxed reflect components to use
+    </span><span class="kw">let </span>boxed_reflect_component_a: Box&lt;<span class="kw">dyn </span>Reflect&gt; = Box::new(ComponentA(<span class="number">916</span>));
+    <span class="kw">let </span>boxed_reflect_component_b: Box&lt;<span class="kw">dyn </span>Reflect&gt;  = Box::new(ComponentB(<span class="string">"NineSixteen"</span>.to_string()));
+    <span class="kw">let </span>boxed_reflect_bundle_a: Box&lt;<span class="kw">dyn </span>Reflect&gt; = Box::new(BundleA {
+        a: ComponentA(<span class="number">24</span>),
+        b: ComponentB(<span class="string">"Twenty-Four"</span>.to_string()),
+    });
+
+    <span class="comment">// You can overwrite the component in the resource with either ComponentA or ComponentB
+    </span>prefab.data = boxed_reflect_component_a;
+    prefab.data = boxed_reflect_component_b;
+
+    <span class="comment">// Or even with BundleA
+    </span>prefab.data = boxed_reflect_bundle_a;
+
+    <span class="comment">// No matter which component or bundle is in the resource and without knowing the exact type, you can
+    // use the insert_reflect entity command to insert that component/bundle into an entity.
+    </span>commands
+        .spawn_empty()
+        .insert_reflect(prefab.data.clone_value());
+}</code></pre></div>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.insert_reflect_with_registry" class="method"><a class="src rightside" href="../../src/bevy_ecs/reflect/entity_commands.rs.html#100-103">Source</a><h4 class="code-header">fn <a href="#tymethod.insert_reflect_with_registry" class="fn">insert_reflect_with_registry</a>&lt;T: <a class="trait" href="../system/trait.Resource.html" title="trait bevy_ecs::system::Resource">Resource</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="struct" href="../../bevy_reflect/type_registry/struct.TypeRegistry.html" title="struct bevy_reflect::type_registry::TypeRegistry">TypeRegistry</a>&gt;&gt;(
+    &amp;mut self,
+    component: <a class="struct" href="https://doc.rust-lang.org/1.85.0/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="../../bevy_reflect/reflect/trait.PartialReflect.html" title="trait bevy_reflect::reflect::PartialReflect">PartialReflect</a>&gt;,
+) -&gt; &amp;mut Self</h4></section></summary><div class="docblock"><p>Same as <a href="trait.ReflectCommandExt.html#tymethod.insert_reflect" title="method bevy_ecs::reflect::ReflectCommandExt::insert_reflect"><code>insert_reflect</code></a>, but using the <code>T</code> resource as type registry instead of
+<code>AppTypeRegistry</code>.</p>
+<h5 id="panics-1"><a class="doc-anchor" href="#panics-1">§</a>Panics</h5>
+<ul>
+<li>If the given <a href="../system/trait.Resource.html" title="trait bevy_ecs::system::Resource"><code>Resource</code></a> is not present in the <a href="../world/struct.World.html" title="struct bevy_ecs::world::World"><code>World</code></a>.</li>
+</ul>
+<h5 id="note-1"><a class="doc-anchor" href="#note-1">§</a>Note</h5>
+<ul>
+<li>The given <a href="../system/trait.Resource.html" title="trait bevy_ecs::system::Resource"><code>Resource</code></a> is removed from the <a href="../world/struct.World.html" title="struct bevy_ecs::world::World"><code>World</code></a> before the command is applied.</li>
+</ul>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.remove_reflect" class="method"><a class="src rightside" href="../../src/bevy_ecs/reflect/entity_commands.rs.html#162">Source</a><h4 class="code-header">fn <a href="#tymethod.remove_reflect" class="fn">remove_reflect</a>(
+    &amp;mut self,
+    component_type_name: impl <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="enum" href="https://doc.rust-lang.org/1.85.0/alloc/borrow/enum.Cow.html" title="enum alloc::borrow::Cow">Cow</a>&lt;'static, <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.str.html">str</a>&gt;&gt;,
+) -&gt; &amp;mut Self</h4></section></summary><div class="docblock"><p>Removes from the entity the component or bundle with the given type name registered in <a href="struct.AppTypeRegistry.html" title="struct bevy_ecs::reflect::AppTypeRegistry"><code>AppTypeRegistry</code></a>.</p>
+<p>If the type is a bundle, it will remove any components in that bundle regardless if the entity
+contains all the components.</p>
+<p>Does nothing if the type is a component and the entity does not have a component of the same type,
+if the type is a bundle and the entity does not contain any of the components in the bundle,
+if <a href="struct.AppTypeRegistry.html" title="struct bevy_ecs::reflect::AppTypeRegistry"><code>AppTypeRegistry</code></a> does not contain the reflection data for the given component,
+or if the entity does not exist.</p>
+<h5 id="note-2"><a class="doc-anchor" href="#note-2">§</a>Note</h5>
+<p>Prefer to use the typed <a href="../system/struct.EntityCommands.html#method.remove" title="method bevy_ecs::system::EntityCommands::remove"><code>EntityCommands::remove</code></a> if possible. Removing a reflected component
+is much slower.</p>
+<h5 id="example-1"><a class="doc-anchor" href="#example-1">§</a>Example</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// Note that you need to register the component/bundle type in the AppTypeRegistry prior to using
+// reflection. You can use the helpers on the App with `app.register_type::&lt;ComponentA&gt;()`
+// or write to the TypeRegistry directly to register all your components and bundles
+
+
+// A resource that can hold any component or bundle that implements reflect as a boxed reflect
+</span><span class="attr">#[derive(Resource)]
+</span><span class="kw">struct </span>Prefab{
+    entity: Entity,
+    data: Box&lt;<span class="kw">dyn </span>Reflect&gt;,
+}
+<span class="attr">#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+</span><span class="kw">struct </span>ComponentA(u32);
+<span class="attr">#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+</span><span class="kw">struct </span>ComponentB(String);
+<span class="attr">#[derive(Bundle, Reflect, Default)]
+#[reflect(Bundle)]
+</span><span class="kw">struct </span>BundleA {
+    a: ComponentA,
+    b: ComponentB,
+}
+
+<span class="kw">fn </span>remove_reflect_component(
+    <span class="kw-2">mut </span>commands: Commands,
+    prefab: Res&lt;Prefab&gt;
+    ) {
+    <span class="comment">// Prefab can hold any boxed reflect component or bundle. In this case either
+    // ComponentA, ComponentB, or BundleA. No matter which component or bundle is in the resource though,
+    // we can attempt to remove any component (or set of components in the case of a bundle)
+    // of that same type from an entity.
+    </span>commands.entity(prefab.entity)
+        .remove_reflect(prefab.data.reflect_type_path().to_owned());
+}</code></pre></div>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.remove_reflect_with_registry" class="method"><a class="src rightside" href="../../src/bevy_ecs/reflect/entity_commands.rs.html#165-168">Source</a><h4 class="code-header">fn <a href="#tymethod.remove_reflect_with_registry" class="fn">remove_reflect_with_registry</a>&lt;T: <a class="trait" href="../system/trait.Resource.html" title="trait bevy_ecs::system::Resource">Resource</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;<a class="struct" href="../../bevy_reflect/type_registry/struct.TypeRegistry.html" title="struct bevy_reflect::type_registry::TypeRegistry">TypeRegistry</a>&gt;&gt;(
+    &amp;mut self,
+    component_type_name: impl <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/convert/trait.Into.html" title="trait core::convert::Into">Into</a>&lt;<a class="enum" href="https://doc.rust-lang.org/1.85.0/alloc/borrow/enum.Cow.html" title="enum alloc::borrow::Cow">Cow</a>&lt;'static, <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.str.html">str</a>&gt;&gt;,
+) -&gt; &amp;mut Self</h4></section></summary><div class="docblock"><p>Same as <a href="trait.ReflectCommandExt.html#tymethod.remove_reflect" title="method bevy_ecs::reflect::ReflectCommandExt::remove_reflect"><code>remove_reflect</code></a>, but using the <code>T</code> resource as type registry instead of
+<code>AppTypeRegistry</code>.</p>
+</div></details></div><h2 id="dyn-compatibility" class="section-header">Dyn Compatibility<a href="#dyn-compatibility" class="anchor">§</a></h2><div class="dyn-compatibility-info"><p>This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.85.0/reference/items/traits.html#object-safety">dyn compatible</a>.</p><p><i>In older versions of Rust, dyn compatibility was called "object safety", so this trait is not object safe.</i></p></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-ReflectCommandExt-for-EntityCommands%3C'_%3E" class="impl"><a class="src rightside" href="../../src/bevy_ecs/reflect/entity_commands.rs.html#171-211">Source</a><a href="#impl-ReflectCommandExt-for-EntityCommands%3C'_%3E" class="anchor">§</a><h3 class="code-header">impl <a class="trait" href="trait.ReflectCommandExt.html" title="trait bevy_ecs::reflect::ReflectCommandExt">ReflectCommandExt</a> for <a class="struct" href="../system/struct.EntityCommands.html" title="struct bevy_ecs::system::EntityCommands">EntityCommands</a>&lt;'_&gt;</h3></section></div><script src="../../trait.impl/bevy_ecs/reflect/entity_commands/trait.ReflectCommandExt.js" async></script></section></div></main></body></html>

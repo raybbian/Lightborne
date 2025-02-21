@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["acos","acosh","asin","asinh","atan","atan2","atanh","cbrt","cos","cosh","exp","exp2","exp_m1","hypot","ln","ln_1p","log10","log2","powf","sin","sin_cos","sinh","tan","tanh"],"trait":["FloatPow"]};

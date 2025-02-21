@@ -1,0 +1,1 @@
+searchState.loadedDescShard("disqualified", 0, "Lazily shortens a type name to remove all module paths.\nReturns the argument unchanged.\nCalls <code>U::from(self)</code>.\nGets a shortened version of the name of the type <code>T</code>.\nGets the original name before shortening.")

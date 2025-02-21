@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["BackgroundMaterial","BlurMaterial","CombineFramesMaterial","FrameMaskMaterial","GradientLightMaterial"]};

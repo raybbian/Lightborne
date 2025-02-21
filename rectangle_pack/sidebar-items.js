@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["RectanglePackError"],"fn":["contains_smallest_box","pack_rects","volume_heuristic"],"struct":["BinSection","GroupedRectsToPlace","PackedLocation","RectToInsert","RectanglePackOk","TargetBin"],"type":["BoxSizeHeuristicFn","ComparePotentialContainersFn"]};

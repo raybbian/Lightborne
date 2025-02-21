@@ -1,0 +1,89 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Materials are used alongside `UiMaterialPlugin` and `MaterialNode` to spawn entities that are rendered with a specific `UiMaterial` type. They serve as an easy to use high level way to render `Node` entities with custom shader logic."><title>UiMaterial in bevy::ui - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bevy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt="logo"></a><h2><a href="../../bevy/index.html">bevy</a><span class="version">0.15.2</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">UiMaterial</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#example" title="Example">Example</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.fragment_shader" title="fragment_shader">fragment_shader</a></li><li><a href="#method.specialize" title="specialize">specialize</a></li><li><a href="#method.vertex_shader" title="vertex_shader">vertex_shader</a></li></ul><h3><a href="#dyn-compatibility">Dyn Compatibility</a></h3><h3><a href="#implementors">Implementors</a></h3></section><div id="rustdoc-modnav"><h2><a href="index.html">In bevy::<wbr>ui</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">bevy</a>::<wbr><a href="index.html">ui</a></span><h1>Trait <span class="trait">UiMaterial</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/bevy_ui/ui_material.rs.html#100">Source</a> </span></div><pre class="rust item-decl"><code>pub trait UiMaterial:
+    <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/marker/trait.Sized.html" title="trait core::marker::Sized">Sized</a>
+    + <a class="trait" href="../render/render_resource/trait.AsBindGroup.html" title="trait bevy::render::render_resource::AsBindGroup">AsBindGroup</a>
+    + <a class="trait" href="../prelude/trait.Asset.html" title="trait bevy::prelude::Asset">Asset</a>
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> {
+    // Provided methods
+    fn <a href="#method.vertex_shader" class="fn">vertex_shader</a>() -&gt; <a class="enum" href="../render/render_resource/enum.ShaderRef.html" title="enum bevy::render::render_resource::ShaderRef">ShaderRef</a> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.fragment_shader" class="fn">fragment_shader</a>() -&gt; <a class="enum" href="../render/render_resource/enum.ShaderRef.html" title="enum bevy::render::render_resource::ShaderRef">ShaderRef</a> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.specialize" class="fn">specialize</a>(
+        descriptor: &amp;mut <a class="struct" href="../render/render_resource/struct.RenderPipelineDescriptor.html" title="struct bevy::render::render_resource::RenderPipelineDescriptor">RenderPipelineDescriptor</a>,
+        key: <a class="struct" href="../prelude/struct.UiMaterialKey.html" title="struct bevy::prelude::UiMaterialKey">UiMaterialKey</a>&lt;Self&gt;,
+    ) { ... }
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Materials are used alongside <a href="../prelude/struct.UiMaterialPlugin.html" title="struct bevy::prelude::UiMaterialPlugin"><code>UiMaterialPlugin</code></a> and <a href="../prelude/struct.MaterialNode.html" title="struct bevy::prelude::MaterialNode"><code>MaterialNode</code></a>
+to spawn entities that are rendered with a specific <a href="../prelude/trait.UiMaterial.html" title="trait bevy::prelude::UiMaterial"><code>UiMaterial</code></a> type. They serve as an easy to use high level
+way to render <code>Node</code> entities with custom shader logic.</p>
+<p><code>UiMaterials</code> must implement <a href="../render/render_resource/trait.AsBindGroup.html" title="trait bevy::render::render_resource::AsBindGroup"><code>AsBindGroup</code></a> to define how data will be transferred to the GPU and bound in shaders.
+<a href="../render/render_resource/trait.AsBindGroup.html" title="trait bevy::render::render_resource::AsBindGroup"><code>AsBindGroup</code></a> can be derived, which makes generating bindings straightforward. See the <a href="../render/render_resource/trait.AsBindGroup.html" title="trait bevy::render::render_resource::AsBindGroup"><code>AsBindGroup</code></a> docs for details.</p>
+<p>Materials must also implement <a href="../prelude/trait.Asset.html" title="trait bevy::prelude::Asset"><code>Asset</code></a> so they can be treated as such.</p>
+<p>If you are only using the fragment shader, make sure your shader imports the <code>UiVertexOutput</code>
+from <code>bevy_ui::ui_vertex_output</code> and uses it as the input of your fragment shader like the
+example below does.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<p>Here is a simple <a href="../prelude/trait.UiMaterial.html" title="trait bevy::prelude::UiMaterial"><code>UiMaterial</code></a> implementation. The <a href="../render/render_resource/trait.AsBindGroup.html" title="trait bevy::render::render_resource::AsBindGroup"><code>AsBindGroup</code></a> derive has many features. To see what else is available,
+check out the <a href="../render/render_resource/trait.AsBindGroup.html" title="trait bevy::render::render_resource::AsBindGroup"><code>AsBindGroup</code></a> documentation.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>
+<span class="attr">#[derive(AsBindGroup, Asset, TypePath, Debug, Clone)]
+</span><span class="kw">pub struct </span>CustomMaterial {
+    <span class="comment">// Uniform bindings must implement `ShaderType`, which will be used to convert the value to
+    // its shader-compatible equivalent. Most core math types already implement `ShaderType`.
+    </span><span class="attr">#[uniform(<span class="number">0</span>)]
+    </span>color: LinearRgba,
+    <span class="comment">// Images can be bound as textures in shaders. If the Image's sampler is also needed, just
+    // add the sampler attribute with a different binding index.
+    </span><span class="attr">#[texture(<span class="number">1</span>)]
+    #[sampler(<span class="number">2</span>)]
+    </span>color_texture: Handle&lt;Image&gt;,
+}
+
+<span class="comment">// All functions on `UiMaterial` have default impls. You only need to implement the
+// functions that are relevant for your material.
+</span><span class="kw">impl </span>UiMaterial <span class="kw">for </span>CustomMaterial {
+    <span class="kw">fn </span>fragment_shader() -&gt; ShaderRef {
+        <span class="string">"shaders/custom_material.wgsl"</span>.into()
+    }
+}
+
+<span class="comment">// Spawn an entity using `CustomMaterial`.
+</span><span class="kw">fn </span>setup(<span class="kw-2">mut </span>commands: Commands, <span class="kw-2">mut </span>materials: ResMut&lt;Assets&lt;CustomMaterial&gt;&gt;, asset_server: Res&lt;AssetServer&gt;) {
+    commands.spawn((
+        MaterialNode(materials.add(CustomMaterial {
+            color: LinearRgba::RED,
+            color_texture: asset_server.load(<span class="string">"some_image.png"</span>),
+        })),
+        Node {
+            width: Val::Percent(<span class="number">100.0</span>),
+            ..Default::default()
+        },
+    ));
+}</code></pre></div>
+<p>In WGSL shaders, the material’s binding would look like this:</p>
+<p>If you only use the fragment shader make sure to import <code>UiVertexOutput</code> from
+<code>bevy_ui::ui_vertex_output</code> in your wgsl shader.
+Also note that bind group 0 is always bound to the <a href="../render/view/struct.ViewUniform.html" title="struct bevy::render::view::ViewUniform"><code>View Uniform</code></a>
+and the <a href="../render/globals/struct.GlobalsUniform.html" title="struct bevy::render::globals::GlobalsUniform"><code>Globals Uniform</code></a>.</p>
+<div class="example-wrap"><pre class="language-wgsl"><code>#import bevy_ui::ui_vertex_output UiVertexOutput
+
+struct CustomMaterial {
+    color: vec4&lt;f32&gt;,
+}
+
+@group(1) @binding(0)
+var&lt;uniform&gt; material: CustomMaterial;
+@group(1) @binding(1)
+var color_texture: texture_2d&lt;f32&gt;;
+@group(1) @binding(2)
+var color_sampler: sampler;
+
+@fragment
+fn fragment(in: UiVertexOutput) -&gt; @location(0) vec4&lt;f32&gt; {
+
+}</code></pre></div></div></details><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.vertex_shader" class="method"><a class="src rightside" href="../../src/bevy_ui/ui_material.rs.html#103">Source</a><h4 class="code-header">fn <a href="#method.vertex_shader" class="fn">vertex_shader</a>() -&gt; <a class="enum" href="../render/render_resource/enum.ShaderRef.html" title="enum bevy::render::render_resource::ShaderRef">ShaderRef</a></h4></section></summary><div class="docblock"><p>Returns this materials vertex shader. If <a href="../render/render_resource/enum.ShaderRef.html#variant.Default" title="variant bevy::render::render_resource::ShaderRef::Default"><code>ShaderRef::Default</code></a> is returned, the default UI
+vertex shader will be used.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.fragment_shader" class="method"><a class="src rightside" href="../../src/bevy_ui/ui_material.rs.html#109">Source</a><h4 class="code-header">fn <a href="#method.fragment_shader" class="fn">fragment_shader</a>() -&gt; <a class="enum" href="../render/render_resource/enum.ShaderRef.html" title="enum bevy::render::render_resource::ShaderRef">ShaderRef</a></h4></section></summary><div class="docblock"><p>Returns this materials fragment shader. If <a href="../render/render_resource/enum.ShaderRef.html#variant.Default" title="variant bevy::render::render_resource::ShaderRef::Default"><code>ShaderRef::Default</code></a> is returned, the default
+UI fragment shader will be used.</p>
+</div></details><section id="method.specialize" class="method"><a class="src rightside" href="../../src/bevy_ui/ui_material.rs.html#115">Source</a><h4 class="code-header">fn <a href="#method.specialize" class="fn">specialize</a>(
+    descriptor: &amp;mut <a class="struct" href="../render/render_resource/struct.RenderPipelineDescriptor.html" title="struct bevy::render::render_resource::RenderPipelineDescriptor">RenderPipelineDescriptor</a>,
+    key: <a class="struct" href="../prelude/struct.UiMaterialKey.html" title="struct bevy::prelude::UiMaterialKey">UiMaterialKey</a>&lt;Self&gt;,
+)</h4></section></div><h2 id="dyn-compatibility" class="section-header">Dyn Compatibility<a href="#dyn-compatibility" class="anchor">§</a></h2><div class="dyn-compatibility-info"><p>This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.85.0/reference/items/traits.html#object-safety">dyn compatible</a>.</p><p><i>In older versions of Rust, dyn compatibility was called "object safety", so this trait is not object safe.</i></p></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"></div><script src="../../trait.impl/bevy_ui/ui_material/trait.UiMaterial.js" async></script></section></div></main></body></html>

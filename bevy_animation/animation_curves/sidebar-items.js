@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["EvaluatorId"],"struct":["AnimatableCurve","AnimatableCurveEvaluator","AnimatableKeyframeCurve","AnimatedField","WeightsCurve"],"trait":["AnimatableProperty","AnimationCompatibleCurve","AnimationCurve","AnimationCurveEvaluator"]};

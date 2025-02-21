@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["OIT_RESOLVE_SHADER_HANDLE"],"fn":["prepare_oit_resolve_bind_group","queue_oit_resolve_pipeline"],"mod":["node"],"struct":["OitResolveBindGroup","OitResolvePipeline","OitResolvePipelineId","OitResolvePipelineKey","OitResolvePlugin"]};

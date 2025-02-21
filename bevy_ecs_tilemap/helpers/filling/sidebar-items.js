@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["fill_tilemap","fill_tilemap_hexagon","fill_tilemap_rect","fill_tilemap_rect_color","generate_hex_ring","generate_hexagon"]};

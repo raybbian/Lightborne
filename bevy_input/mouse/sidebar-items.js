@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["MouseButton","MouseScrollUnit"],"fn":["accumulate_mouse_motion_system","accumulate_mouse_scroll_system","mouse_button_input_system"],"struct":["AccumulatedMouseMotion","AccumulatedMouseScroll","MouseButtonInput","MouseMotion","MouseWheel"]};

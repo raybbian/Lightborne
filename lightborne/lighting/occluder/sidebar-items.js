@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["create_occluder_polygon","despawn_collider_occluders","draw_occluders","on_remove_occluder_despawn_occluder_renderers","polygon_mesh","spawn_collider_occluders","spawn_occluder_renderers","vector_to_segment"],"struct":["ColliderBasedOccluder","Occluder","OccluderPlugin","OccluderRenderer","OccluderRendererBundle"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["CasNode","CasPipeline","CasPipelineKey","CasPlugin","ContrastAdaptiveSharpening","DenoiseCas","ViewCasPipeline"],"type":["ContrastAdaptiveSharpeningSettings"]};

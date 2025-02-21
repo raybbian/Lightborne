@@ -1,0 +1,1505 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_scene-0.15.2/src/scene_spawner.rs`."><title>scene_spawner.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bevy_scene" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">bevy_scene/</div>scene_spawner.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
+<a href="#2" id="2">2</a>
+<a href="#3" id="3">3</a>
+<a href="#4" id="4">4</a>
+<a href="#5" id="5">5</a>
+<a href="#6" id="6">6</a>
+<a href="#7" id="7">7</a>
+<a href="#8" id="8">8</a>
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+<a href="#42" id="42">42</a>
+<a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
+<a href="#47" id="47">47</a>
+<a href="#48" id="48">48</a>
+<a href="#49" id="49">49</a>
+<a href="#50" id="50">50</a>
+<a href="#51" id="51">51</a>
+<a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
+<a href="#458" id="458">458</a>
+<a href="#459" id="459">459</a>
+<a href="#460" id="460">460</a>
+<a href="#461" id="461">461</a>
+<a href="#462" id="462">462</a>
+<a href="#463" id="463">463</a>
+<a href="#464" id="464">464</a>
+<a href="#465" id="465">465</a>
+<a href="#466" id="466">466</a>
+<a href="#467" id="467">467</a>
+<a href="#468" id="468">468</a>
+<a href="#469" id="469">469</a>
+<a href="#470" id="470">470</a>
+<a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
+<a href="#483" id="483">483</a>
+<a href="#484" id="484">484</a>
+<a href="#485" id="485">485</a>
+<a href="#486" id="486">486</a>
+<a href="#487" id="487">487</a>
+<a href="#488" id="488">488</a>
+<a href="#489" id="489">489</a>
+<a href="#490" id="490">490</a>
+<a href="#491" id="491">491</a>
+<a href="#492" id="492">492</a>
+<a href="#493" id="493">493</a>
+<a href="#494" id="494">494</a>
+<a href="#495" id="495">495</a>
+<a href="#496" id="496">496</a>
+<a href="#497" id="497">497</a>
+<a href="#498" id="498">498</a>
+<a href="#499" id="499">499</a>
+<a href="#500" id="500">500</a>
+<a href="#501" id="501">501</a>
+<a href="#502" id="502">502</a>
+<a href="#503" id="503">503</a>
+<a href="#504" id="504">504</a>
+<a href="#505" id="505">505</a>
+<a href="#506" id="506">506</a>
+<a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a>
+<a href="#509" id="509">509</a>
+<a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
+<a href="#519" id="519">519</a>
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
+<a href="#524" id="524">524</a>
+<a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
+<a href="#527" id="527">527</a>
+<a href="#528" id="528">528</a>
+<a href="#529" id="529">529</a>
+<a href="#530" id="530">530</a>
+<a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
+<a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
+<a href="#557" id="557">557</a>
+<a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
+<a href="#561" id="561">561</a>
+<a href="#562" id="562">562</a>
+<a href="#563" id="563">563</a>
+<a href="#564" id="564">564</a>
+<a href="#565" id="565">565</a>
+<a href="#566" id="566">566</a>
+<a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a>
+<a href="#569" id="569">569</a>
+<a href="#570" id="570">570</a>
+<a href="#571" id="571">571</a>
+<a href="#572" id="572">572</a>
+<a href="#573" id="573">573</a>
+<a href="#574" id="574">574</a>
+<a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
+<a href="#578" id="578">578</a>
+<a href="#579" id="579">579</a>
+<a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
+<a href="#583" id="583">583</a>
+<a href="#584" id="584">584</a>
+<a href="#585" id="585">585</a>
+<a href="#586" id="586">586</a>
+<a href="#587" id="587">587</a>
+<a href="#588" id="588">588</a>
+<a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a>
+<a href="#611" id="611">611</a>
+<a href="#612" id="612">612</a>
+<a href="#613" id="613">613</a>
+<a href="#614" id="614">614</a>
+<a href="#615" id="615">615</a>
+<a href="#616" id="616">616</a>
+<a href="#617" id="617">617</a>
+<a href="#618" id="618">618</a>
+<a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
+<a href="#621" id="621">621</a>
+<a href="#622" id="622">622</a>
+<a href="#623" id="623">623</a>
+<a href="#624" id="624">624</a>
+<a href="#625" id="625">625</a>
+<a href="#626" id="626">626</a>
+<a href="#627" id="627">627</a>
+<a href="#628" id="628">628</a>
+<a href="#629" id="629">629</a>
+<a href="#630" id="630">630</a>
+<a href="#631" id="631">631</a>
+<a href="#632" id="632">632</a>
+<a href="#633" id="633">633</a>
+<a href="#634" id="634">634</a>
+<a href="#635" id="635">635</a>
+<a href="#636" id="636">636</a>
+<a href="#637" id="637">637</a>
+<a href="#638" id="638">638</a>
+<a href="#639" id="639">639</a>
+<a href="#640" id="640">640</a>
+<a href="#641" id="641">641</a>
+<a href="#642" id="642">642</a>
+<a href="#643" id="643">643</a>
+<a href="#644" id="644">644</a>
+<a href="#645" id="645">645</a>
+<a href="#646" id="646">646</a>
+<a href="#647" id="647">647</a>
+<a href="#648" id="648">648</a>
+<a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
+<a href="#657" id="657">657</a>
+<a href="#658" id="658">658</a>
+<a href="#659" id="659">659</a>
+<a href="#660" id="660">660</a>
+<a href="#661" id="661">661</a>
+<a href="#662" id="662">662</a>
+<a href="#663" id="663">663</a>
+<a href="#664" id="664">664</a>
+<a href="#665" id="665">665</a>
+<a href="#666" id="666">666</a>
+<a href="#667" id="667">667</a>
+<a href="#668" id="668">668</a>
+<a href="#669" id="669">669</a>
+<a href="#670" id="670">670</a>
+<a href="#671" id="671">671</a>
+<a href="#672" id="672">672</a>
+<a href="#673" id="673">673</a>
+<a href="#674" id="674">674</a>
+<a href="#675" id="675">675</a>
+<a href="#676" id="676">676</a>
+<a href="#677" id="677">677</a>
+<a href="#678" id="678">678</a>
+<a href="#679" id="679">679</a>
+<a href="#680" id="680">680</a>
+<a href="#681" id="681">681</a>
+<a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
+<a href="#684" id="684">684</a>
+<a href="#685" id="685">685</a>
+<a href="#686" id="686">686</a>
+<a href="#687" id="687">687</a>
+<a href="#688" id="688">688</a>
+<a href="#689" id="689">689</a>
+<a href="#690" id="690">690</a>
+<a href="#691" id="691">691</a>
+<a href="#692" id="692">692</a>
+<a href="#693" id="693">693</a>
+<a href="#694" id="694">694</a>
+<a href="#695" id="695">695</a>
+<a href="#696" id="696">696</a>
+<a href="#697" id="697">697</a>
+<a href="#698" id="698">698</a>
+<a href="#699" id="699">699</a>
+<a href="#700" id="700">700</a>
+<a href="#701" id="701">701</a>
+<a href="#702" id="702">702</a>
+<a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
+<a href="#708" id="708">708</a>
+<a href="#709" id="709">709</a>
+<a href="#710" id="710">710</a>
+<a href="#711" id="711">711</a>
+<a href="#712" id="712">712</a>
+<a href="#713" id="713">713</a>
+<a href="#714" id="714">714</a>
+<a href="#715" id="715">715</a>
+<a href="#716" id="716">716</a>
+<a href="#717" id="717">717</a>
+<a href="#718" id="718">718</a>
+<a href="#719" id="719">719</a>
+<a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
+<a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a></pre></div><pre class="rust"><code><span class="kw">use crate</span>::{DynamicScene, Scene};
+<span class="kw">use </span>bevy_asset::{AssetEvent, AssetId, Assets, Handle};
+<span class="kw">use </span>bevy_ecs::{
+    entity::{Entity, EntityHashMap},
+    event::{Event, EventCursor, Events},
+    reflect::AppTypeRegistry,
+    system::Resource,
+    world::{Command, Mut, World},
+};
+<span class="kw">use </span>bevy_hierarchy::{AddChild, BuildChildren, DespawnRecursiveExt, Parent};
+<span class="kw">use </span>bevy_reflect::Reflect;
+<span class="kw">use </span>bevy_utils::{HashMap, HashSet};
+<span class="kw">use </span>derive_more::derive::{Display, Error};
+<span class="kw">use </span>uuid::Uuid;
+
+<span class="doccomment">/// Triggered on a scene's parent entity when [`crate::SceneInstance`] becomes ready to use.
+///
+/// See also [`Trigger`], [`SceneSpawner::instance_is_ready`].
+///
+/// [`Trigger`]: bevy_ecs::observer::Trigger
+</span><span class="attr">#[derive(Clone, Copy, Debug, Eq, PartialEq, Event, Reflect)]
+#[reflect(Debug, PartialEq)]
+</span><span class="kw">pub struct </span>SceneInstanceReady {
+    <span class="doccomment">/// Instance which has been spawned.
+    </span><span class="kw">pub </span>instance_id: InstanceId,
+}
+
+<span class="doccomment">/// Information about a scene instance.
+</span><span class="attr">#[derive(Debug)]
+</span><span class="kw">pub struct </span>InstanceInfo {
+    <span class="doccomment">/// Mapping of entities from the scene world to the instance world.
+    </span><span class="kw">pub </span>entity_map: EntityHashMap&lt;Entity&gt;,
+}
+
+<span class="doccomment">/// Unique id identifying a scene instance.
+</span><span class="attr">#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Reflect)]
+#[reflect(Debug, PartialEq, Hash)]
+</span><span class="kw">pub struct </span>InstanceId(Uuid);
+
+<span class="kw">impl </span>InstanceId {
+    <span class="kw">fn </span>new() -&gt; <span class="self">Self </span>{
+        InstanceId(Uuid::new_v4())
+    }
+}
+
+<span class="doccomment">/// Handles spawning and despawning scenes in the world, either synchronously or batched through the [`scene_spawner_system`].
+///
+/// Synchronous methods: (Scene operations will take effect immediately)
+/// - [`spawn_dynamic_sync`](Self::spawn_dynamic_sync)
+/// - [`spawn_sync`](Self::spawn_sync)
+/// - [`despawn_sync`](Self::despawn_sync)
+/// - [`despawn_instance_sync`](Self::despawn_instance_sync)
+/// - [`update_spawned_scenes`](Self::update_spawned_scenes)
+/// - [`spawn_queued_scenes`](Self::spawn_queued_scenes)
+/// - [`despawn_queued_scenes`](Self::despawn_queued_scenes)
+/// - [`despawn_queued_instances`](Self::despawn_queued_instances)
+///
+/// Deferred methods: (Scene operations will be processed when the [`scene_spawner_system`] is run)
+/// - [`spawn_dynamic`](Self::spawn_dynamic)
+/// - [`spawn_dynamic_as_child`](Self::spawn_dynamic_as_child)
+/// - [`spawn`](Self::spawn)
+/// - [`spawn_as_child`](Self::spawn_as_child)
+/// - [`despawn`](Self::despawn)
+/// - [`despawn_instance`](Self::despawn_instance)
+</span><span class="attr">#[derive(Default, Resource)]
+</span><span class="kw">pub struct </span>SceneSpawner {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) spawned_dynamic_scenes: HashMap&lt;AssetId&lt;DynamicScene&gt;, HashSet&lt;InstanceId&gt;&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) spawned_instances: HashMap&lt;InstanceId, InstanceInfo&gt;,
+    scene_asset_event_reader: EventCursor&lt;AssetEvent&lt;DynamicScene&gt;&gt;,
+    dynamic_scenes_to_spawn: Vec&lt;(Handle&lt;DynamicScene&gt;, InstanceId, <span class="prelude-ty">Option</span>&lt;Entity&gt;)&gt;,
+    scenes_to_spawn: Vec&lt;(Handle&lt;Scene&gt;, InstanceId, <span class="prelude-ty">Option</span>&lt;Entity&gt;)&gt;,
+    scenes_to_despawn: Vec&lt;AssetId&lt;DynamicScene&gt;&gt;,
+    instances_to_despawn: Vec&lt;InstanceId&gt;,
+    scenes_with_parent: Vec&lt;(InstanceId, Entity)&gt;,
+}
+
+<span class="doccomment">/// Errors that can occur when spawning a scene.
+</span><span class="attr">#[derive(Error, Display, Debug)]
+</span><span class="kw">pub enum </span>SceneSpawnError {
+    <span class="doccomment">/// Scene contains an unregistered component type.
+    </span><span class="attr">#[display(<span class="string">"scene contains the unregistered component `{type_path}`. consider adding `#[reflect(Component)]` to your type"</span>)]
+    </span>UnregisteredComponent {
+        <span class="doccomment">/// Type of the unregistered component.
+        </span>type_path: String,
+    },
+    <span class="doccomment">/// Scene contains an unregistered resource type.
+    </span><span class="attr">#[display(<span class="string">"scene contains the unregistered resource `{type_path}`. consider adding `#[reflect(Resource)]` to your type"</span>)]
+    </span>UnregisteredResource {
+        <span class="doccomment">/// Type of the unregistered resource.
+        </span>type_path: String,
+    },
+    <span class="doccomment">/// Scene contains an unregistered type.
+    </span><span class="attr">#[display(
+        <span class="string">"scene contains the unregistered type `{std_type_name}`. \
+        consider reflecting it with `#[derive(Reflect)]` \
+        and registering the type using `app.register_type::&lt;T&gt;()`"
+    </span>)]
+    </span>UnregisteredType {
+        <span class="doccomment">/// The [type name](std::any::type_name) for the unregistered type.
+        </span>std_type_name: String,
+    },
+    <span class="doccomment">/// Scene contains an unregistered type which has a `TypePath`.
+    </span><span class="attr">#[display(
+        <span class="string">"scene contains the reflected type `{type_path}` but it was not found in the type registry. \
+        consider registering the type using `app.register_type::&lt;T&gt;()``"
+    </span>)]
+    </span>UnregisteredButReflectedType {
+        <span class="doccomment">/// The unregistered type.
+        </span>type_path: String,
+    },
+    <span class="doccomment">/// Scene contains a proxy without a represented type.
+    </span><span class="attr">#[display(<span class="string">"scene contains dynamic type `{type_path}` without a represented type. consider changing this using `set_represented_type`."</span>)]
+    </span>NoRepresentedType {
+        <span class="doccomment">/// The dynamic instance type.
+        </span>type_path: String,
+    },
+    <span class="doccomment">/// Dynamic scene with the given id does not exist.
+    </span><span class="attr">#[display(<span class="string">"scene does not exist"</span>)]
+    </span>NonExistentScene {
+        <span class="doccomment">/// Id of the non-existent dynamic scene.
+        </span>id: AssetId&lt;DynamicScene&gt;,
+    },
+    <span class="doccomment">/// Scene with the given id does not exist.
+    </span><span class="attr">#[display(<span class="string">"scene does not exist"</span>)]
+    </span>NonExistentRealScene {
+        <span class="doccomment">/// Id of the non-existent scene.
+        </span>id: AssetId&lt;Scene&gt;,
+    },
+}
+
+<span class="kw">impl </span>SceneSpawner {
+    <span class="doccomment">/// Schedule the spawn of a new instance of the provided dynamic scene.
+    </span><span class="kw">pub fn </span>spawn_dynamic(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: <span class="kw">impl </span>Into&lt;Handle&lt;DynamicScene&gt;&gt;) -&gt; InstanceId {
+        <span class="kw">let </span>instance_id = InstanceId::new();
+        <span class="self">self</span>.dynamic_scenes_to_spawn
+            .push((id.into(), instance_id, <span class="prelude-val">None</span>));
+        instance_id
+    }
+
+    <span class="doccomment">/// Schedule the spawn of a new instance of the provided dynamic scene as a child of `parent`.
+    </span><span class="kw">pub fn </span>spawn_dynamic_as_child(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        id: <span class="kw">impl </span>Into&lt;Handle&lt;DynamicScene&gt;&gt;,
+        parent: Entity,
+    ) -&gt; InstanceId {
+        <span class="kw">let </span>instance_id = InstanceId::new();
+        <span class="self">self</span>.dynamic_scenes_to_spawn
+            .push((id.into(), instance_id, <span class="prelude-val">Some</span>(parent)));
+        <span class="self">self</span>.scenes_with_parent.push((instance_id, parent));
+        instance_id
+    }
+
+    <span class="doccomment">/// Schedule the spawn of a new instance of the provided scene.
+    </span><span class="kw">pub fn </span>spawn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: <span class="kw">impl </span>Into&lt;Handle&lt;Scene&gt;&gt;) -&gt; InstanceId {
+        <span class="kw">let </span>instance_id = InstanceId::new();
+        <span class="self">self</span>.scenes_to_spawn.push((id.into(), instance_id, <span class="prelude-val">None</span>));
+        instance_id
+    }
+
+    <span class="doccomment">/// Schedule the spawn of a new instance of the provided scene as a child of `parent`.
+    </span><span class="kw">pub fn </span>spawn_as_child(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: <span class="kw">impl </span>Into&lt;Handle&lt;Scene&gt;&gt;, parent: Entity) -&gt; InstanceId {
+        <span class="kw">let </span>instance_id = InstanceId::new();
+        <span class="self">self</span>.scenes_to_spawn
+            .push((id.into(), instance_id, <span class="prelude-val">Some</span>(parent)));
+        <span class="self">self</span>.scenes_with_parent.push((instance_id, parent));
+        instance_id
+    }
+
+    <span class="doccomment">/// Schedule the despawn of all instances of the provided dynamic scene.
+    </span><span class="kw">pub fn </span>despawn(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: <span class="kw">impl </span>Into&lt;AssetId&lt;DynamicScene&gt;&gt;) {
+        <span class="self">self</span>.scenes_to_despawn.push(id.into());
+    }
+
+    <span class="doccomment">/// Schedule the despawn of a scene instance, removing all its entities from the world.
+    </span><span class="kw">pub fn </span>despawn_instance(<span class="kw-2">&amp;mut </span><span class="self">self</span>, instance_id: InstanceId) {
+        <span class="self">self</span>.instances_to_despawn.push(instance_id);
+    }
+
+    <span class="doccomment">/// Immediately despawns all instances of a dynamic scene.
+    </span><span class="kw">pub fn </span>despawn_sync(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        world: <span class="kw-2">&amp;mut </span>World,
+        id: <span class="kw">impl </span>Into&lt;AssetId&lt;DynamicScene&gt;&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), SceneSpawnError&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(instance_ids) = <span class="self">self</span>.spawned_dynamic_scenes.remove(<span class="kw-2">&amp;</span>id.into()) {
+            <span class="kw">for </span>instance_id <span class="kw">in </span>instance_ids {
+                <span class="self">self</span>.despawn_instance_sync(world, <span class="kw-2">&amp;</span>instance_id);
+            }
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Immediately despawns a scene instance, removing all its entities from the world.
+    </span><span class="kw">pub fn </span>despawn_instance_sync(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World, instance_id: <span class="kw-2">&amp;</span>InstanceId) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(instance) = <span class="self">self</span>.spawned_instances.remove(instance_id) {
+            <span class="kw">for </span><span class="kw-2">&amp;</span>entity <span class="kw">in </span>instance.entity_map.values() {
+                <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>entity_mut) = world.get_entity_mut(entity) {
+                    entity_mut.remove_parent();
+                    entity_mut.despawn_recursive();
+                };
+            }
+        }
+    }
+
+    <span class="doccomment">/// Immediately spawns a new instance of the provided dynamic scene.
+    </span><span class="kw">pub fn </span>spawn_dynamic_sync(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        world: <span class="kw-2">&amp;mut </span>World,
+        id: <span class="kw">impl </span>Into&lt;AssetId&lt;DynamicScene&gt;&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;InstanceId, SceneSpawnError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>entity_map = EntityHashMap::default();
+        <span class="kw">let </span>id = id.into();
+        <span class="self">Self</span>::spawn_dynamic_internal(world, id, <span class="kw-2">&amp;mut </span>entity_map)<span class="question-mark">?</span>;
+        <span class="kw">let </span>instance_id = InstanceId::new();
+        <span class="self">self</span>.spawned_instances
+            .insert(instance_id, InstanceInfo { entity_map });
+        <span class="kw">let </span>spawned = <span class="self">self</span>.spawned_dynamic_scenes.entry(id).or_default();
+        spawned.insert(instance_id);
+        <span class="prelude-val">Ok</span>(instance_id)
+    }
+
+    <span class="kw">fn </span>spawn_dynamic_internal(
+        world: <span class="kw-2">&amp;mut </span>World,
+        id: AssetId&lt;DynamicScene&gt;,
+        entity_map: <span class="kw-2">&amp;mut </span>EntityHashMap&lt;Entity&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), SceneSpawnError&gt; {
+        world.resource_scope(|world, scenes: Mut&lt;Assets&lt;DynamicScene&gt;&gt;| {
+            <span class="kw">let </span>scene = scenes
+                .get(id)
+                .ok_or(SceneSpawnError::NonExistentScene { id })<span class="question-mark">?</span>;
+
+            scene.write_to_world(world, entity_map)
+        })
+    }
+
+    <span class="doccomment">/// Immediately spawns a new instance of the provided scene.
+    </span><span class="kw">pub fn </span>spawn_sync(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        world: <span class="kw-2">&amp;mut </span>World,
+        id: <span class="kw">impl </span>Into&lt;AssetId&lt;Scene&gt;&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;InstanceId, SceneSpawnError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>entity_map = EntityHashMap::default();
+        <span class="kw">let </span>id = id.into();
+        <span class="self">Self</span>::spawn_sync_internal(world, id, <span class="kw-2">&amp;mut </span>entity_map)<span class="question-mark">?</span>;
+        <span class="kw">let </span>instance_id = InstanceId::new();
+        <span class="self">self</span>.spawned_instances
+            .insert(instance_id, InstanceInfo { entity_map });
+        <span class="prelude-val">Ok</span>(instance_id)
+    }
+
+    <span class="kw">fn </span>spawn_sync_internal(
+        world: <span class="kw-2">&amp;mut </span>World,
+        id: AssetId&lt;Scene&gt;,
+        entity_map: <span class="kw-2">&amp;mut </span>EntityHashMap&lt;Entity&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), SceneSpawnError&gt; {
+        world.resource_scope(|world, scenes: Mut&lt;Assets&lt;Scene&gt;&gt;| {
+            <span class="kw">let </span>scene = scenes
+                .get(id)
+                .ok_or(SceneSpawnError::NonExistentRealScene { id })<span class="question-mark">?</span>;
+
+            scene.write_to_world_with(
+                world,
+                entity_map,
+                <span class="kw-2">&amp;</span>world.resource::&lt;AppTypeRegistry&gt;().clone(),
+            )
+        })
+    }
+
+    <span class="doccomment">/// Iterate through all instances of the provided scenes and update those immediately.
+    ///
+    /// Useful for updating already spawned scene instances after their corresponding scene has been modified.
+    </span><span class="kw">pub fn </span>update_spawned_scenes(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        world: <span class="kw-2">&amp;mut </span>World,
+        scene_ids: <span class="kw-2">&amp;</span>[AssetId&lt;DynamicScene&gt;],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), SceneSpawnError&gt; {
+        <span class="kw">for </span>id <span class="kw">in </span>scene_ids {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(spawned_instances) = <span class="self">self</span>.spawned_dynamic_scenes.get(id) {
+                <span class="kw">for </span>instance_id <span class="kw">in </span>spawned_instances {
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(instance_info) = <span class="self">self</span>.spawned_instances.get_mut(instance_id) {
+                        <span class="self">Self</span>::spawn_dynamic_internal(world, <span class="kw-2">*</span>id, <span class="kw-2">&amp;mut </span>instance_info.entity_map)<span class="question-mark">?</span>;
+                    }
+                }
+            }
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Immediately despawns all scenes scheduled for despawn by despawning their instances.
+    </span><span class="kw">pub fn </span>despawn_queued_scenes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World) -&gt; <span class="prelude-ty">Result</span>&lt;(), SceneSpawnError&gt; {
+        <span class="kw">let </span>scenes_to_despawn = core::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.scenes_to_despawn);
+
+        <span class="kw">for </span>scene_handle <span class="kw">in </span>scenes_to_despawn {
+            <span class="self">self</span>.despawn_sync(world, scene_handle)<span class="question-mark">?</span>;
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Immediately despawns all scene instances scheduled for despawn.
+    </span><span class="kw">pub fn </span>despawn_queued_instances(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World) {
+        <span class="kw">let </span>instances_to_despawn = core::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.instances_to_despawn);
+
+        <span class="kw">for </span>instance_id <span class="kw">in </span>instances_to_despawn {
+            <span class="self">self</span>.despawn_instance_sync(world, <span class="kw-2">&amp;</span>instance_id);
+        }
+    }
+
+    <span class="doccomment">/// Immediately spawns all scenes scheduled for spawn.
+    </span><span class="kw">pub fn </span>spawn_queued_scenes(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World) -&gt; <span class="prelude-ty">Result</span>&lt;(), SceneSpawnError&gt; {
+        <span class="kw">let </span>scenes_to_spawn = core::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.dynamic_scenes_to_spawn);
+
+        <span class="kw">for </span>(handle, instance_id, parent) <span class="kw">in </span>scenes_to_spawn {
+            <span class="kw">let </span><span class="kw-2">mut </span>entity_map = EntityHashMap::default();
+
+            <span class="kw">match </span><span class="self">Self</span>::spawn_dynamic_internal(world, handle.id(), <span class="kw-2">&amp;mut </span>entity_map) {
+                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="self">self</span>.spawned_instances
+                        .insert(instance_id, InstanceInfo { entity_map });
+                    <span class="kw">let </span>spawned = <span class="self">self
+                        </span>.spawned_dynamic_scenes
+                        .entry(handle.id())
+                        .or_insert_with(HashSet::new);
+                    spawned.insert(instance_id);
+
+                    <span class="comment">// Scenes with parents need more setup before they are ready.
+                    // See `set_scene_instance_parent_sync()`.
+                    </span><span class="kw">if </span>parent.is_none() {
+                        <span class="comment">// Defer via commands otherwise SceneSpawner is not available in the observer.
+                        </span>world.commands().trigger(SceneInstanceReady { instance_id });
+                    }
+                }
+                <span class="prelude-val">Err</span>(SceneSpawnError::NonExistentScene { .. }) =&gt; {
+                    <span class="self">self</span>.dynamic_scenes_to_spawn
+                        .push((handle, instance_id, parent));
+                }
+                <span class="prelude-val">Err</span>(err) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(err),
+            }
+        }
+
+        <span class="kw">let </span>scenes_to_spawn = core::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.scenes_to_spawn);
+
+        <span class="kw">for </span>(scene_handle, instance_id, parent) <span class="kw">in </span>scenes_to_spawn {
+            <span class="kw">let </span><span class="kw-2">mut </span>entity_map = EntityHashMap::default();
+
+            <span class="kw">match </span><span class="self">Self</span>::spawn_sync_internal(world, scene_handle.id(), <span class="kw-2">&amp;mut </span>entity_map) {
+                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="self">self</span>.spawned_instances
+                        .insert(instance_id, InstanceInfo { entity_map });
+
+                    <span class="comment">// Scenes with parents need more setup before they are ready.
+                    // See `set_scene_instance_parent_sync()`.
+                    </span><span class="kw">if </span>parent.is_none() {
+                        <span class="comment">// Defer via commands otherwise SceneSpawner is not available in the observer.
+                        </span>world.commands().trigger(SceneInstanceReady { instance_id });
+                    }
+                }
+                <span class="prelude-val">Err</span>(SceneSpawnError::NonExistentRealScene { .. }) =&gt; {
+                    <span class="self">self</span>.scenes_to_spawn
+                        .push((scene_handle, instance_id, parent));
+                }
+                <span class="prelude-val">Err</span>(err) =&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(err),
+            }
+        }
+
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_scene_instance_parent_sync(<span class="kw-2">&amp;mut </span><span class="self">self</span>, world: <span class="kw-2">&amp;mut </span>World) {
+        <span class="kw">let </span>scenes_with_parent = core::mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.scenes_with_parent);
+
+        <span class="kw">for </span>(instance_id, parent) <span class="kw">in </span>scenes_with_parent {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(instance) = <span class="self">self</span>.spawned_instances.get(<span class="kw-2">&amp;</span>instance_id) {
+                <span class="kw">for </span><span class="kw-2">&amp;</span>entity <span class="kw">in </span>instance.entity_map.values() {
+                    <span class="comment">// Add the `Parent` component to the scene root, and update the `Children` component of
+                    // the scene parent
+                    </span><span class="kw">if </span>!world
+                        .get_entity(entity)
+                        <span class="comment">// This will filter only the scene root entity, as all other from the
+                        // scene have a parent
+                        </span>.map(|entity| entity.contains::&lt;Parent&gt;())
+                        <span class="comment">// Default is true so that it won't run on an entity that wouldn't exist anymore
+                        // this case shouldn't happen anyway
+                        </span>.unwrap_or(<span class="bool-val">true</span>)
+                    {
+                        AddChild {
+                            parent,
+                            child: entity,
+                        }
+                        .apply(world);
+                    }
+                }
+
+                <span class="comment">// Defer via commands otherwise SceneSpawner is not available in the observer.
+                </span>world
+                    .commands()
+                    .trigger_targets(SceneInstanceReady { instance_id }, parent);
+            } <span class="kw">else </span>{
+                <span class="self">self</span>.scenes_with_parent.push((instance_id, parent));
+            }
+        }
+    }
+
+    <span class="doccomment">/// Check that an scene instance spawned previously is ready to use
+    </span><span class="kw">pub fn </span>instance_is_ready(<span class="kw-2">&amp;</span><span class="self">self</span>, instance_id: InstanceId) -&gt; bool {
+        <span class="self">self</span>.spawned_instances.contains_key(<span class="kw-2">&amp;</span>instance_id)
+    }
+
+    <span class="doccomment">/// Get an iterator over the entities in an instance, once it's spawned.
+    ///
+    /// Before the scene is spawned, the iterator will be empty. Use [`Self::instance_is_ready`]
+    /// to check if the instance is ready.
+    </span><span class="kw">pub fn </span>iter_instance_entities(
+        <span class="kw-2">&amp;</span><span class="lifetime">'_ </span><span class="self">self</span>,
+        instance_id: InstanceId,
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = Entity&gt; + <span class="lifetime">'_ </span>{
+        <span class="self">self</span>.spawned_instances
+            .get(<span class="kw-2">&amp;</span>instance_id)
+            .map(|instance| instance.entity_map.values())
+            .into_iter()
+            .flatten()
+            .copied()
+    }
+}
+
+<span class="doccomment">/// System that handles scheduled scene instance spawning and despawning through a [`SceneSpawner`].
+</span><span class="kw">pub fn </span>scene_spawner_system(world: <span class="kw-2">&amp;mut </span>World) {
+    world.resource_scope(|world, <span class="kw-2">mut </span>scene_spawner: Mut&lt;SceneSpawner&gt;| {
+        <span class="comment">// remove any loading instances where parent is deleted
+        </span><span class="kw">let </span><span class="kw-2">mut </span>dead_instances = HashSet::default();
+        scene_spawner
+            .scenes_with_parent
+            .retain(|(instance, parent)| {
+                <span class="kw">let </span>retain = world.get_entity(<span class="kw-2">*</span>parent).is_ok();
+
+                <span class="kw">if </span>!retain {
+                    dead_instances.insert(<span class="kw-2">*</span>instance);
+                }
+
+                retain
+            });
+        scene_spawner
+            .dynamic_scenes_to_spawn
+            .retain(|(<span class="kw">_</span>, instance, <span class="kw">_</span>)| !dead_instances.contains(instance));
+        scene_spawner
+            .scenes_to_spawn
+            .retain(|(<span class="kw">_</span>, instance, <span class="kw">_</span>)| !dead_instances.contains(instance));
+
+        <span class="kw">let </span>scene_asset_events = world.resource::&lt;Events&lt;AssetEvent&lt;DynamicScene&gt;&gt;&gt;();
+
+        <span class="kw">let </span><span class="kw-2">mut </span>updated_spawned_scenes = Vec::new();
+        <span class="kw">let </span>scene_spawner = <span class="kw-2">&amp;mut *</span>scene_spawner;
+        <span class="kw">for </span>event <span class="kw">in </span>scene_spawner
+            .scene_asset_event_reader
+            .read(scene_asset_events)
+        {
+            <span class="kw">if let </span>AssetEvent::Modified { id } = event {
+                <span class="kw">if </span>scene_spawner.spawned_dynamic_scenes.contains_key(id) {
+                    updated_spawned_scenes.push(<span class="kw-2">*</span>id);
+                }
+            }
+        }
+
+        scene_spawner.despawn_queued_scenes(world).unwrap();
+        scene_spawner.despawn_queued_instances(world);
+        scene_spawner
+            .spawn_queued_scenes(world)
+            .unwrap_or_else(|err| <span class="macro">panic!</span>(<span class="string">"{}"</span>, err));
+        scene_spawner
+            .update_spawned_scenes(world, <span class="kw-2">&amp;</span>updated_spawned_scenes)
+            .unwrap();
+        scene_spawner.set_scene_instance_parent_sync(world);
+    });
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>bevy_app::App;
+    <span class="kw">use </span>bevy_asset::{AssetPlugin, AssetServer, Handle};
+    <span class="kw">use </span>bevy_ecs::{
+        component::Component,
+        observer::Trigger,
+        prelude::ReflectComponent,
+        query::With,
+        system::{Commands, Query, Res, ResMut, RunSystemOnce},
+    };
+    <span class="kw">use </span>bevy_reflect::Reflect;
+
+    <span class="kw">use crate</span>::{DynamicSceneBuilder, DynamicSceneRoot, ScenePlugin};
+
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+
+    <span class="attr">#[derive(Reflect, Component, Debug, PartialEq, Eq, Clone, Copy, Default)]
+    #[reflect(Component)]
+    </span><span class="kw">struct </span>A(usize);
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>clone_dynamic_entities() {
+        <span class="kw">let </span><span class="kw-2">mut </span>world = World::default();
+
+        <span class="comment">// setup
+        </span><span class="kw">let </span>atr = AppTypeRegistry::default();
+        atr.write().register::&lt;A&gt;();
+        world.insert_resource(atr);
+        world.insert_resource(Assets::&lt;DynamicScene&gt;::default());
+
+        <span class="comment">// start test
+        </span>world.spawn(A(<span class="number">42</span>));
+
+        <span class="macro">assert_eq!</span>(world.query::&lt;<span class="kw-2">&amp;</span>A&gt;().iter(<span class="kw-2">&amp;</span>world).len(), <span class="number">1</span>);
+
+        <span class="comment">// clone only existing entity
+        </span><span class="kw">let </span><span class="kw-2">mut </span>scene_spawner = SceneSpawner::default();
+        <span class="kw">let </span>entity = world.query_filtered::&lt;Entity, With&lt;A&gt;&gt;().single(<span class="kw-2">&amp;</span>world);
+        <span class="kw">let </span>scene = DynamicSceneBuilder::from_world(<span class="kw-2">&amp;</span>world)
+            .extract_entity(entity)
+            .build();
+
+        <span class="kw">let </span>scene_id = world.resource_mut::&lt;Assets&lt;DynamicScene&gt;&gt;().add(scene);
+        <span class="kw">let </span>instance_id = scene_spawner
+            .spawn_dynamic_sync(<span class="kw-2">&amp;mut </span>world, <span class="kw-2">&amp;</span>scene_id)
+            .unwrap();
+
+        <span class="comment">// verify we spawned exactly one new entity with our expected component
+        </span><span class="macro">assert_eq!</span>(world.query::&lt;<span class="kw-2">&amp;</span>A&gt;().iter(<span class="kw-2">&amp;</span>world).len(), <span class="number">2</span>);
+
+        <span class="comment">// verify that we can get this newly-spawned entity by the instance ID
+        </span><span class="kw">let </span>new_entity = scene_spawner
+            .iter_instance_entities(instance_id)
+            .next()
+            .unwrap();
+
+        <span class="comment">// verify this is not the original entity
+        </span><span class="macro">assert_ne!</span>(entity, new_entity);
+
+        <span class="comment">// verify this new entity contains the same data as the original entity
+        </span><span class="kw">let </span>[old_a, new_a] = world
+            .query::&lt;<span class="kw-2">&amp;</span>A&gt;()
+            .get_many(<span class="kw-2">&amp;</span>world, [entity, new_entity])
+            .unwrap();
+        <span class="macro">assert_eq!</span>(old_a, new_a);
+    }
+
+    <span class="attr">#[derive(Component, Reflect, Default)]
+    #[reflect(Component)]
+    </span><span class="kw">struct </span>ComponentA;
+
+    <span class="attr">#[derive(Resource, Default)]
+    </span><span class="kw">struct </span>TriggerCount(u32);
+
+    <span class="kw">fn </span>setup() -&gt; App {
+        <span class="kw">let </span><span class="kw-2">mut </span>app = App::new();
+        app.add_plugins((AssetPlugin::default(), ScenePlugin));
+        app.init_resource::&lt;TriggerCount&gt;();
+
+        app.register_type::&lt;ComponentA&gt;();
+        app.world_mut().spawn(ComponentA);
+        app.world_mut().spawn(ComponentA);
+
+        app
+    }
+
+    <span class="kw">fn </span>build_scene(app: <span class="kw-2">&amp;mut </span>App) -&gt; Handle&lt;Scene&gt; {
+        app.world_mut()
+            .run_system_once(
+                |world: <span class="kw-2">&amp;</span>World,
+                 type_registry: Res&lt;<span class="lifetime">'_</span>, AppTypeRegistry&gt;,
+                 asset_server: Res&lt;<span class="lifetime">'_</span>, AssetServer&gt;| {
+                    asset_server.add(
+                        Scene::from_dynamic_scene(<span class="kw-2">&amp;</span>DynamicScene::from_world(world), <span class="kw-2">&amp;</span>type_registry)
+                            .unwrap(),
+                    )
+                },
+            )
+            .expect(<span class="string">"Failed to run scene builder system."</span>)
+    }
+
+    <span class="kw">fn </span>build_dynamic_scene(app: <span class="kw-2">&amp;mut </span>App) -&gt; Handle&lt;DynamicScene&gt; {
+        app.world_mut()
+            .run_system_once(|world: <span class="kw-2">&amp;</span>World, asset_server: Res&lt;<span class="lifetime">'_</span>, AssetServer&gt;| {
+                asset_server.add(DynamicScene::from_world(world))
+            })
+            .expect(<span class="string">"Failed to run dynamic scene builder system."</span>)
+    }
+
+    <span class="kw">fn </span>observe_trigger(app: <span class="kw-2">&amp;mut </span>App, scene_id: InstanceId, scene_entity: Entity) {
+        <span class="comment">// Add observer
+        </span>app.world_mut().add_observer(
+            <span class="kw">move </span>|trigger: Trigger&lt;SceneInstanceReady&gt;,
+                  scene_spawner: Res&lt;SceneSpawner&gt;,
+                  <span class="kw-2">mut </span>trigger_count: ResMut&lt;TriggerCount&gt;| {
+                <span class="macro">assert_eq!</span>(
+                    trigger.event().instance_id,
+                    scene_id,
+                    <span class="string">"`SceneInstanceReady` contains the wrong `InstanceId`"
+                </span>);
+                <span class="macro">assert_eq!</span>(
+                    trigger.entity(),
+                    scene_entity,
+                    <span class="string">"`SceneInstanceReady` triggered on the wrong parent entity"
+                </span>);
+                <span class="macro">assert!</span>(
+                    scene_spawner.instance_is_ready(trigger.event().instance_id),
+                    <span class="string">"`InstanceId` is not ready"
+                </span>);
+                trigger_count.<span class="number">0 </span>+= <span class="number">1</span>;
+            },
+        );
+
+        <span class="comment">// Check observer is triggered once.
+        </span>app.update();
+        app.world_mut()
+            .run_system_once(|trigger_count: Res&lt;TriggerCount&gt;| {
+                <span class="macro">assert_eq!</span>(
+                    trigger_count.<span class="number">0</span>, <span class="number">1</span>,
+                    <span class="string">"wrong number of `SceneInstanceReady` triggers"
+                </span>);
+            })
+            .unwrap();
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>observe_scene() {
+        <span class="kw">let </span><span class="kw-2">mut </span>app = setup();
+
+        <span class="comment">// Build scene.
+        </span><span class="kw">let </span>scene = build_scene(<span class="kw-2">&amp;mut </span>app);
+
+        <span class="comment">// Spawn scene.
+        </span><span class="kw">let </span>scene_id = app
+            .world_mut()
+            .run_system_once(<span class="kw">move </span>|<span class="kw-2">mut </span>scene_spawner: ResMut&lt;<span class="lifetime">'_</span>, SceneSpawner&gt;| {
+                scene_spawner.spawn(scene.clone())
+            })
+            .unwrap();
+
+        <span class="comment">// Check trigger.
+        </span>observe_trigger(<span class="kw-2">&amp;mut </span>app, scene_id, Entity::PLACEHOLDER);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>observe_dynamic_scene() {
+        <span class="kw">let </span><span class="kw-2">mut </span>app = setup();
+
+        <span class="comment">// Build scene.
+        </span><span class="kw">let </span>scene = build_dynamic_scene(<span class="kw-2">&amp;mut </span>app);
+
+        <span class="comment">// Spawn scene.
+        </span><span class="kw">let </span>scene_id = app
+            .world_mut()
+            .run_system_once(<span class="kw">move </span>|<span class="kw-2">mut </span>scene_spawner: ResMut&lt;<span class="lifetime">'_</span>, SceneSpawner&gt;| {
+                scene_spawner.spawn_dynamic(scene.clone())
+            })
+            .unwrap();
+
+        <span class="comment">// Check trigger.
+        </span>observe_trigger(<span class="kw-2">&amp;mut </span>app, scene_id, Entity::PLACEHOLDER);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>observe_scene_as_child() {
+        <span class="kw">let </span><span class="kw-2">mut </span>app = setup();
+
+        <span class="comment">// Build scene.
+        </span><span class="kw">let </span>scene = build_scene(<span class="kw-2">&amp;mut </span>app);
+
+        <span class="comment">// Spawn scene as child.
+        </span><span class="kw">let </span>(scene_id, scene_entity) = app
+            .world_mut()
+            .run_system_once(
+                <span class="kw">move </span>|<span class="kw-2">mut </span>commands: Commands&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;,
+                      <span class="kw-2">mut </span>scene_spawner: ResMut&lt;<span class="lifetime">'_</span>, SceneSpawner&gt;| {
+                    <span class="kw">let </span>entity = commands.spawn_empty().id();
+                    <span class="kw">let </span>id = scene_spawner.spawn_as_child(scene.clone(), entity);
+                    (id, entity)
+                },
+            )
+            .unwrap();
+
+        <span class="comment">// Check trigger.
+        </span>observe_trigger(<span class="kw-2">&amp;mut </span>app, scene_id, scene_entity);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>observe_dynamic_scene_as_child() {
+        <span class="kw">let </span><span class="kw-2">mut </span>app = setup();
+
+        <span class="comment">// Build scene.
+        </span><span class="kw">let </span>scene = build_dynamic_scene(<span class="kw-2">&amp;mut </span>app);
+
+        <span class="comment">// Spawn scene as child.
+        </span><span class="kw">let </span>(scene_id, scene_entity) = app
+            .world_mut()
+            .run_system_once(
+                <span class="kw">move </span>|<span class="kw-2">mut </span>commands: Commands&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt;,
+                      <span class="kw-2">mut </span>scene_spawner: ResMut&lt;<span class="lifetime">'_</span>, SceneSpawner&gt;| {
+                    <span class="kw">let </span>entity = commands.spawn_empty().id();
+                    <span class="kw">let </span>id = scene_spawner.spawn_dynamic_as_child(scene.clone(), entity);
+                    (id, entity)
+                },
+            )
+            .unwrap();
+
+        <span class="comment">// Check trigger.
+        </span>observe_trigger(<span class="kw-2">&amp;mut </span>app, scene_id, scene_entity);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>despawn_scene() {
+        <span class="kw">let </span><span class="kw-2">mut </span>app = App::new();
+        app.add_plugins((AssetPlugin::default(), ScenePlugin));
+        app.register_type::&lt;ComponentA&gt;();
+
+        <span class="kw">let </span>asset_server = app.world().resource::&lt;AssetServer&gt;();
+
+        <span class="comment">// Build scene.
+        </span><span class="kw">let </span>scene = asset_server.add(DynamicScene::default());
+        <span class="kw">let </span>count = <span class="number">10</span>;
+
+        <span class="comment">// Checks the number of scene instances stored in `SceneSpawner`.
+        </span><span class="kw">let </span>check = |world: <span class="kw-2">&amp;mut </span>World, expected_count: usize| {
+            <span class="kw">let </span>scene_spawner = world.resource::&lt;SceneSpawner&gt;();
+            <span class="macro">assert_eq!</span>(
+                scene_spawner.spawned_dynamic_scenes[<span class="kw-2">&amp;</span>scene.id()].len(),
+                expected_count
+            );
+            <span class="macro">assert_eq!</span>(scene_spawner.spawned_instances.len(), expected_count);
+        };
+
+        <span class="comment">// Spawn scene.
+        </span><span class="kw">for _ in </span><span class="number">0</span>..count {
+            app.world_mut()
+                .spawn((ComponentA, DynamicSceneRoot(scene.clone())));
+        }
+
+        app.update();
+        check(app.world_mut(), count);
+
+        <span class="comment">// Despawn scene.
+        </span>app.world_mut()
+            .run_system_once(
+                |<span class="kw-2">mut </span>commands: Commands, query: Query&lt;Entity, With&lt;ComponentA&gt;&gt;| {
+                    <span class="kw">for </span>entity <span class="kw">in </span>query.iter() {
+                        commands.entity(entity).despawn_recursive();
+                    }
+                },
+            )
+            .unwrap();
+
+        app.update();
+        check(app.world_mut(), <span class="number">0</span>);
+    }
+}
+</code></pre></div></section></main></body></html>

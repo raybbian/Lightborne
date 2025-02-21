@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"externcrate":["nalgebra"],"macro":["point","vector"],"type":["DMatrix","DVector"]};

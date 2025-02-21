@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["TRANSPARENT_IMAGE_HANDLE"],"fn":["update_texture_cache_system"],"struct":["CachedTexture","ColorAttachment","DepthAttachment","FallbackImage","FallbackImageCubemap","FallbackImageFormatMsaaCache","FallbackImageMsaa","FallbackImageZero","GpuImage","ImagePlugin","OutputColorAttachment","TextureCache"]};

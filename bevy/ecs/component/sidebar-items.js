@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"derive":["Component"],"enum":["RequiredComponentsError","StorageType"],"struct":["ComponentDescriptor","ComponentHooks","ComponentId","ComponentIdFor","ComponentInfo","ComponentTicks","Components","RequiredComponent","RequiredComponentConstructor","RequiredComponents","Tick","TickCells"],"trait":["Component"],"type":["ComponentHook"]};

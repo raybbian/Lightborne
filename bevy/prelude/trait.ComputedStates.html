@@ -1,0 +1,72 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A state whose value is automatically computed based on the values of other `States`."><title>ComputedStates in bevy::prelude - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bevy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt="logo"></a><h2><a href="../../bevy/index.html">bevy</a><span class="version">0.15.2</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Computed<wbr>States</a></h2><h3><a href="#required-associated-types">Required Associated Types</a></h3><ul class="block"><li><a href="#associatedtype.SourceStates" title="SourceStates">SourceStates</a></li></ul><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.compute" title="compute">compute</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.register_computed_state_systems" title="register_computed_state_systems">register_computed_state_systems</a></li></ul><h3><a href="#dyn-compatibility">Dyn Compatibility</a></h3><h3><a href="#implementors">Implementors</a></h3></section><div id="rustdoc-modnav"><h2><a href="index.html">In bevy::<wbr>prelude</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">bevy</a>::<wbr><a href="index.html">prelude</a></span><h1>Trait <span class="trait">ComputedStates</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/bevy_state/state/computed_states.rs.html#69">Source</a> </span></div><pre class="rust item-decl"><code>pub trait ComputedStates:
+    'static
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a>
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a>
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a>
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.PartialEq.html" title="trait core::cmp::PartialEq">PartialEq</a>
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.Eq.html" title="trait core::cmp::Eq">Eq</a>
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/hash/trait.Hash.html" title="trait core::hash::Hash">Hash</a>
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> {
+    type <a href="#associatedtype.SourceStates" class="associatedtype">SourceStates</a>: <a class="trait" href="trait.StateSet.html" title="trait bevy::prelude::StateSet">StateSet</a>;
+
+    // Required method
+    fn <a href="#tymethod.compute" class="fn">compute</a>(sources: Self::<a class="associatedtype" href="trait.ComputedStates.html#associatedtype.SourceStates" title="type bevy::prelude::ComputedStates::SourceStates">SourceStates</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;Self&gt;;
+
+    // Provided method
+    fn <a href="#method.register_computed_state_systems" class="fn">register_computed_state_systems</a>(schedule: &amp;mut <a class="struct" href="struct.Schedule.html" title="struct bevy::prelude::Schedule">Schedule</a>) { ... }
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A state whose value is automatically computed based on the values of other <a href="trait.States.html" title="trait bevy::prelude::States"><code>States</code></a>.</p>
+<p>A <strong>computed state</strong> is a state that is deterministically derived from a set of <code>SourceStates</code>.
+The <a href="trait.StateSet.html" title="trait bevy::prelude::StateSet"><code>StateSet</code></a> is passed into the <code>compute</code> method whenever one of them changes, and the
+result becomes the state’s value.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>
+<span class="doccomment">/// Computed States require some state to derive from
+</span><span class="attr">#[derive(States, Clone, PartialEq, Eq, Hash, Debug, Default)]
+</span><span class="kw">enum </span>AppState {
+    <span class="attr">#[default]
+    </span>Menu,
+    InGame { paused: bool }
+}
+
+
+<span class="attr">#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+</span><span class="kw">struct </span>InGame;
+
+<span class="kw">impl </span>ComputedStates <span class="kw">for </span>InGame {
+    <span class="doccomment">/// We set the source state to be the state, or a tuple of states,
+    /// we want to depend on. You can also wrap each state in an Option,
+    /// if you want the computed state to execute even if the state doesn't
+    /// currently exist in the world.
+    </span><span class="kw">type </span>SourceStates = AppState;
+
+    <span class="doccomment">/// We then define the compute function, which takes in
+    /// your SourceStates
+    </span><span class="kw">fn </span>compute(sources: AppState) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">match </span>sources {
+            <span class="doccomment">/// When we are in game, we want to return the InGame state
+            </span>AppState::InGame { .. } =&gt; <span class="prelude-val">Some</span>(InGame),
+            <span class="doccomment">/// Otherwise, we don't want the `State&lt;InGame&gt;` resource to exist,
+            /// so we return None.
+            </span><span class="kw">_ </span>=&gt; <span class="prelude-val">None
+        </span>}
+    }
+}</code></pre></div>
+<p>you can then add it to an App, and from there you use the state as normal</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code>
+
+    App::new()
+        .init_state::&lt;AppState&gt;()
+        .add_computed_state::&lt;InGame&gt;();</code></pre></div>
+</div></details><h2 id="required-associated-types" class="section-header">Required Associated Types<a href="#required-associated-types" class="anchor">§</a></h2><div class="methods"><details class="toggle" open><summary><section id="associatedtype.SourceStates" class="method"><a class="src rightside" href="../../src/bevy_state/state/computed_states.rs.html#77">Source</a><h4 class="code-header">type <a href="#associatedtype.SourceStates" class="associatedtype">SourceStates</a>: <a class="trait" href="trait.StateSet.html" title="trait bevy::prelude::StateSet">StateSet</a></h4></section></summary><div class="docblock"><p>The set of states from which the <a href="trait.ComputedStates.html" title="trait bevy::prelude::ComputedStates"><code>Self</code></a> is derived.</p>
+<p>This can either be a single type that implements <a href="trait.States.html" title="trait bevy::prelude::States"><code>States</code></a>, an Option of a type
+that implements <a href="trait.States.html" title="trait bevy::prelude::States"><code>States</code></a>, or a tuple
+containing multiple types that implement <a href="trait.States.html" title="trait bevy::prelude::States"><code>States</code></a> or Optional versions of them.</p>
+<p>For example, <code>(MapState, EnemyState)</code> is valid, as is <code>(MapState, Option&lt;EnemyState&gt;)</code></p>
+</div></details></div><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.compute" class="method"><a class="src rightside" href="../../src/bevy_state/state/computed_states.rs.html#83">Source</a><h4 class="code-header">fn <a href="#tymethod.compute" class="fn">compute</a>(sources: Self::<a class="associatedtype" href="trait.ComputedStates.html#associatedtype.SourceStates" title="type bevy::prelude::ComputedStates::SourceStates">SourceStates</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;Self&gt;</h4></section></summary><div class="docblock"><p>Computes the next value of <a href="struct.State.html" title="struct bevy::prelude::State"><code>State&lt;Self&gt;</code></a>.
+This function gets called whenever one of the <a href="trait.ComputedStates.html#associatedtype.SourceStates" title="associated type bevy_state::state::computed_states::ComputedStates::SourceStates::SourceStates"><code>SourceStates</code></a> changes.</p>
+<p>If the result is <a href="https://doc.rust-lang.org/1.85.0/core/option/enum.Option.html#variant.None" title="variant core::option::Option::None"><code>None</code></a>, the <a href="struct.State.html" title="struct bevy::prelude::State"><code>State&lt;Self&gt;</code></a> resource will be removed from the world.</p>
+</div></details></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.register_computed_state_systems" class="method"><a class="src rightside" href="../../src/bevy_state/state/computed_states.rs.html#88">Source</a><h4 class="code-header">fn <a href="#method.register_computed_state_systems" class="fn">register_computed_state_systems</a>(schedule: &amp;mut <a class="struct" href="struct.Schedule.html" title="struct bevy::prelude::Schedule">Schedule</a>)</h4></section></summary><div class="docblock"><p>This function sets up systems that compute the state whenever one of the <a href="trait.ComputedStates.html#associatedtype.SourceStates" title="associated type bevy_state::state::computed_states::ComputedStates::SourceStates::SourceStates"><code>SourceStates</code></a>
+change. It is called by <code>App::add_computed_state</code>, but can be called manually if <code>App</code> is not
+used.</p>
+</div></details></div><h2 id="dyn-compatibility" class="section-header">Dyn Compatibility<a href="#dyn-compatibility" class="anchor">§</a></h2><div class="dyn-compatibility-info"><p>This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.85.0/reference/items/traits.html#object-safety">dyn compatible</a>.</p><p><i>In older versions of Rust, dyn compatibility was called "object safety", so this trait is not object safe.</i></p></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"></div><script src="../../trait.impl/bevy_state/state/computed_states/trait.ComputedStates.js" async></script></section></div></main></body></html>

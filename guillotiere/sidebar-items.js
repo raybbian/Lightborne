@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_OPTIONS"],"enum":["NodeKind"],"externcrate":["euclid"],"fn":["dump_into_svg","dump_svg","point2","size2"],"struct":["AllocId","Allocation","AllocatorOptions","AtlasAllocator","Change","ChangeList","SimpleAtlasAllocator"],"type":["Point","Rectangle","Size"]};

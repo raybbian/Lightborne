@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Determine how to fit a set of incoming rectangles (2d or 3d) into a set of target bins."><title>pack_rects in rectangle_pack - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="rectangle_pack" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../rectangle_pack/index.html">rectangle_<wbr>pack</a><span class="version">0.4.2</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">pack_<wbr>rects</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#example" title="Example">Example</a></li><li><a href="#algorithm" title="Algorithm">Algorithm</a></li><li><a href="#todo" title="TODO:">TODO:</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate rectangle_<wbr>pack</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="index.html">rectangle_pack</a></span><h1>Function <span class="fn">pack_rects</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/rectangle_pack/lib.rs.html#132-211">Source</a> </span></div><pre class="rust item-decl"><code>pub fn pack_rects&lt;RectToPlaceId: <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/hash/trait.Hash.html" title="trait core::hash::Hash">Hash</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.PartialEq.html" title="trait core::cmp::PartialEq">PartialEq</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.Eq.html" title="trait core::cmp::Eq">Eq</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.Ord.html" title="trait core::cmp::Ord">Ord</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.PartialOrd.html" title="trait core::cmp::PartialOrd">PartialOrd</a>, BinId: <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/hash/trait.Hash.html" title="trait core::hash::Hash">Hash</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.PartialEq.html" title="trait core::cmp::PartialEq">PartialEq</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.Eq.html" title="trait core::cmp::Eq">Eq</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.Ord.html" title="trait core::cmp::Ord">Ord</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.PartialOrd.html" title="trait core::cmp::PartialOrd">PartialOrd</a>, GroupId: <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/hash/trait.Hash.html" title="trait core::hash::Hash">Hash</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.PartialEq.html" title="trait core::cmp::PartialEq">PartialEq</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.Eq.html" title="trait core::cmp::Eq">Eq</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.Ord.html" title="trait core::cmp::Ord">Ord</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/cmp/trait.PartialOrd.html" title="trait core::cmp::PartialOrd">PartialOrd</a>&gt;(
+    rects_to_place: &amp;<a class="struct" href="struct.GroupedRectsToPlace.html" title="struct rectangle_pack::GroupedRectsToPlace">GroupedRectsToPlace</a>&lt;RectToPlaceId, GroupId&gt;,
+    target_bins: &amp;mut <a class="struct" href="https://doc.rust-lang.org/1.85.0/alloc/collections/btree/map/struct.BTreeMap.html" title="struct alloc::collections::btree::map::BTreeMap">BTreeMap</a>&lt;BinId, <a class="struct" href="struct.TargetBin.html" title="struct rectangle_pack::TargetBin">TargetBin</a>&gt;,
+    box_size_heuristic: &amp;<a class="type" href="type.BoxSizeHeuristicFn.html" title="type rectangle_pack::BoxSizeHeuristicFn">BoxSizeHeuristicFn</a>,
+    more_suitable_containers_fn: &amp;<a class="type" href="type.ComparePotentialContainersFn.html" title="type rectangle_pack::ComparePotentialContainersFn">ComparePotentialContainersFn</a>,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.RectanglePackOk.html" title="struct rectangle_pack::RectanglePackOk">RectanglePackOk</a>&lt;RectToPlaceId, BinId&gt;, <a class="enum" href="enum.RectanglePackError.html" title="enum rectangle_pack::RectanglePackError">RectanglePackError</a>&gt;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Determine how to fit a set of incoming rectangles (2d or 3d) into a set of target bins.</p>
+<h3 id="example"><a class="doc-anchor" href="#example">§</a>Example</h3>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="doccomment">//! A basic example of packing rectangles into target bins
+
+</span><span class="kw">use </span>rectangle_pack::{
+    GroupedRectsToPlace,
+    RectToInsert,
+    pack_rects,
+    TargetBin,
+    volume_heuristic,
+    contains_smallest_box
+};
+<span class="kw">use </span>std::collections::BTreeMap;
+
+<span class="comment">// A rectangle ID just needs to meet these trait bounds (ideally also Copy).
+// So you could use a String, PathBuf, or any other type that meets these
+// trat bounds. You do not have to use a custom enum.
+</span><span class="attr">#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd)]
+</span><span class="kw">enum </span>MyCustomRectId {
+    RectOne,
+    RectTwo,
+    RectThree,
+}
+
+<span class="comment">// A target bin ID just needs to meet these trait bounds (ideally also Copy)
+// So you could use a u32, &amp;str, or any other type that meets these
+// trat bounds. You do not have to use a custom enum.
+</span><span class="attr">#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd)]
+</span><span class="kw">enum </span>MyCustomBinId {
+    DestinationBinOne,
+    DestinationBinTwo,
+}
+
+<span class="comment">// A placement group just needs to meet these trait bounds (ideally also Copy).
+//
+// Groups allow you to ensure that a set of rectangles will be placed
+// into the same bin. If this isn't possible an error is returned.
+//
+// Groups are optional.
+//
+// You could use an i32, &amp;'static str, or any other type that meets these
+// trat bounds. You do not have to use a custom enum.
+</span><span class="attr">#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd)]
+</span><span class="kw">enum </span>MyCustomGroupId {
+    GroupIdOne
+}
+
+<span class="kw">let </span><span class="kw-2">mut </span>rects_to_place = GroupedRectsToPlace::new();
+rects_to_place.push_rect(
+    MyCustomRectId::RectOne,
+    <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[MyCustomGroupId::GroupIdOne]),
+    RectToInsert::new(<span class="number">10</span>, <span class="number">20</span>, <span class="number">255</span>)
+);
+rects_to_place.push_rect(
+    MyCustomRectId::RectTwo,
+    <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[MyCustomGroupId::GroupIdOne]),
+    RectToInsert::new(<span class="number">5</span>, <span class="number">50</span>, <span class="number">255</span>)
+);
+rects_to_place.push_rect(
+    MyCustomRectId::RectThree,
+    <span class="prelude-val">None</span>,
+    RectToInsert::new(<span class="number">30</span>, <span class="number">30</span>, <span class="number">255</span>)
+);
+
+<span class="kw">let </span><span class="kw-2">mut </span>target_bins = BTreeMap::new();
+target_bins.insert(MyCustomBinId::DestinationBinOne, TargetBin::new(<span class="number">2048</span>, <span class="number">2048</span>, <span class="number">255</span>));
+target_bins.insert(MyCustomBinId::DestinationBinTwo, TargetBin::new(<span class="number">4096</span>, <span class="number">4096</span>, <span class="number">1020</span>));
+
+<span class="comment">// Information about where each `MyCustomRectId` was placed
+</span><span class="kw">let </span>rectangle_placements = pack_rects(
+    <span class="kw-2">&amp;</span>rects_to_place,
+    <span class="kw-2">&amp;mut </span>target_bins,
+    <span class="kw-2">&amp;</span>volume_heuristic,
+    <span class="kw-2">&amp;</span>contains_smallest_box
+).unwrap();</code></pre></div>
+<h3 id="algorithm"><a class="doc-anchor" href="#algorithm">§</a>Algorithm</h3>
+<p>The algorithm was originally inspired by <a href="https://github.com/TeamHypersomnia/rectpack2D">rectpack2D</a> and then modified to work in 3D.</p>
+<h3 id="todo"><a class="doc-anchor" href="#todo">§</a>TODO:</h3>
+<p>Optimize - plenty of room to remove clones and duplication .. etc</p>
+</div></details></section></div></main></body></html>

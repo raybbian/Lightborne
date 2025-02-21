@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["prelude","ray"],"struct":["HitData","PointerHits"]};

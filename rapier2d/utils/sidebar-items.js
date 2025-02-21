@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["smallest_abs_diff_between_angles","smallest_abs_diff_between_sin_angles"],"trait":["IndexMut2","SimdBasis","SimdQuat","SimdRealCopy","SimdSign"]};

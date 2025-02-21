@@ -1,0 +1,126 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A low-level trait for use in `crate::VariableCurve` that provides fine control over how animations are evaluated."><title>AnimationCurveEvaluator in bevy::animation::prelude - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bevy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt="logo"></a><h2><a href="../../../bevy/index.html">bevy</a><span class="version">0.15.2</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Animation<wbr>Curve<wbr>Evaluator</a></h2><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.add" title="add">add</a></li><li><a href="#tymethod.blend" title="blend">blend</a></li><li><a href="#tymethod.commit" title="commit">commit</a></li><li><a href="#tymethod.push_blend_register" title="push_blend_register">push_blend_register</a></li></ul><h3><a href="#implementations">Methods</a></h3><ul class="block method"><li><a href="#method.downcast" title="downcast">downcast</a></li><li><a href="#method.downcast_mut" title="downcast_mut">downcast_mut</a></li><li><a href="#method.downcast_rc" title="downcast_rc">downcast_rc</a></li><li><a href="#method.downcast_ref" title="downcast_ref">downcast_ref</a></li><li><a href="#method.is" title="is">is</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><div id="rustdoc-modnav"><h2><a href="index.html">In bevy::<wbr>animation::<wbr>prelude</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../../index.html">bevy</a>::<wbr><a href="../index.html">animation</a>::<wbr><a href="index.html">prelude</a></span><h1>Trait <span class="trait">AnimationCurveEvaluator</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/bevy_animation/animation_curves.rs.html#839">Source</a> </span></div><pre class="rust item-decl"><code>pub trait AnimationCurveEvaluator:
+    <a class="trait" href="../../../downcast_rs/trait.Downcast.html" title="trait downcast_rs::Downcast">Downcast</a>
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a>
+    + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a>
+    + 'static {
+    // Required methods
+    fn <a href="#tymethod.blend" class="fn">blend</a>(
+        &amp;mut self,
+        graph_node: <a class="struct" href="../../../petgraph/graph_impl/struct.NodeIndex.html" title="struct petgraph::graph_impl::NodeIndex">NodeIndex</a>,
+    ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, <a class="enum" href="../enum.AnimationEvaluationError.html" title="enum bevy::animation::AnimationEvaluationError">AnimationEvaluationError</a>&gt;;
+<span class="item-spacer"></span>    fn <a href="#tymethod.add" class="fn">add</a>(
+        &amp;mut self,
+        graph_node: <a class="struct" href="../../../petgraph/graph_impl/struct.NodeIndex.html" title="struct petgraph::graph_impl::NodeIndex">NodeIndex</a>,
+    ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, <a class="enum" href="../enum.AnimationEvaluationError.html" title="enum bevy::animation::AnimationEvaluationError">AnimationEvaluationError</a>&gt;;
+<span class="item-spacer"></span>    fn <a href="#tymethod.push_blend_register" class="fn">push_blend_register</a>(
+        &amp;mut self,
+        weight: <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.f32.html">f32</a>,
+        graph_node: <a class="struct" href="../../../petgraph/graph_impl/struct.NodeIndex.html" title="struct petgraph::graph_impl::NodeIndex">NodeIndex</a>,
+    ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, <a class="enum" href="../enum.AnimationEvaluationError.html" title="enum bevy::animation::AnimationEvaluationError">AnimationEvaluationError</a>&gt;;
+<span class="item-spacer"></span>    fn <a href="#tymethod.commit" class="fn">commit</a>&lt;'a&gt;(
+        &amp;mut self,
+        entity: <a class="struct" href="../../ecs/world/struct.EntityMutExcept.html" title="struct bevy::ecs::world::EntityMutExcept">EntityMutExcept</a>&lt;'a, (<a class="struct" href="../struct.AnimationTarget.html" title="struct bevy::animation::AnimationTarget">AnimationTarget</a>, <a class="struct" href="../../prelude/struct.AnimationPlayer.html" title="struct bevy::prelude::AnimationPlayer">AnimationPlayer</a>, <a class="struct" href="../../prelude/struct.AnimationGraphHandle.html" title="struct bevy::prelude::AnimationGraphHandle">AnimationGraphHandle</a>)&gt;,
+    ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, <a class="enum" href="../enum.AnimationEvaluationError.html" title="enum bevy::animation::AnimationEvaluationError">AnimationEvaluationError</a>&gt;;
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A low-level trait for use in <a href="../../prelude/struct.VariableCurve.html" title="struct bevy::prelude::VariableCurve"><code>crate::VariableCurve</code></a> that provides fine
+control over how animations are evaluated.</p>
+<p>You can implement this trait when the generic <a href="../../prelude/struct.AnimatableCurveEvaluator.html" title="struct bevy::prelude::AnimatableCurveEvaluator"><code>AnimatableCurveEvaluator</code></a>
+isn’t sufficiently-expressive for your needs. For example, <a href="../../prelude/struct.MorphWeights.html" title="struct bevy::prelude::MorphWeights"><code>MorphWeights</code></a>
+implements this trait instead of using <a href="../../prelude/struct.AnimatableCurveEvaluator.html" title="struct bevy::prelude::AnimatableCurveEvaluator"><code>AnimatableCurveEvaluator</code></a> because
+it needs to animate arbitrarily many weights at once, which can’t be done
+with <a href="../../prelude/trait.Animatable.html" title="trait bevy::prelude::Animatable"><code>Animatable</code></a> as that works on fixed-size values only.</p>
+<p>If you implement this trait, you should also implement <a href="../../prelude/trait.AnimationCurve.html" title="trait bevy::prelude::AnimationCurve"><code>AnimationCurve</code></a> on
+your curve type, as that trait allows creating instances of this one.</p>
+<p>Implementations of <a href="../../prelude/struct.AnimatableCurveEvaluator.html" title="struct bevy::prelude::AnimatableCurveEvaluator"><code>AnimatableCurveEvaluator</code></a> should maintain a <em>stack</em> of
+(value, weight, node index) triples, as well as a <em>blend register</em>, which is
+either a (value, weight) pair or empty. <em>Value</em> here refers to an instance
+of the value being animated: for example, <a href="../../prelude/struct.Vec3.html" title="struct bevy::prelude::Vec3"><code>Vec3</code></a> in the case of
+translation keyframes.  The stack stores intermediate values generated while
+evaluating the <a href="../../prelude/struct.AnimationGraph.html" title="struct bevy::prelude::AnimationGraph"><code>crate::graph::AnimationGraph</code></a>, while the blend register
+stores the result of a blend operation.</p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.blend" class="method"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#856">Source</a><h4 class="code-header">fn <a href="#tymethod.blend" class="fn">blend</a>(
+    &amp;mut self,
+    graph_node: <a class="struct" href="../../../petgraph/graph_impl/struct.NodeIndex.html" title="struct petgraph::graph_impl::NodeIndex">NodeIndex</a>,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, <a class="enum" href="../enum.AnimationEvaluationError.html" title="enum bevy::animation::AnimationEvaluationError">AnimationEvaluationError</a>&gt;</h4></section></summary><div class="docblock"><p>Blends the top element of the stack with the blend register.</p>
+<p>The semantics of this method are as follows:</p>
+<ol>
+<li>
+<p>Pop the top element of the stack. Call its value vₘ and its weight
+wₘ. If the stack was empty, return success.</p>
+</li>
+<li>
+<p>If the blend register is empty, set the blend register value to vₘ
+and the blend register weight to wₘ; then, return success.</p>
+</li>
+<li>
+<p>If the blend register is nonempty, call its current value vₙ and its
+current weight wₙ. Then, set the value of the blend register to
+<code>interpolate(vₙ, vₘ, wₘ / (wₘ + wₙ))</code>, and set the weight of the blend
+register to wₘ + wₙ.</p>
+</li>
+<li>
+<p>Return success.</p>
+</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.add" class="method"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#872">Source</a><h4 class="code-header">fn <a href="#tymethod.add" class="fn">add</a>(&amp;mut self, graph_node: <a class="struct" href="../../../petgraph/graph_impl/struct.NodeIndex.html" title="struct petgraph::graph_impl::NodeIndex">NodeIndex</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, <a class="enum" href="../enum.AnimationEvaluationError.html" title="enum bevy::animation::AnimationEvaluationError">AnimationEvaluationError</a>&gt;</h4></section></summary><div class="docblock"><p>Additively blends the top element of the stack with the blend register.</p>
+<p>The semantics of this method are as follows:</p>
+<ol>
+<li>
+<p>Pop the top element of the stack. Call its value vₘ and its weight
+wₘ. If the stack was empty, return success.</p>
+</li>
+<li>
+<p>If the blend register is empty, set the blend register value to vₘ
+and the blend register weight to wₘ; then, return success.</p>
+</li>
+<li>
+<p>If the blend register is nonempty, call its current value vₙ.
+Then, set the value of the blend register to vₙ + vₘwₘ.</p>
+</li>
+<li>
+<p>Return success.</p>
+</li>
+</ol>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.push_blend_register" class="method"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#882-886">Source</a><h4 class="code-header">fn <a href="#tymethod.push_blend_register" class="fn">push_blend_register</a>(
+    &amp;mut self,
+    weight: <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.f32.html">f32</a>,
+    graph_node: <a class="struct" href="../../../petgraph/graph_impl/struct.NodeIndex.html" title="struct petgraph::graph_impl::NodeIndex">NodeIndex</a>,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, <a class="enum" href="../enum.AnimationEvaluationError.html" title="enum bevy::animation::AnimationEvaluationError">AnimationEvaluationError</a>&gt;</h4></section></summary><div class="docblock"><p>Pushes the current value of the blend register onto the stack.</p>
+<p>If the blend register is empty, this method does nothing successfully.
+Otherwise, this method pushes the current value of the blend register
+onto the stack, alongside the weight and graph node supplied to this
+function. The weight present in the blend register is discarded; only
+the weight parameter to this function is pushed onto the stack. The
+blend register is emptied after this process.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.commit" class="method"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#900-903">Source</a><h4 class="code-header">fn <a href="#tymethod.commit" class="fn">commit</a>&lt;'a&gt;(
+    &amp;mut self,
+    entity: <a class="struct" href="../../ecs/world/struct.EntityMutExcept.html" title="struct bevy::ecs::world::EntityMutExcept">EntityMutExcept</a>&lt;'a, (<a class="struct" href="../struct.AnimationTarget.html" title="struct bevy::animation::AnimationTarget">AnimationTarget</a>, <a class="struct" href="../../prelude/struct.AnimationPlayer.html" title="struct bevy::prelude::AnimationPlayer">AnimationPlayer</a>, <a class="struct" href="../../prelude/struct.AnimationGraphHandle.html" title="struct bevy::prelude::AnimationGraphHandle">AnimationGraphHandle</a>)&gt;,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, <a class="enum" href="../enum.AnimationEvaluationError.html" title="enum bevy::animation::AnimationEvaluationError">AnimationEvaluationError</a>&gt;</h4></section></summary><div class="docblock"><p>Pops the top value off the stack and writes it into the appropriate
+component.</p>
+<p>If the stack is empty, this method does nothing successfully. Otherwise,
+it pops the top value off the stack, fetches the associated component
+from either the <code>transform</code> or <code>entity</code> values as appropriate, and
+updates the appropriate property with the value popped from the stack.
+The weight and node index associated with the popped stack element are
+discarded. After doing this, the stack is emptied.</p>
+<p>The property on the component must be overwritten with the value from
+the stack, not blended with it.</p>
+</div></details></div><h2 id="implementations" class="section-header">Implementations<a href="#implementations" class="anchor">§</a></h2><div id="implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-dyn+AnimationCurveEvaluator" class="impl"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#906">Source</a><a href="#impl-dyn+AnimationCurveEvaluator" class="anchor">§</a><h3 class="code-header">impl dyn <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.is" class="method"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#906">Source</a><h4 class="code-header">pub fn <a href="#method.is" class="fn">is</a>&lt;__T&gt;(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.bool.html">bool</a><div class="where">where
+    __T: <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a>,</div></h4></section></summary><div class="docblock"><p>Returns true if the trait object wraps an object of type <code>__T</code>.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.downcast" class="method"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#906">Source</a><h4 class="code-header">pub fn <a href="#method.downcast" class="fn">downcast</a>&lt;__T&gt;(
+    self: <a class="struct" href="../../ecs/label/struct.Box.html" title="struct bevy::ecs::label::Box">Box</a>&lt;dyn <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a>&gt;,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="../../ecs/label/struct.Box.html" title="struct bevy::ecs::label::Box">Box</a>&lt;__T&gt;, <a class="struct" href="../../ecs/label/struct.Box.html" title="struct bevy::ecs::label::Box">Box</a>&lt;dyn <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a>&gt;&gt;<div class="where">where
+    __T: <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a>,</div></h4></section></summary><div class="docblock"><p>Returns a boxed object from a boxed trait object if the underlying object is of type
+<code>__T</code>. Returns the original boxed trait if it isn’t.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.downcast_rc" class="method"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#906">Source</a><h4 class="code-header">pub fn <a href="#method.downcast_rc" class="fn">downcast_rc</a>&lt;__T&gt;(
+    self: <a class="struct" href="https://doc.rust-lang.org/1.85.0/alloc/rc/struct.Rc.html" title="struct alloc::rc::Rc">Rc</a>&lt;dyn <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a>&gt;,
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="https://doc.rust-lang.org/1.85.0/alloc/rc/struct.Rc.html" title="struct alloc::rc::Rc">Rc</a>&lt;__T&gt;, <a class="struct" href="https://doc.rust-lang.org/1.85.0/alloc/rc/struct.Rc.html" title="struct alloc::rc::Rc">Rc</a>&lt;dyn <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a>&gt;&gt;<div class="where">where
+    __T: <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a>,</div></h4></section></summary><div class="docblock"><p>Returns an <code>Rc</code>-ed object from an <code>Rc</code>-ed trait object if the underlying object is of
+type <code>__T</code>. Returns the original <code>Rc</code>-ed trait if it isn’t.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.downcast_ref" class="method"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#906">Source</a><h4 class="code-header">pub fn <a href="#method.downcast_ref" class="fn">downcast_ref</a>&lt;__T&gt;(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.reference.html">&amp;__T</a>&gt;<div class="where">where
+    __T: <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a>,</div></h4></section></summary><div class="docblock"><p>Returns a reference to the object within the trait object if it is of type <code>__T</code>, or
+<code>None</code> if it isn’t.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.downcast_mut" class="method"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#906">Source</a><h4 class="code-header">pub fn <a href="#method.downcast_mut" class="fn">downcast_mut</a>&lt;__T&gt;(&amp;mut self) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.reference.html">&amp;mut __T</a>&gt;<div class="where">where
+    __T: <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a>,</div></h4></section></summary><div class="docblock"><p>Returns a mutable reference to the object within the trait object if it is of type
+<code>__T</code>, or <code>None</code> if it isn’t.</p>
+</div></details></div></details></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-AnimationCurveEvaluator-for-AnimatableCurveEvaluator%3CA%3E" class="impl"><a class="src rightside" href="../../../src/bevy_animation/animation_curves.rs.html#386">Source</a><a href="#impl-AnimationCurveEvaluator-for-AnimatableCurveEvaluator%3CA%3E" class="anchor">§</a><h3 class="code-header">impl&lt;A&gt; <a class="trait" href="../../prelude/trait.AnimationCurveEvaluator.html" title="trait bevy::prelude::AnimationCurveEvaluator">AnimationCurveEvaluator</a> for <a class="struct" href="../../prelude/struct.AnimatableCurveEvaluator.html" title="struct bevy::prelude::AnimatableCurveEvaluator">AnimatableCurveEvaluator</a>&lt;A&gt;<div class="where">where
+    A: <a class="trait" href="../../prelude/trait.Animatable.html" title="trait bevy::prelude::Animatable">Animatable</a>,</div></h3></section></div><script src="../../../trait.impl/bevy_animation/animation_curves/trait.AnimationCurveEvaluator.js" data-ignore-extern-crates="bevy_animation" async></script></section></div></main></body></html>

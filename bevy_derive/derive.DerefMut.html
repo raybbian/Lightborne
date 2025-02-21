@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Implements `DerefMut` for structs. This is especially useful when utilizing the newtype pattern."><title>DerefMut in bevy_derive - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="bevy_derive" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc derive"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../bevy_derive/index.html"><img src="https://bevyengine.org/assets/icon.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../bevy_derive/index.html"><img src="https://bevyengine.org/assets/icon.png" alt="logo"></a><h2><a href="../bevy_derive/index.html">bevy_<wbr>derive</a><span class="version">0.15.2</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Deref<wbr>Mut</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#example" title="Example">Example</a><ul><li><a href="#tuple-structs" title="Tuple Structs">Tuple Structs</a></li><li><a href="#named-structs" title="Named Structs">Named Structs</a></li></ul></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate bevy_<wbr>derive</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="index.html">bevy_derive</a></span><h1>Derive Macro <span class="derive">DerefMut</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/bevy_derive/lib.rs.html#188-190">Source</a> </span></div><pre class="rust item-decl"><code>#[derive(DerefMut)]
+{
+    <span class="comment">// Attributes available to this derive:</span>
+    #[deref]
+}
+</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Implements <a href="https://doc.rust-lang.org/1.85.0/core/ops/deref/trait.DerefMut.html" title="trait core::ops::deref::DerefMut"><code>DerefMut</code></a> for structs. This is especially useful when utilizing the <a href="https://doc.rust-lang.org/rust-by-example/generics/new_types.html">newtype</a> pattern.</p>
+<p>For single-field structs, the implementation automatically uses that field.
+For multi-field structs, you must specify which field to use with the <code>#[deref]</code> attribute.</p>
+<p><a href="https://doc.rust-lang.org/1.85.0/core/ops/deref/trait.DerefMut.html" title="trait core::ops::deref::DerefMut"><code>DerefMut</code></a> requires a <a href="https://doc.rust-lang.org/1.85.0/core/ops/deref/trait.Deref.html" title="trait core::ops::deref::Deref"><code>Deref</code></a> implementation. You can implement it manually or use
+Bevy’s <a href="derive.Deref.html" title="derive bevy_derive::Deref">derive</a> macro for convenience.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2><h3 id="tuple-structs"><a class="doc-anchor" href="#tuple-structs">§</a>Tuple Structs</h3>
+<p>Using a single-field struct:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bevy_derive::{Deref, DerefMut};
+
+<span class="attr">#[derive(Deref, DerefMut)]
+</span><span class="kw">struct </span>MyNewtype(String);
+
+<span class="kw">let </span><span class="kw-2">mut </span>foo = MyNewtype(String::from(<span class="string">"Hello"</span>));
+foo.push_str(<span class="string">" World!"</span>);
+<span class="macro">assert_eq!</span>(<span class="string">"Hello World!"</span>, <span class="kw-2">*</span>foo);</code></pre></div>
+<p>Using a multi-field struct:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bevy_derive::{Deref, DerefMut};
+
+<span class="attr">#[derive(Deref, DerefMut)]
+</span><span class="kw">struct </span>MyStruct&lt;T&gt;(<span class="attr">#[deref] </span>String, PhantomData&lt;T&gt;);
+
+<span class="kw">let </span><span class="kw-2">mut </span>foo = MyStruct(String::from(<span class="string">"Hello"</span>), PhantomData::&lt;usize&gt;);
+foo.push_str(<span class="string">" World!"</span>);
+<span class="macro">assert_eq!</span>(<span class="string">"Hello World!"</span>, <span class="kw-2">*</span>foo);</code></pre></div>
+<h3 id="named-structs"><a class="doc-anchor" href="#named-structs">§</a>Named Structs</h3>
+<p>Using a single-field struct:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bevy_derive::{Deref, DerefMut};
+
+<span class="attr">#[derive(Deref, DerefMut)]
+</span><span class="kw">struct </span>MyStruct {
+  value: String,
+}
+
+<span class="kw">let </span><span class="kw-2">mut </span>foo = MyStruct {
+  value: String::from(<span class="string">"Hello"</span>)
+};
+foo.push_str(<span class="string">" World!"</span>);
+<span class="macro">assert_eq!</span>(<span class="string">"Hello World!"</span>, <span class="kw-2">*</span>foo);</code></pre></div>
+<p>Using a multi-field struct:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bevy_derive::{Deref, DerefMut};
+
+<span class="attr">#[derive(Deref, DerefMut)]
+</span><span class="kw">struct </span>MyStruct&lt;T&gt; {
+  <span class="attr">#[deref]
+  </span>value: String,
+  _phantom: PhantomData&lt;T&gt;,
+}
+
+<span class="kw">let </span><span class="kw-2">mut </span>foo = MyStruct {
+  value:String::from(<span class="string">"Hello"</span>),
+  _phantom:PhantomData::&lt;usize&gt;
+};
+foo.push_str(<span class="string">" World!"</span>);
+<span class="macro">assert_eq!</span>(<span class="string">"Hello World!"</span>, <span class="kw-2">*</span>foo);</code></pre></div>
+</div></details></section></div></main></body></html>

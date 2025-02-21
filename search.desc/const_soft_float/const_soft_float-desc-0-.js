@@ -1,0 +1,1 @@
+searchState.loadedDescShard("const_soft_float", 0, "Rust float-point in constant context\nReturns the argument unchanged.\nCalls <code>U::from(self)</code>.\nFloor (SoftF32)\nReturns the argument unchanged.\nCalls <code>U::from(self)</code>.\nFloor (f64)")

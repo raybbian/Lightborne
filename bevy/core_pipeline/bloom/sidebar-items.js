@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BloomCompositeMode"],"struct":["Bloom","BloomPlugin","BloomPrefilter"],"type":["BloomPrefilterSettings","BloomSettings"]};

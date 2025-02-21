@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["chunk_aabb","chunk_index_to_world_space"]};

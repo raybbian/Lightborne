@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["despawn_pause","spawn_pause","toggle_pause"],"struct":["PauseMarker","PausePlugin"]};

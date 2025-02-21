@@ -1,0 +1,9 @@
+(function() {
+    var implementors = Object.fromEntries([["bevy",[]],["bevy_core_pipeline",[["impl <a class=\"trait\" href=\"bevy_render/render_phase/trait.SortedPhaseItem.html\" title=\"trait bevy_render::render_phase::SortedPhaseItem\">SortedPhaseItem</a> for <a class=\"struct\" href=\"bevy_core_pipeline/core_2d/struct.Transparent2d.html\" title=\"struct bevy_core_pipeline::core_2d::Transparent2d\">Transparent2d</a>"],["impl <a class=\"trait\" href=\"bevy_render/render_phase/trait.SortedPhaseItem.html\" title=\"trait bevy_render::render_phase::SortedPhaseItem\">SortedPhaseItem</a> for <a class=\"struct\" href=\"bevy_core_pipeline/core_3d/struct.Transmissive3d.html\" title=\"struct bevy_core_pipeline::core_3d::Transmissive3d\">Transmissive3d</a>"],["impl <a class=\"trait\" href=\"bevy_render/render_phase/trait.SortedPhaseItem.html\" title=\"trait bevy_render::render_phase::SortedPhaseItem\">SortedPhaseItem</a> for <a class=\"struct\" href=\"bevy_core_pipeline/core_3d/struct.Transparent3d.html\" title=\"struct bevy_core_pipeline::core_3d::Transparent3d\">Transparent3d</a>"]]],["bevy_ui",[["impl <a class=\"trait\" href=\"bevy_render/render_phase/trait.SortedPhaseItem.html\" title=\"trait bevy_render::render_phase::SortedPhaseItem\">SortedPhaseItem</a> for <a class=\"struct\" href=\"bevy_ui/struct.TransparentUi.html\" title=\"struct bevy_ui::TransparentUi\">TransparentUi</a>"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[11,1024,307]}

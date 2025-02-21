@@ -1,0 +1,9 @@
+(function() {
+    var implementors = Object.fromEntries([["bevy",[]],["bevy_animation",[["impl <a class=\"trait\" href=\"bevy_ecs/entity/visit_entities/trait.VisitEntitiesMut.html\" title=\"trait bevy_ecs::entity::visit_entities::VisitEntitiesMut\">VisitEntitiesMut</a> for <a class=\"struct\" href=\"bevy_animation/struct.AnimationTarget.html\" title=\"struct bevy_animation::AnimationTarget\">AnimationTarget</a>"]]],["bevy_ecs",[]],["bevy_hierarchy",[["impl <a class=\"trait\" href=\"bevy_ecs/entity/visit_entities/trait.VisitEntitiesMut.html\" title=\"trait bevy_ecs::entity::visit_entities::VisitEntitiesMut\">VisitEntitiesMut</a> for <a class=\"struct\" href=\"bevy_hierarchy/struct.Children.html\" title=\"struct bevy_hierarchy::Children\">Children</a>"],["impl <a class=\"trait\" href=\"bevy_ecs/entity/visit_entities/trait.VisitEntitiesMut.html\" title=\"trait bevy_ecs::entity::visit_entities::VisitEntitiesMut\">VisitEntitiesMut</a> for <a class=\"struct\" href=\"bevy_hierarchy/struct.Parent.html\" title=\"struct bevy_hierarchy::Parent\">Parent</a>"]]],["bevy_mesh",[["impl <a class=\"trait\" href=\"bevy_ecs/entity/visit_entities/trait.VisitEntitiesMut.html\" title=\"trait bevy_ecs::entity::visit_entities::VisitEntitiesMut\">VisitEntitiesMut</a> for <a class=\"struct\" href=\"bevy_mesh/skinning/struct.SkinnedMesh.html\" title=\"struct bevy_mesh::skinning::SkinnedMesh\">SkinnedMesh</a>"]]],["bevy_window",[["impl <a class=\"trait\" href=\"bevy_ecs/entity/visit_entities/trait.VisitEntitiesMut.html\" title=\"trait bevy_ecs::entity::visit_entities::VisitEntitiesMut\">VisitEntitiesMut</a> for <a class=\"enum\" href=\"bevy_window/enum.WindowRef.html\" title=\"enum bevy_window::WindowRef\">WindowRef</a>"]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":57,"fragment_lengths":[11,350,16,631,342,317]}

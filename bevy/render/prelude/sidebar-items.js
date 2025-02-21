@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AlphaMode","ClearColorConfig","Msaa","Projection","Visibility"],"struct":["Camera","ClearColor","ExtractSchedule","ImagePlugin","InheritedVisibility","Mesh","Mesh2d","Mesh3d","MorphWeights","OrthographicProjection","PerspectiveProjection","Shader","SpatialBundle","ViewVisibility","VisibilityBundle"],"trait":["MeshBuilder","Meshable"]};

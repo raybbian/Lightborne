@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_MAX_HISTORY_LENGTH"],"struct":["Diagnostic","DiagnosticMeasurement","DiagnosticPath","Diagnostics","DiagnosticsPlugin","DiagnosticsStore","EntityCountDiagnosticsPlugin","FrameTimeDiagnosticsPlugin","LogDiagnosticsPlugin","SystemInfo","SystemInformationDiagnosticsPlugin"],"trait":["RegisterDiagnostic"]};

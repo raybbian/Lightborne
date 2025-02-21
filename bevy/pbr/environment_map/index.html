@@ -1,0 +1,41 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Environment maps and reflection probes."><title>bevy::pbr::environment_map - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="bevy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt="logo"></a><h2><a href="../../../bevy/index.html">bevy</a><span class="version">0.15.2</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module environment_<wbr>map</a></h2><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#constants" title="Constants">Constants</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In bevy::<wbr>pbr</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../../index.html">bevy</a>::<wbr><a href="../index.html">pbr</a></span><h1>Module <span>environment_map</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/bevy_pbr/light_probe/mod.rs.html#46">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Environment maps and reflection probes.</p>
+<p>An <em>environment map</em> consists of a pair of diffuse and specular cubemaps
+that together reflect the static surrounding area of a region in space. When
+available, the PBR shader uses these to apply diffuse light and calculate
+specular reflections.</p>
+<p>Environment maps come in two flavors, depending on what other components the
+entities they’re attached to have:</p>
+<ol>
+<li>
+<p>If attached to a view, they represent the objects located a very far
+distance from the view, in a similar manner to a skybox. Essentially, these
+<em>view environment maps</em> represent a higher-quality replacement for
+<a href="../../prelude/struct.AmbientLight.html" title="struct bevy::prelude::AmbientLight"><code>AmbientLight</code></a> for outdoor scenes. The indirect light from such
+environment maps are added to every point of the scene, including
+interior enclosed areas.</p>
+</li>
+<li>
+<p>If attached to a <a href="../../prelude/struct.LightProbe.html" title="struct bevy::prelude::LightProbe"><code>LightProbe</code></a>, environment maps represent the immediate
+surroundings of a specific location in the scene. These types of
+environment maps are known as <em>reflection probes</em>.</p>
+</li>
+</ol>
+<p>Typically, environment maps are static (i.e. “baked”, calculated ahead of
+time) and so only reflect fixed static geometry. The environment maps must
+be pre-filtered into a pair of cubemaps, one for the diffuse component and
+one for the specular component, according to the <a href="https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf">split-sum approximation</a>.
+To pre-filter your environment map, you can use the <a href="https://github.com/KhronosGroup/glTF-IBL-Sampler">glTF IBL Sampler</a> or
+its <a href="https://github.com/pcwalton/gltf-ibl-sampler-egui">artist-friendly UI</a>. The diffuse map uses the Lambertian distribution,
+while the specular map uses the GGX distribution.</p>
+<p>The Khronos Group has <a href="https://github.com/KhronosGroup/glTF-Sample-Environments">several pre-filtered environment maps</a> available for
+you to use.</p>
+<p>Currently, reflection probes (i.e. environment maps attached to light
+probes) use binding arrays (also known as bindless textures) and
+consequently aren’t supported on WebGL2 or WebGPU. Reflection probes are
+also unsupported if GLSL is in use, due to <code>naga</code> limitations. Environment
+maps attached to views are, however, supported on all platforms.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.EnvironmentMapIds.html" title="struct bevy::pbr::environment_map::EnvironmentMapIds">Environment<wbr>MapIds</a></div><div class="desc docblock-short">Like <a href="../../prelude/struct.EnvironmentMapLight.html" title="struct bevy::prelude::EnvironmentMapLight"><code>EnvironmentMapLight</code></a>, but contains asset IDs instead of handles.</div></li><li><div class="item-name"><a class="struct" href="struct.EnvironmentMapLight.html" title="struct bevy::pbr::environment_map::EnvironmentMapLight">Environment<wbr>MapLight</a></div><div class="desc docblock-short">A pair of cubemap textures that represent the surroundings of a specific
+area in space.</div></li><li><div class="item-name"><a class="struct" href="struct.EnvironmentMapViewLightProbeInfo.html" title="struct bevy::pbr::environment_map::EnvironmentMapViewLightProbeInfo">Environment<wbr>MapView<wbr>Light<wbr>Probe<wbr>Info</a></div><div class="desc docblock-short">Information about the environment map attached to the view, if any. This is
+a global environment map that lights everything visible in the view, as
+opposed to a light probe which affects only a specific area.</div></li><li><div class="item-name"><a class="struct" href="struct.ReflectionProbeBundle.html" title="struct bevy::pbr::environment_map::ReflectionProbeBundle">Reflection<wbr>Probe<wbr>Bundle</a><wbr><span class="stab deprecated" title="">Deprecated</span></div><div class="desc docblock-short">A bundle that contains everything needed to make an entity a reflection
+probe.</div></li></ul><h2 id="constants" class="section-header">Constants<a href="#constants" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="constant" href="constant.ENVIRONMENT_MAP_SHADER_HANDLE.html" title="constant bevy::pbr::environment_map::ENVIRONMENT_MAP_SHADER_HANDLE">ENVIRONMENT_<wbr>MAP_<wbr>SHADER_<wbr>HANDLE</a></div><div class="desc docblock-short">A handle to the environment map helper shader.</div></li></ul></section></div></main></body></html>

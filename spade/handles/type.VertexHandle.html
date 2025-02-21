@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Handle to a vertex of a triangulation."><title>VertexHandle in spade::handles - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="spade" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc type"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../spade/index.html">spade</a><span class="version">2.13.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Vertex<wbr>Handle</a></h2><h3><a href="#aliased-type">Aliased type</a></h3><h3><a href="#implementations">Methods</a></h3><ul class="block method"><li><a href="#method.as_voronoi_face" title="as_voronoi_face">as_voronoi_face</a></li><li><a href="#method.data" title="data">data</a></li><li><a href="#method.out_edge" title="out_edge">out_edge</a></li><li><a href="#method.out_edges" title="out_edges">out_edges</a></li><li><a href="#method.position" title="position">position</a></li></ul><h3><a href="#trait-implementations">Trait Implementations</a></h3><ul class="block trait-implementation"><li><a href="#impl-AsRef%3CV%3E-for-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" title="AsRef&#60;V&#62;">AsRef&#60;V&#62;</a></li><li><a href="#impl-Debug-for-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" title="Debug">Debug</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In spade::<wbr>handles</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">spade</a>::<wbr><a href="index.html">handles</a></span><h1>Type Alias <span class="type">VertexHandle</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/spade/delaunay_core/handles/public_handles.rs.html#129-130">Source</a> </span></div><pre class="rust item-decl"><code>pub type VertexHandle&lt;'a, V, DE = <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, UE = <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, F = <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>&gt; = <a class="struct" href="../internals/struct.DynamicHandleImpl.html" title="struct spade::internals::DynamicHandleImpl">DynamicHandleImpl</a>&lt;'a, V, DE, UE, F, VertexTag, <a class="struct" href="struct.InnerTag.html" title="struct spade::handles::InnerTag">InnerTag</a>&gt;;</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Handle to a vertex of a triangulation.</p>
+<p>Use this handle to retrieve the vertex <a href="../internals/struct.DynamicHandleImpl.html#method.position" title="method spade::internals::DynamicHandleImpl::position">position</a> or its
+<a href="../internals/struct.DynamicHandleImpl.html#method.out_edges" title="method spade::internals::DynamicHandleImpl::out_edges">outgoing edges</a>.</p>
+<p><em>See also the <a href="index.html" title="mod spade::handles">handles module</a>.</em></p>
+</div></details><h2 id="aliased-type" class="section-header">Aliased Type<a href="#aliased-type" class="anchor">§</a></h2><pre class="rust item-decl"><code>struct VertexHandle&lt;'a, V, DE = <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, UE = <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>, F = <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.unit.html">()</a>&gt; { <span class="comment">/* private fields */</span> }</code></pre><h2 id="implementations" class="section-header">Implementations<a href="#implementations" class="anchor">§</a></h2><div id="implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" class="impl"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#709-717">Source</a><a href="#impl-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" class="anchor">§</a><h3 class="code-header">impl&lt;V, DE, UE, F&gt; <a class="type" href="type.VertexHandle.html" title="type spade::handles::VertexHandle">VertexHandle</a>&lt;'_, V, DE, UE, F&gt;<div class="where">where
+    V: <a class="trait" href="../trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>,</div></h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.position" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#714-716">Source</a><h4 class="code-header">pub fn <a href="#method.position" class="fn">position</a>(&amp;self) -&gt; <a class="struct" href="../struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;V::<a class="associatedtype" href="../trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;</h4></section></summary><div class="docblock"><p>Returns the position of this vertex.</p>
+</div></details></div></details><details class="toggle implementors-toggle" open><summary><section id="impl-DynamicHandleImpl%3C'a,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" class="impl"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#735-776">Source</a><a href="#impl-DynamicHandleImpl%3C'a,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" class="anchor">§</a><h3 class="code-header">impl&lt;'a, V, DE, UE, F&gt; <a class="type" href="type.VertexHandle.html" title="type spade::handles::VertexHandle">VertexHandle</a>&lt;'a, V, DE, UE, F&gt;</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.out_edges" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#747-756">Source</a><h4 class="code-header">pub fn <a href="#method.out_edges" class="fn">out_edges</a>(
+    &amp;self,
+) -&gt; CircularIterator&lt;'a, V, DE, UE, F, CCWEdgesNextBackFn&gt;</h4></section></summary><div class="docblock"><p>Returns all directed edges going out of this vertex.</p>
+<p>The edges are returned in counterclockwise order, beginning at an arbitrary
+edge.</p>
+<svg viewBox="-55.75 -41.16 122.5 82.32" width="400" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<pattern height="1" id="circular_iterator_pattern0001" patternTransform="rotate(63.512 0 0) scale(2)" patternUnits="userSpaceOnUse" width="1">
+<line stroke="rgb(255 255 255)" stroke-width="1.01" x1="0" x2="0" y1="-0.1" y2="1.1"/>
+<line stroke="rgb(211 211 211)" stroke-width="1.01" x1="1" x2="1" y1="-0.1" y2="1.1"/>
+</pattern>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0002" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0003" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0004" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0005" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0006" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0007" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0008" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0009" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0010" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0011" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0012" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0013" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0014" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0015" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0016" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0017" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0018" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0019" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0020" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0021" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0022" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0023" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0024" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0025" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0026" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0027" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0028" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(0 0 0)" id="circular_iterator_filled_arrow0029" markerHeight="3" markerWidth="5" orient="auto" refX="4" refY="0.5" stroke="none">
+<path d="M1,0 L4,0 L0,2 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="circular_iterator_filled_arrow0030" markerHeight="3" markerWidth="5" orient="auto" refX="4.9" refY="1.5" stroke="none">
+<path d="M0,0 L5,1.5 L0,3 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+<marker fill="rgb(65 105 225)" id="circular_iterator_filled_arrow0031" markerHeight="3" markerWidth="5" orient="auto" refX="4.9" refY="1.5" stroke="none">
+<path d="M0,0 L5,1.5 L0,3 z" transform="scale(-1 1) translate (-5 0)"/>
+</marker>
+</defs>
+<rect height="100%" style="fill: url(#circular_iterator_pattern0001)" width="100%" x="-55.75" y="-41.16"/>
+<g>
+<path d="M6,40 L0,0 L60,40 z" style="fill: rgb(211 211 211)"/>
+<path d="M-55,5 L0,0 L-45,25 z" style="fill: rgb(211 211 211)"/>
+<path d="M66,-5 L60,40 L0,0 z" style="fill: rgb(211 211 211)"/>
+<path d="M6,40 L-45,25 L0,0 z" style="fill: rgb(211 211 211)"/>
+<path d="M45,-40 L66,-5 L0,0 z" style="fill: rgb(211 211 211)"/>
+<path d="M45,-40 L0,0 L-49,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-55,5 L-49,-30 L0,0 z" style="fill: rgb(211 211 211)"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0002); fill: none" x1="5.525" x2="63.05" y1="0.15" y2="-4.225"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0003); fill: none" x1="60.475" x2="2.95" y1="-5.15" y2="-0.775"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0004); fill: none" x1="4.275" x2="57.2" y1="3.525" y2="38.8"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0005); fill: none" x1="55.725" x2="2.8" y1="36.475" y2="1.2"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0006); fill: none" x1="5.75" x2="1" y1="34.475" y2="2.875"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0007); fill: none" x1="0.25" x2="5" y1="5.525" y2="37.125"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0008); fill: none" x1="-5.075" x2="-42.65" y1="2.175" y2="23.05"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0009); fill: none" x1="-39.925" x2="-2.35" y1="22.825" y2="1.95"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0010); fill: none" x1="-49.475" x2="-2.925" y1="5.05" y2="0.825"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0011); fill: none" x1="-5.525" x2="-52.075" y1="-0.05" y2="4.175"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0012); fill: none" x1="64.725" x2="59.85" y1="0.375" y2="36.95"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0013); fill: none" x1="61.275" x2="66.15" y1="34.625" y2="-1.95"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0014); fill: none" x1="54.5" x2="9" y1="39.45" y2="39.45"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0015); fill: none" x1="11.5" x2="57" y1="40.55" y2="40.55"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0016); fill: none" x1="0.875" x2="-41.975" y1="37.9" y2="25.3"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0017); fill: none" x1="-39.875" x2="2.975" y1="27.1" y2="39.7"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0018); fill: none" x1="-46.95" x2="-53.15" y1="19.825" y2="7.425"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0019); fill: none" x1="-53.05" x2="-46.85" y1="10.175" y2="22.575"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0020); fill: none" x1="4.475" x2="43.125" y1="-3.225" y2="-37.6"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0021); fill: none" x1="40.525" x2="1.875" y1="-36.775" y2="-2.4"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0022); fill: none" x1="47.35" x2="63.975" y1="-35" y2="-7.275"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0023); fill: none" x1="63.65" x2="47.025" y1="-10" y2="-37.725"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0024); fill: none" x1="-4.4" x2="-46.15" y1="-3.35" y2="-28.9"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0025); fill: none" x1="-44.6" x2="-2.85" y1="-26.65" y2="-1.1"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0026); fill: none" x1="-53.525" x2="-48.95" y1="-0.325" y2="-26.95"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0027); fill: none" x1="-50.475" x2="-55.05" y1="-24.675" y2="1.95"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0028); fill: none" x1="-43.475" x2="42.075" y1="-30.025" y2="-39.125"/>
+<line style="stroke-width: 0.7; stroke: rgb(0 0 0); marker-start: url(#circular_iterator_filled_arrow0029); fill: none" x1="39.475" x2="-46.075" y1="-39.975" y2="-30.875"/>
+<circle cx="0" cy="0" r="3.5" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="66" cy="-5" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="6" cy="40" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-55" cy="5" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="60" cy="40" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-45" cy="25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="45" cy="-40" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-49" cy="-30" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<text dy="-2" font-size="8" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (33 -2.5) rotate (-4.332313983188513) translate(-33 2.5)" x="33" y="-2.5">
+e6
+</text>
+<text dy="-2" font-size="8" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (30 20) rotate (33.690067525979785) translate(-30 -20)" x="30" y="20">
+e5
+</text>
+<text dy="-2" font-size="8" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (3 20) rotate (81.46923439005187) translate(-3 -20)" x="3" y="20">
+e4
+</text>
+<text dy="7" font-size="8" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (-22.5 12.5) rotate (-29.05460409907714) translate(22.5 -12.5)" x="-22.5" y="12.5">
+e3
+</text>
+<text dy="7" font-size="8" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (-27.5 2.5) rotate (-5.194428907734803) translate(27.5 -2.5)" x="-27.5" y="2.5">
+e2
+</text>
+<text dy="7" font-size="8" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (-24.5 -15) rotate (31.476839349583983) translate(24.5 15)" x="-24.5" y="-15">
+e1
+</text>
+<text dy="-2" font-size="8" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (22.5 -20) rotate (-41.633539336570195) translate(-22.5 20)" x="22.5" y="-20">
+e0
+</text>
+<text dy="2.1" font-size="7" style="fill: rgb(0 0 0)" text-anchor="middle" transform="translate (0 0) rotate (0) translate(-0 -0)" x="0" y="0">
+v
+</text>
+<path d="M0,-10 A10,10,0,0,1,6.427876,7.6604443" style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#circular_iterator_filled_arrow0030); fill: none"/>
+<path d="M0,10 A10,10,0,0,1,-6.427876,-7.6604443" style="stroke-width: 1; stroke: rgb(65 105 225); marker-start: url(#circular_iterator_filled_arrow0031); fill: none"/>
+</g>
+</svg>
+<p><em>A possible iteration order of <code>v.out_edges()</code></em></p>
+<p><em>Note</em>: The returned iterator implements <code>DoubleEndedIterator</code>, allowing traversal in
+clockwise order.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.out_edge" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#761-765">Source</a><h4 class="code-header">pub fn <a href="#method.out_edge" class="fn">out_edge</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.85.0/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="type" href="type.DirectedEdgeHandle.html" title="type spade::handles::DirectedEdgeHandle">DirectedEdgeHandle</a>&lt;'a, V, DE, UE, F&gt;&gt;</h4></section></summary><div class="docblock"><p>Returns an outgoing edge of this vertex.</p>
+<p>If the vertex has multiple outgoing edges, any of them is returned.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.data" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#768-770">Source</a><h4 class="code-header">pub fn <a href="#method.data" class="fn">data</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.reference.html">&amp;V</a></h4></section></summary><div class="docblock"><p>Returns the data associated with this vertex.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.as_voronoi_face" class="method"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#773-775">Source</a><h4 class="code-header">pub fn <a href="#method.as_voronoi_face" class="fn">as_voronoi_face</a>(&amp;self) -&gt; <a class="type" href="type.VoronoiFace.html" title="type spade::handles::VoronoiFace">VoronoiFace</a>&lt;'a, V, DE, UE, F&gt;</h4></section></summary><div class="docblock"><p>Returns the voronoi face that corresponds to this vertex of the Delaunay triangulation.</p>
+</div></details></div></details></div><h2 id="trait-implementations" class="section-header">Trait Implementations<a href="#trait-implementations" class="anchor">§</a></h2><div id="trait-implementations-list"><details class="toggle implementors-toggle" open><summary><section id="impl-AsRef%3CV%3E-for-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" class="impl"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#703-707">Source</a><a href="#impl-AsRef%3CV%3E-for-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" class="anchor">§</a><h3 class="code-header">impl&lt;V, DE, UE, F&gt; <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/convert/trait.AsRef.html" title="trait core::convert::AsRef">AsRef</a>&lt;V&gt; for <a class="type" href="type.VertexHandle.html" title="type spade::handles::VertexHandle">VertexHandle</a>&lt;'_, V, DE, UE, F&gt;</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.as_ref" class="method trait-impl"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#704-706">Source</a><a href="#method.as_ref" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.85.0/core/convert/trait.AsRef.html#tymethod.as_ref" class="fn">as_ref</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/1.85.0/std/primitive.reference.html">&amp;V</a></h4></section></summary><div class='docblock'>Converts this type into a shared reference of the (usually inferred) input type.</div></details></div></details><details class="toggle implementors-toggle" open><summary><section id="impl-Debug-for-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" class="impl"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#15-19">Source</a><a href="#impl-Debug-for-DynamicHandleImpl%3C'_,+V,+DE,+UE,+F,+VertexTag,+InnerTag%3E" class="anchor">§</a><h3 class="code-header">impl&lt;V, DE, UE, F&gt; <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="type" href="type.VertexHandle.html" title="type spade::handles::VertexHandle">VertexHandle</a>&lt;'_, V, DE, UE, F&gt;</h3></section></summary><div class="impl-items"><details class="toggle method-toggle" open><summary><section id="method.fmt" class="method trait-impl"><a class="src rightside" href="../../src/spade/delaunay_core/handles/handle_impls.rs.html#16-18">Source</a><a href="#method.fmt" class="anchor">§</a><h4 class="code-header">fn <a href="https://doc.rust-lang.org/1.85.0/core/fmt/trait.Debug.html#tymethod.fmt" class="fn">fmt</a>(&amp;self, f: &amp;mut <a class="struct" href="https://doc.rust-lang.org/1.85.0/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>&lt;'_&gt;) -&gt; <a class="type" href="https://doc.rust-lang.org/1.85.0/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></h4></section></summary><div class='docblock'>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/1.85.0/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></div></details></div></details></div><script src="../../type.impl/spade/internals/struct.DynamicHandleImpl.js" data-self-path="spade::delaunay_core::handles::public_handles::VertexHandle" async></script></section></div></main></body></html>

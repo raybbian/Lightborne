@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["EGUI_SHADER_HANDLE"],"enum":["EguiRenderTargetType"],"struct":["EguiBevyPaintCallback","EguiNode","EguiPipeline","EguiPipelineKey"],"trait":["EguiBevyPaintCallbackImpl"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["LIGHT_SEGMENT_THICKNESS","LIGHT_SPEED"],"enum":["LightColor"],"mod":["render","segments","sensor"],"struct":["LightManagementPlugin","LightRaySource"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["ui_for_asset","ui_for_assets","ui_for_resource"]};

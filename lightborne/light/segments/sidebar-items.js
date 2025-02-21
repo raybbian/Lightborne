@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["cleanup_light_sources","simulate_light_sources","tick_light_sources"],"struct":["LightBounceSfx","LightSegmentBundle","LightSegmentCache","LightSegmentMarker"]};

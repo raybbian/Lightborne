@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Callback that executes custom rendering logic"><title>EguiBevyPaintCallbackImpl in bevy_egui::egui_node - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bevy_egui" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../bevy_egui/index.html">bevy_<wbr>egui</a><span class="version">0.32.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Egui<wbr>Bevy<wbr>Paint<wbr>Callback<wbr>Impl</a></h2><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.render" title="render">render</a></li><li><a href="#tymethod.update" title="update">update</a></li></ul><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.prepare_render" title="prepare_render">prepare_render</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><div id="rustdoc-modnav"><h2><a href="index.html">In bevy_<wbr>egui::<wbr>egui_<wbr>node</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">bevy_egui</a>::<wbr><a href="index.html">egui_node</a></span><h1>Trait <span class="trait">EguiBevyPaintCallbackImpl</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/bevy_egui/egui_node.rs.html#783-822">Source</a> </span></div><pre class="rust item-decl"><code>pub trait EguiBevyPaintCallbackImpl: <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> + <a class="trait" href="https://doc.rust-lang.org/1.85.0/core/marker/trait.Sync.html" title="trait core::marker::Sync">Sync</a> {
+    // Required methods
+    fn <a href="#tymethod.update" class="fn">update</a>(
+        &amp;self,
+        info: <a class="struct" href="../../epaint/shape/struct.PaintCallbackInfo.html" title="struct epaint::shape::PaintCallbackInfo">PaintCallbackInfo</a>,
+        window_entity: <a class="struct" href="../../bevy_render/sync_world/struct.RenderEntity.html" title="struct bevy_render::sync_world::RenderEntity">RenderEntity</a>,
+        pipeline_key: <a class="struct" href="struct.EguiPipelineKey.html" title="struct bevy_egui::egui_node::EguiPipelineKey">EguiPipelineKey</a>,
+        world: &amp;mut <a class="struct" href="../../bevy_ecs/world/struct.World.html" title="struct bevy_ecs::world::World">World</a>,
+    );
+<span class="item-spacer"></span>    fn <a href="#tymethod.render" class="fn">render</a>&lt;'pass&gt;(
+        &amp;self,
+        info: <a class="struct" href="../../epaint/shape/struct.PaintCallbackInfo.html" title="struct epaint::shape::PaintCallbackInfo">PaintCallbackInfo</a>,
+        render_pass: &amp;mut <a class="struct" href="../../bevy_render/render_phase/draw_state/struct.TrackedRenderPass.html" title="struct bevy_render::render_phase::draw_state::TrackedRenderPass">TrackedRenderPass</a>&lt;'pass&gt;,
+        window_entity: <a class="struct" href="../../bevy_render/sync_world/struct.RenderEntity.html" title="struct bevy_render::sync_world::RenderEntity">RenderEntity</a>,
+        pipeline_key: <a class="struct" href="struct.EguiPipelineKey.html" title="struct bevy_egui::egui_node::EguiPipelineKey">EguiPipelineKey</a>,
+        world: &amp;'pass <a class="struct" href="../../bevy_ecs/world/struct.World.html" title="struct bevy_ecs::world::World">World</a>,
+    );
+
+    // Provided method
+    fn <a href="#method.prepare_render" class="fn">prepare_render</a>&lt;'w&gt;(
+        &amp;self,
+        info: <a class="struct" href="../../epaint/shape/struct.PaintCallbackInfo.html" title="struct epaint::shape::PaintCallbackInfo">PaintCallbackInfo</a>,
+        render_context: &amp;mut <a class="struct" href="../../bevy_render/renderer/struct.RenderContext.html" title="struct bevy_render::renderer::RenderContext">RenderContext</a>&lt;'w&gt;,
+        window_entity: <a class="struct" href="../../bevy_render/sync_world/struct.RenderEntity.html" title="struct bevy_render::sync_world::RenderEntity">RenderEntity</a>,
+        pipeline_key: <a class="struct" href="struct.EguiPipelineKey.html" title="struct bevy_egui::egui_node::EguiPipelineKey">EguiPipelineKey</a>,
+        world: &amp;'w <a class="struct" href="../../bevy_ecs/world/struct.World.html" title="struct bevy_ecs::world::World">World</a>,
+    ) { ... }
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Callback that executes custom rendering logic</p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.update" class="method"><a class="src rightside" href="../../src/bevy_egui/egui_node.rs.html#785-791">Source</a><h4 class="code-header">fn <a href="#tymethod.update" class="fn">update</a>(
+    &amp;self,
+    info: <a class="struct" href="../../epaint/shape/struct.PaintCallbackInfo.html" title="struct epaint::shape::PaintCallbackInfo">PaintCallbackInfo</a>,
+    window_entity: <a class="struct" href="../../bevy_render/sync_world/struct.RenderEntity.html" title="struct bevy_render::sync_world::RenderEntity">RenderEntity</a>,
+    pipeline_key: <a class="struct" href="struct.EguiPipelineKey.html" title="struct bevy_egui::egui_node::EguiPipelineKey">EguiPipelineKey</a>,
+    world: &amp;mut <a class="struct" href="../../bevy_ecs/world/struct.World.html" title="struct bevy_ecs::world::World">World</a>,
+)</h4></section></summary><div class="docblock"><p>Paint callback will be rendered in near future, all data must be finalized for render step</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.render" class="method"><a class="src rightside" href="../../src/bevy_egui/egui_node.rs.html#814-821">Source</a><h4 class="code-header">fn <a href="#tymethod.render" class="fn">render</a>&lt;'pass&gt;(
+    &amp;self,
+    info: <a class="struct" href="../../epaint/shape/struct.PaintCallbackInfo.html" title="struct epaint::shape::PaintCallbackInfo">PaintCallbackInfo</a>,
+    render_pass: &amp;mut <a class="struct" href="../../bevy_render/render_phase/draw_state/struct.TrackedRenderPass.html" title="struct bevy_render::render_phase::draw_state::TrackedRenderPass">TrackedRenderPass</a>&lt;'pass&gt;,
+    window_entity: <a class="struct" href="../../bevy_render/sync_world/struct.RenderEntity.html" title="struct bevy_render::sync_world::RenderEntity">RenderEntity</a>,
+    pipeline_key: <a class="struct" href="struct.EguiPipelineKey.html" title="struct bevy_egui::egui_node::EguiPipelineKey">EguiPipelineKey</a>,
+    world: &amp;'pass <a class="struct" href="../../bevy_ecs/world/struct.World.html" title="struct bevy_ecs::world::World">World</a>,
+)</h4></section></summary><div class="docblock"><p>Paint callback render step</p>
+<p>Native wgpu RenderPass can be retrieved from <a href="../../bevy_render/render_phase/draw_state/struct.TrackedRenderPass.html" title="struct bevy_render::render_phase::draw_state::TrackedRenderPass"><code>TrackedRenderPass</code></a> by calling
+<a href="../../bevy_render/render_phase/draw_state/struct.TrackedRenderPass.html#method.wgpu_pass" title="method bevy_render::render_phase::draw_state::TrackedRenderPass::wgpu_pass"><code>TrackedRenderPass::wgpu_pass</code></a>.</p>
+</div></details></div><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.prepare_render" class="method"><a class="src rightside" href="../../src/bevy_egui/egui_node.rs.html#798-808">Source</a><h4 class="code-header">fn <a href="#method.prepare_render" class="fn">prepare_render</a>&lt;'w&gt;(
+    &amp;self,
+    info: <a class="struct" href="../../epaint/shape/struct.PaintCallbackInfo.html" title="struct epaint::shape::PaintCallbackInfo">PaintCallbackInfo</a>,
+    render_context: &amp;mut <a class="struct" href="../../bevy_render/renderer/struct.RenderContext.html" title="struct bevy_render::renderer::RenderContext">RenderContext</a>&lt;'w&gt;,
+    window_entity: <a class="struct" href="../../bevy_render/sync_world/struct.RenderEntity.html" title="struct bevy_render::sync_world::RenderEntity">RenderEntity</a>,
+    pipeline_key: <a class="struct" href="struct.EguiPipelineKey.html" title="struct bevy_egui::egui_node::EguiPipelineKey">EguiPipelineKey</a>,
+    world: &amp;'w <a class="struct" href="../../bevy_ecs/world/struct.World.html" title="struct bevy_ecs::world::World">World</a>,
+)</h4></section></summary><div class="docblock"><p>Paint callback call before render step</p>
+<p>Can be used to implement custom render passes
+or to submit command buffers for execution before egui render pass</p>
+</div></details></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"></div><script src="../../trait.impl/bevy_egui/egui_node/trait.EguiBevyPaintCallbackImpl.js" async></script></section></div></main></body></html>

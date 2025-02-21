@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DIAMOND_BASIS","INV_DIAMOND_BASIS"],"struct":["DiamondPos"]};

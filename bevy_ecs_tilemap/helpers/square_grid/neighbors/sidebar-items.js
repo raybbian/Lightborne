@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CARDINAL_SQUARE_DIRECTIONS","SQUARE_DIRECTIONS","SQUARE_OFFSETS"],"enum":["SquareDirection"],"struct":["Neighbors"]};

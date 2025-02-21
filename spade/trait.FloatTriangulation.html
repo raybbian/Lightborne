@@ -1,0 +1,504 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Implements general functions for triangulations over floating point data types."><title>FloatTriangulation in spade - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="spade" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../spade/index.html">spade</a><span class="version">2.13.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Float<wbr>Triangulation</a></h2><h3><a href="#provided-methods">Provided Methods</a></h3><ul class="block"><li><a href="#method.barycentric" title="barycentric">barycentric</a></li><li><a href="#method.get_edges_in_circle" title="get_edges_in_circle">get_edges_in_circle</a></li><li><a href="#method.get_edges_in_rectangle" title="get_edges_in_rectangle">get_edges_in_rectangle</a></li><li><a href="#method.get_vertices_in_circle" title="get_vertices_in_circle">get_vertices_in_circle</a></li><li><a href="#method.get_vertices_in_rectangle" title="get_vertices_in_rectangle">get_vertices_in_rectangle</a></li></ul><h3><a href="#dyn-compatibility">Dyn Compatibility</a></h3><h3><a href="#implementors">Implementors</a></h3></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="index.html">In crate spade</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="index.html">spade</a></span><h1>Trait <span class="trait">FloatTriangulation</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/spade/triangulation.rs.html#634-758">Source</a> </span></div><pre class="rust item-decl"><code>pub trait FloatTriangulation: <a class="trait" href="trait.Triangulation.html" title="trait spade::Triangulation">Triangulation</a><div class="where">where
+    &lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>: <a class="trait" href="../num_traits/float/trait.Float.html" title="trait num_traits::float::Float">Float</a>,</div>{
+    // Provided methods
+    fn <a href="#method.get_edges_in_rectangle" class="fn">get_edges_in_rectangle</a>(
+        &amp;self,
+        lower: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+        upper: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+    ) -&gt; <a class="struct" href="iterators/struct.EdgesInShapeIterator.html" title="struct spade::iterators::EdgesInShapeIterator">EdgesInShapeIterator</a>&lt;'_, Self, <a class="struct" href="iterators/struct.RectangleMetric.html" title="struct spade::iterators::RectangleMetric">RectangleMetric</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;&gt; <a href="#" class="tooltip" data-notable-ty="EdgesInShapeIterator&lt;&#39;_, Self, RectangleMetric&lt;&lt;Self::Vertex as HasPosition&gt;::Scalar&gt;&gt;">ⓘ</a> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_edges_in_circle" class="fn">get_edges_in_circle</a>(
+        &amp;self,
+        center: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+        radius_2: &lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>,
+    ) -&gt; <a class="struct" href="iterators/struct.EdgesInShapeIterator.html" title="struct spade::iterators::EdgesInShapeIterator">EdgesInShapeIterator</a>&lt;'_, Self, <a class="struct" href="iterators/struct.CircleMetric.html" title="struct spade::iterators::CircleMetric">CircleMetric</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;&gt; <a href="#" class="tooltip" data-notable-ty="EdgesInShapeIterator&lt;&#39;_, Self, CircleMetric&lt;&lt;Self::Vertex as HasPosition&gt;::Scalar&gt;&gt;">ⓘ</a> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_vertices_in_rectangle" class="fn">get_vertices_in_rectangle</a>(
+        &amp;self,
+        lower: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+        upper: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+    ) -&gt; <a class="struct" href="iterators/struct.VerticesInShapeIterator.html" title="struct spade::iterators::VerticesInShapeIterator">VerticesInShapeIterator</a>&lt;'_, Self, <a class="struct" href="iterators/struct.RectangleMetric.html" title="struct spade::iterators::RectangleMetric">RectangleMetric</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;&gt; <a href="#" class="tooltip" data-notable-ty="VerticesInShapeIterator&lt;&#39;_, Self, RectangleMetric&lt;&lt;Self::Vertex as HasPosition&gt;::Scalar&gt;&gt;">ⓘ</a> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.get_vertices_in_circle" class="fn">get_vertices_in_circle</a>(
+        &amp;self,
+        center: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+        radius_2: &lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>,
+    ) -&gt; <a class="struct" href="iterators/struct.VerticesInShapeIterator.html" title="struct spade::iterators::VerticesInShapeIterator">VerticesInShapeIterator</a>&lt;'_, Self, <a class="struct" href="iterators/struct.CircleMetric.html" title="struct spade::iterators::CircleMetric">CircleMetric</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;&gt; <a href="#" class="tooltip" data-notable-ty="VerticesInShapeIterator&lt;&#39;_, Self, CircleMetric&lt;&lt;Self::Vertex as HasPosition&gt;::Scalar&gt;&gt;">ⓘ</a> { ... }
+<span class="item-spacer"></span>    fn <a href="#method.barycentric" class="fn">barycentric</a>(&amp;self) -&gt; <a class="struct" href="struct.Barycentric.html" title="struct spade::Barycentric">Barycentric</a>&lt;'_, Self&gt; { ... }
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Implements general functions for triangulations over floating point data types.</p>
+<p>This trait is implemented for any triangulation (constrained and regular Delaunay triangulations)
+over <code>f32</code> and <code>f64</code>.</p>
+</div></details><h2 id="provided-methods" class="section-header">Provided Methods<a href="#provided-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="method.get_edges_in_rectangle" class="method"><a class="src rightside" href="../src/spade/triangulation.rs.html#654-664">Source</a><h4 class="code-header">fn <a href="#method.get_edges_in_rectangle" class="fn">get_edges_in_rectangle</a>(
+    &amp;self,
+    lower: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+    upper: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+) -&gt; <a class="struct" href="iterators/struct.EdgesInShapeIterator.html" title="struct spade::iterators::EdgesInShapeIterator">EdgesInShapeIterator</a>&lt;'_, Self, <a class="struct" href="iterators/struct.RectangleMetric.html" title="struct spade::iterators::RectangleMetric">RectangleMetric</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;&gt; <a href="#" class="tooltip" data-notable-ty="EdgesInShapeIterator&lt;&#39;_, Self, RectangleMetric&lt;&lt;Self::Vertex as HasPosition&gt;::Scalar&gt;&gt;">ⓘ</a></h4></section></summary><div class="docblock"><p>Returns all edges contained in a rectangle.</p>
+<p>An edge is considered to be contained in the rectangle if at least one point exists
+that is both on the edge and inside the rectangle (including its boundary).</p>
+<p>The rectangle is specified by its lower and upper corners. Yields an empty iterator
+if <code>lower.x &gt; upper.x</code> or <code>lower.y &gt; upper.y</code>.</p>
+<svg viewBox="-83.7 -64.9 176.4 130.8" width="500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<pattern height="1" id="shape_iterator_rectangle_edges_pattern0001" patternTransform="rotate(63.512 0 0) scale(2)" patternUnits="userSpaceOnUse" width="1">
+<line stroke="rgb(255 255 255)" stroke-width="1.01" x1="0" x2="0" y1="-0.1" y2="1.1"/>
+<line stroke="rgb(211 211 211)" stroke-width="1.01" x1="1" x2="1" y1="-0.1" y2="1.1"/>
+</pattern>
+</defs>
+<rect height="100%" style="fill: url(#shape_iterator_rectangle_edges_pattern0001)" width="100%" x="-83.7" y="-64.9"/>
+<g>
+<path d="M-2,-24 L5,-12 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L33,-30 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L30,2 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L-35,32 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L-5,-42 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M30,2 L5,-12 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L-30,-25 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L15,39 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L-35,5 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L30,2 L50,50 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L30,2 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-5,-42 L33,-30 L-2,-24 z" style="fill: rgb(211 211 211)"/>
+<path d="M5,-12 L12,10 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L5,-12 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-35,32 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-30,-25 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M33,-30 L-5,-42 L45,-47 z" style="fill: rgb(211 211 211)"/>
+<path d="M-30,-25 L-35,5 L-55,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-55,-25 L-14,-52 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-67,52 L-55,-25 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M50,50 L-67,52 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L50,50 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M45,-47 L76,10 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L45,-47 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,-30 L-35,55 L20,55 L20,-30 z" style="stroke-width: 0.7; stroke: rgb(0 128 128); fill: none"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="12" y1="5" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-2" x2="33" y1="-24" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="15" y1="2" y2="39"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="33" y1="-12" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="5" y1="2" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="12" x2="-35" y1="10" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-35" y1="39" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-30" y1="-42" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-35" y1="-12" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-2" y1="-42" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-2" y1="-12" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-67" y1="32" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="5" y1="-25" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-67" y1="39" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-30" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="-5" y1="-52" y2="-42"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="76" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="50" y1="2" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="33" y1="2" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="33" y1="-42" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="12" y1="39" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="12" y1="-12" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="12" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-35" y1="32" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-35" y1="52" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-2" y1="-25" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="45" y1="-42" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="76" y1="-30" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-55" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-55" y1="-25" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-55" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-55" y1="52" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="50" y1="39" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="50" x2="-67" y1="50" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="76" x2="50" y1="10" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="45" y1="-30" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="45" x2="76" y1="-47" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="45" y1="-52" y2="-47"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="12" x2="-35" y1="10" y2="32"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-35" x2="12" y1="5" y2="10"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-35" x2="-35" y1="32" y2="5"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="15" x2="-35" y1="39" y2="32"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-35" x2="-67" y1="32" y2="52"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="15" x2="12" y1="39" y2="10"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="5" x2="12" y1="-12" y2="10"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="30" x2="12" y1="2" y2="10"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="5" x2="-35" y1="-12" y2="5"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-67" x2="-35" y1="52" y2="5"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="15" x2="-67" y1="39" y2="52"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="30" x2="15" y1="2" y2="39"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="15" x2="50" y1="39" y2="50"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="30" x2="5" y1="2" y2="-12"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-30" x2="5" y1="-25" y2="-12"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-35" x2="-30" y1="5" y2="-25"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-35" x2="-55" y1="5" y2="-25"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-30" x2="-55" y1="-25" y2="-25"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="50" x2="-67" y1="50" y2="52"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="5" x2="33" y1="-12" y2="-30"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="5" x2="-2" y1="-12" y2="-24"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-2" x2="33" y1="-24" y2="-30"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-30" x2="-2" y1="-25" y2="-24"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-5" x2="-2" y1="-42" y2="-24"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-30" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-5" x2="-30" y1="-42" y2="-25"/>
+<circle cx="15" cy="39" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-5" cy="-42" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="30" cy="2" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="5" cy="-12" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="32" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-2" cy="-24" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-67" cy="52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-14" cy="-52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="76" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="12" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="5" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="33" cy="-30" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-30" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-55" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="50" cy="50" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="45" cy="-47" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+</g>
+</svg>
+<p><em>Example: Shows all edges (red) that are returned when iterating over a rectangle (teal)</em></p>
+<h5 id="memory-consumption"><a class="doc-anchor" href="#memory-consumption">§</a>Memory consumption</h5>
+<p>Memory usage is, on average, in O(|convex_hull(E)|) where “E” refers to all edges that
+have been returned so far.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_edges_in_circle" class="method"><a class="src rightside" href="../src/spade/triangulation.rs.html#685-694">Source</a><h4 class="code-header">fn <a href="#method.get_edges_in_circle" class="fn">get_edges_in_circle</a>(
+    &amp;self,
+    center: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+    radius_2: &lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>,
+) -&gt; <a class="struct" href="iterators/struct.EdgesInShapeIterator.html" title="struct spade::iterators::EdgesInShapeIterator">EdgesInShapeIterator</a>&lt;'_, Self, <a class="struct" href="iterators/struct.CircleMetric.html" title="struct spade::iterators::CircleMetric">CircleMetric</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;&gt; <a href="#" class="tooltip" data-notable-ty="EdgesInShapeIterator&lt;&#39;_, Self, CircleMetric&lt;&lt;Self::Vertex as HasPosition&gt;::Scalar&gt;&gt;">ⓘ</a></h4></section></summary><div class="docblock"><p>Returns all edges contained in a circle.</p>
+<p>An edge is considered to be contained in a circle if at least one point exists that is both
+on the edge and within the circle (including its boundary).</p>
+<p><code>radius_2</code> refers to the <strong>squared radius</strong> of the circle.</p>
+<svg viewBox="-83.7 -64.8 176.4 129.6" width="500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<pattern height="1" id="shape_iterator_circle_edges_pattern0001" patternTransform="rotate(63.512 0 0) scale(2)" patternUnits="userSpaceOnUse" width="1">
+<line stroke="rgb(255 255 255)" stroke-width="1.01" x1="0" x2="0" y1="-0.1" y2="1.1"/>
+<line stroke="rgb(211 211 211)" stroke-width="1.01" x1="1" x2="1" y1="-0.1" y2="1.1"/>
+</pattern>
+</defs>
+<rect height="100%" style="fill: url(#shape_iterator_circle_edges_pattern0001)" width="100%" x="-83.7" y="-64.8"/>
+<g>
+<path d="M-2,-24 L5,-12 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L33,-30 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L30,2 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L-35,32 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L-5,-42 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M30,2 L5,-12 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L-30,-25 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L15,39 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L-35,5 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L30,2 L50,50 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L30,2 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-5,-42 L33,-30 L-2,-24 z" style="fill: rgb(211 211 211)"/>
+<path d="M5,-12 L12,10 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L5,-12 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-35,32 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-30,-25 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M33,-30 L-5,-42 L45,-47 z" style="fill: rgb(211 211 211)"/>
+<path d="M-30,-25 L-35,5 L-55,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-55,-25 L-14,-52 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-67,52 L-55,-25 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M50,50 L-67,52 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L50,50 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M45,-47 L76,10 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L45,-47 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="12" y1="5" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-2" x2="33" y1="-24" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="15" y1="2" y2="39"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="33" y1="-12" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="5" y1="2" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="12" x2="-35" y1="10" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-35" y1="39" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-30" y1="-42" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-35" y1="-12" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-2" y1="-42" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-2" y1="-12" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-67" y1="32" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="5" y1="-25" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-67" y1="39" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-30" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="-5" y1="-52" y2="-42"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="76" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="50" y1="2" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="33" y1="2" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="33" y1="-42" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="12" y1="39" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="12" y1="-12" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="12" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-35" y1="32" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-35" y1="52" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-2" y1="-25" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="45" y1="-42" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="76" y1="-30" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-55" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-55" y1="-25" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-55" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-55" y1="52" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="50" y1="39" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="50" x2="-67" y1="50" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="76" x2="50" y1="10" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="45" y1="-30" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="45" x2="76" y1="-47" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="45" y1="-52" y2="-47"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="5" x2="-35" y1="-12" y2="5"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-35" x2="12" y1="5" y2="10"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="5" x2="12" y1="-12" y2="10"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-30" x2="5" y1="-25" y2="-12"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="12" x2="-35" y1="10" y2="32"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="30" x2="12" y1="2" y2="10"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="15" x2="12" y1="39" y2="10"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="30" x2="5" y1="2" y2="-12"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="5" x2="-2" y1="-12" y2="-24"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="5" x2="33" y1="-12" y2="-30"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-30" x2="-2" y1="-25" y2="-24"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="30" x2="15" y1="2" y2="39"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="30" x2="33" y1="2" y2="-30"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-2" x2="33" y1="-24" y2="-30"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="-5" x2="-2" y1="-42" y2="-24"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="30" x2="50" y1="2" y2="50"/>
+<line style="stroke-width: 0.71; stroke: rgb(250 128 114); fill: none" x1="30" x2="76" y1="2" y2="10"/>
+<circle cx="15" cy="39" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-5" cy="-42" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="30" cy="2" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="5" cy="-12" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="32" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-2" cy="-24" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-67" cy="52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-14" cy="-52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="76" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="12" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="5" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="33" cy="-30" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-30" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-55" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="50" cy="50" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="45" cy="-47" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="0" cy="2" r="30" style="stroke-width: 0.5; stroke: rgb(0 128 128); fill: none"/>
+</g>
+</svg>
+<p><em>Example: Shows all edges (red) that are returned when iterating over a circle (teal)</em></p>
+<h5 id="panics"><a class="doc-anchor" href="#panics">§</a>Panics</h5>
+<p>Panics if <code>radius_2 &lt; 0.0</code></p>
+<h5 id="memory-consumption-1"><a class="doc-anchor" href="#memory-consumption-1">§</a>Memory consumption</h5>
+<p>Memory usage is, on average, in O(|convex_hull(E)|) where “E” refers to all edges that
+have been returned so far.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_vertices_in_rectangle" class="method"><a class="src rightside" href="../src/spade/triangulation.rs.html#711-720">Source</a><h4 class="code-header">fn <a href="#method.get_vertices_in_rectangle" class="fn">get_vertices_in_rectangle</a>(
+    &amp;self,
+    lower: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+    upper: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+) -&gt; <a class="struct" href="iterators/struct.VerticesInShapeIterator.html" title="struct spade::iterators::VerticesInShapeIterator">VerticesInShapeIterator</a>&lt;'_, Self, <a class="struct" href="iterators/struct.RectangleMetric.html" title="struct spade::iterators::RectangleMetric">RectangleMetric</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;&gt; <a href="#" class="tooltip" data-notable-ty="VerticesInShapeIterator&lt;&#39;_, Self, RectangleMetric&lt;&lt;Self::Vertex as HasPosition&gt;::Scalar&gt;&gt;">ⓘ</a></h4></section></summary><div class="docblock"><p>Returns all vertices in a rectangle.</p>
+<p>Any vertex on the rectangle’s boundary or corners is also returned.</p>
+<p>The rectangle is specified by its lower and upper corners. Yields an empty iterator
+if <code>lower.x &gt; upper.x || lower.y &gt; upper.y</code>.</p>
+<svg viewBox="-83.7 -64.9 176.4 130.8" width="500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<pattern height="1" id="shape_iterator_rectangle_vertices_pattern0001" patternTransform="rotate(63.512 0 0) scale(2)" patternUnits="userSpaceOnUse" width="1">
+<line stroke="rgb(255 255 255)" stroke-width="1.01" x1="0" x2="0" y1="-0.1" y2="1.1"/>
+<line stroke="rgb(211 211 211)" stroke-width="1.01" x1="1" x2="1" y1="-0.1" y2="1.1"/>
+</pattern>
+</defs>
+<rect height="100%" style="fill: url(#shape_iterator_rectangle_vertices_pattern0001)" width="100%" x="-83.7" y="-64.9"/>
+<g>
+<path d="M-2,-24 L5,-12 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L33,-30 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L30,2 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L-35,32 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L-5,-42 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M30,2 L5,-12 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L-30,-25 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L15,39 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L-35,5 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L30,2 L50,50 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L30,2 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-5,-42 L33,-30 L-2,-24 z" style="fill: rgb(211 211 211)"/>
+<path d="M5,-12 L12,10 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L5,-12 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-35,32 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-30,-25 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M33,-30 L-5,-42 L45,-47 z" style="fill: rgb(211 211 211)"/>
+<path d="M-30,-25 L-35,5 L-55,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-55,-25 L-14,-52 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-67,52 L-55,-25 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M50,50 L-67,52 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L50,50 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M45,-47 L76,10 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L45,-47 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,-30 L-35,55 L20,55 L20,-30 z" style="stroke-width: 0.7; stroke: rgb(0 128 128); fill: none"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="12" y1="5" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-2" x2="33" y1="-24" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="15" y1="2" y2="39"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="33" y1="-12" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="5" y1="2" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="12" x2="-35" y1="10" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-35" y1="39" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-30" y1="-42" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-35" y1="-12" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-2" y1="-42" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-2" y1="-12" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-67" y1="32" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="5" y1="-25" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-67" y1="39" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-30" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="-5" y1="-52" y2="-42"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="76" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="50" y1="2" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="33" y1="2" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="33" y1="-42" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="12" y1="39" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="12" y1="-12" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="12" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-35" y1="32" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-35" y1="52" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-2" y1="-25" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="45" y1="-42" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="76" y1="-30" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-55" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-55" y1="-25" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-55" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-55" y1="52" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="50" y1="39" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="50" x2="-67" y1="50" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="76" x2="50" y1="10" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="45" y1="-30" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="45" x2="76" y1="-47" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="45" y1="-52" y2="-47"/>
+<circle cx="15" cy="39" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-5" cy="-42" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="30" cy="2" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="5" cy="-12" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="32" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-2" cy="-24" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-67" cy="52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-14" cy="-52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="76" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="12" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="5" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="33" cy="-30" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-30" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-55" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="50" cy="50" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="45" cy="-47" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="12" cy="10" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="-35" cy="32" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="-35" cy="5" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="15" cy="39" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="5" cy="-12" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="-30" cy="-25" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="-2" cy="-24" r="2" style="fill: rgb(250 128 114)"/>
+</g>
+</svg>
+<p><em>Example: Shows all vertices (red) that are returned when iterating over a rectangle (teal)</em></p>
+<h5 id="memory-consumption-2"><a class="doc-anchor" href="#memory-consumption-2">§</a>Memory consumption</h5>
+<p>Consumed memory is in <code>O(|convex_hull(V)|)</code> where <code>V</code> refers to all vertices that have been
+returned so far.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.get_vertices_in_circle" class="method"><a class="src rightside" href="../src/spade/triangulation.rs.html#740-748">Source</a><h4 class="code-header">fn <a href="#method.get_vertices_in_circle" class="fn">get_vertices_in_circle</a>(
+    &amp;self,
+    center: <a class="struct" href="struct.Point2.html" title="struct spade::Point2">Point2</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;,
+    radius_2: &lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>,
+) -&gt; <a class="struct" href="iterators/struct.VerticesInShapeIterator.html" title="struct spade::iterators::VerticesInShapeIterator">VerticesInShapeIterator</a>&lt;'_, Self, <a class="struct" href="iterators/struct.CircleMetric.html" title="struct spade::iterators::CircleMetric">CircleMetric</a>&lt;&lt;Self::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>&gt;&gt; <a href="#" class="tooltip" data-notable-ty="VerticesInShapeIterator&lt;&#39;_, Self, CircleMetric&lt;&lt;Self::Vertex as HasPosition&gt;::Scalar&gt;&gt;">ⓘ</a></h4></section></summary><div class="docblock"><p>Returns all vertices in a circle.</p>
+<p>Any vertex on the circle’s boundary is also returned.</p>
+<p><code>radius_2</code> refers to the <strong>squared radius</strong> of the circle.</p>
+<svg viewBox="-83.7 -64.8 176.4 129.6" width="500" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<pattern height="1" id="shape_iterator_circle_vertices_pattern0001" patternTransform="rotate(63.512 0 0) scale(2)" patternUnits="userSpaceOnUse" width="1">
+<line stroke="rgb(255 255 255)" stroke-width="1.01" x1="0" x2="0" y1="-0.1" y2="1.1"/>
+<line stroke="rgb(211 211 211)" stroke-width="1.01" x1="1" x2="1" y1="-0.1" y2="1.1"/>
+</pattern>
+</defs>
+<rect height="100%" style="fill: url(#shape_iterator_circle_vertices_pattern0001)" width="100%" x="-83.7" y="-64.8"/>
+<g>
+<path d="M-2,-24 L5,-12 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L33,-30 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L30,2 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L-35,32 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L-5,-42 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M30,2 L5,-12 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-2,-24 L-30,-25 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L15,39 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,32 L-35,5 L12,10 z" style="fill: rgb(211 211 211)"/>
+<path d="M15,39 L30,2 L50,50 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L30,2 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-5,-42 L33,-30 L-2,-24 z" style="fill: rgb(211 211 211)"/>
+<path d="M5,-12 L12,10 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M12,10 L5,-12 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-35,32 L-67,52 z" style="fill: rgb(211 211 211)"/>
+<path d="M-35,5 L-30,-25 L5,-12 z" style="fill: rgb(211 211 211)"/>
+<path d="M33,-30 L-5,-42 L45,-47 z" style="fill: rgb(211 211 211)"/>
+<path d="M-30,-25 L-35,5 L-55,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-55,-25 L-14,-52 L-30,-25 z" style="fill: rgb(211 211 211)"/>
+<path d="M-67,52 L-55,-25 L-35,5 z" style="fill: rgb(211 211 211)"/>
+<path d="M50,50 L-67,52 L15,39 z" style="fill: rgb(211 211 211)"/>
+<path d="M76,10 L50,50 L30,2 z" style="fill: rgb(211 211 211)"/>
+<path d="M45,-47 L76,10 L33,-30 z" style="fill: rgb(211 211 211)"/>
+<path d="M-14,-52 L45,-47 L-5,-42 z" style="fill: rgb(211 211 211)"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="12" y1="5" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-2" x2="33" y1="-24" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="15" y1="2" y2="39"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="33" y1="-12" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="5" y1="2" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="12" x2="-35" y1="10" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-35" y1="39" y2="32"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-30" y1="-42" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-35" y1="-12" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="-2" y1="-42" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="-2" y1="-12" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-67" y1="32" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="5" y1="-25" y2="-12"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="-67" y1="39" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-30" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="-5" y1="-52" y2="-42"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="76" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="50" y1="2" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="33" y1="2" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="33" y1="-42" y2="-30"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="12" y1="39" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="5" x2="12" y1="-12" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="30" x2="12" y1="2" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-35" y1="32" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-35" y1="52" y2="5"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-2" y1="-25" y2="-24"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-5" x2="45" y1="-42" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="76" y1="-30" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-35" x2="-55" y1="5" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-30" x2="-55" y1="-25" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-55" x2="-14" y1="-25" y2="-52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-67" x2="-55" y1="52" y2="-25"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="15" x2="50" y1="39" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="50" x2="-67" y1="50" y2="52"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="76" x2="50" y1="10" y2="50"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="33" x2="45" y1="-30" y2="-47"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="45" x2="76" y1="-47" y2="10"/>
+<line style="stroke-width: 1; stroke: rgb(0 0 0); fill: none" x1="-14" x2="45" y1="-52" y2="-47"/>
+<circle cx="15" cy="39" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-5" cy="-42" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="30" cy="2" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="5" cy="-12" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="32" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-2" cy="-24" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-67" cy="52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-14" cy="-52" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="76" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="12" cy="10" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-35" cy="5" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="33" cy="-30" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-30" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="-55" cy="-25" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="50" cy="50" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="45" cy="-47" r="2" style="stroke-width: 0.5; stroke: rgb(0 0 0); fill: rgb(105 105 105)"/>
+<circle cx="12" cy="10" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="5" cy="-12" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="30" cy="2" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="-2" cy="-24" r="2" style="fill: rgb(250 128 114)"/>
+<circle cx="0" cy="2" r="30" style="stroke-width: 0.5; stroke: rgb(0 128 128); fill: none"/>
+</g>
+</svg>
+<p><em>Example: Shows all vertices (red) that are returned when iterating over a circle (teal)</em></p>
+<h5 id="panics-1"><a class="doc-anchor" href="#panics-1">§</a>Panics</h5>
+<p>Panics if <code>radius_2 &lt; 0.0</code></p>
+<h5 id="memory-consumption-3"><a class="doc-anchor" href="#memory-consumption-3">§</a>Memory consumption</h5>
+<p>Consumed memory is in <code>O(|convex_hull(V)|)</code> where <code>V</code> refers to all vertices that have been
+returned so far.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="method.barycentric" class="method"><a class="src rightside" href="../src/spade/triangulation.rs.html#755-757">Source</a><h4 class="code-header">fn <a href="#method.barycentric" class="fn">barycentric</a>(&amp;self) -&gt; <a class="struct" href="struct.Barycentric.html" title="struct spade::Barycentric">Barycentric</a>&lt;'_, Self&gt;</h4></section></summary><div class="docblock"><p>Used for barycentric interpolation on this triangulation. Refer to the documentation of
+<a href="struct.Barycentric.html" title="struct spade::Barycentric">Barycentric</a> and <a href="struct.NaturalNeighbor.html" title="struct spade::NaturalNeighbor">crate::NaturalNeighbor</a> for more information.</p>
+<p><em>Note:</em> In contrast to the other interpolation algorithms, barycentric interpolation also works
+for <a href="struct.ConstrainedDelaunayTriangulation.html" title="struct spade::ConstrainedDelaunayTriangulation">crate::ConstrainedDelaunayTriangulation</a>s.</p>
+</div></details></div><h2 id="dyn-compatibility" class="section-header">Dyn Compatibility<a href="#dyn-compatibility" class="anchor">§</a></h2><div class="dyn-compatibility-info"><p>This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.85.0/reference/items/traits.html#object-safety">dyn compatible</a>.</p><p><i>In older versions of Rust, dyn compatibility was called "object safety", so this trait is not object safe.</i></p></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"><section id="impl-FloatTriangulation-for-T" class="impl"><a class="src rightside" href="../src/spade/triangulation.rs.html#760-765">Source</a><a href="#impl-FloatTriangulation-for-T" class="anchor">§</a><h3 class="code-header">impl&lt;T&gt; <a class="trait" href="trait.FloatTriangulation.html" title="trait spade::FloatTriangulation">FloatTriangulation</a> for T<div class="where">where
+    T: <a class="trait" href="trait.Triangulation.html" title="trait spade::Triangulation">Triangulation</a>,
+    &lt;T::<a class="associatedtype" href="trait.Triangulation.html#associatedtype.Vertex" title="type spade::Triangulation::Vertex">Vertex</a> as <a class="trait" href="trait.HasPosition.html" title="trait spade::HasPosition">HasPosition</a>&gt;::<a class="associatedtype" href="trait.HasPosition.html#associatedtype.Scalar" title="type spade::HasPosition::Scalar">Scalar</a>: <a class="trait" href="../num_traits/float/trait.Float.html" title="trait num_traits::float::Float">Float</a>,</div></h3></section></div><script src="../trait.impl/spade/triangulation/trait.FloatTriangulation.js" async></script><script type="text/json" id="notable-traits-data">{"EdgesInShapeIterator<'_, Self, CircleMetric<<Self::Vertex as HasPosition>::Scalar>>":"<h3>Notable traits for <code><a class=\"struct\" href=\"iterators/struct.EdgesInShapeIterator.html\" title=\"struct spade::iterators::EdgesInShapeIterator\">EdgesInShapeIterator</a>&lt;'a, T, M&gt;</code></h3><pre><code><div class=\"where\">impl&lt;'a, T, M&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.85.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"iterators/struct.EdgesInShapeIterator.html\" title=\"struct spade::iterators::EdgesInShapeIterator\">EdgesInShapeIterator</a>&lt;'a, T, M&gt;<div class=\"where\">where\n    T: <a class=\"trait\" href=\"trait.Triangulation.html\" title=\"trait spade::Triangulation\">Triangulation</a>,\n    M: DistanceMetric&lt;&lt;T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Vertex\" title=\"type spade::Triangulation::Vertex\">Vertex</a> as <a class=\"trait\" href=\"trait.HasPosition.html\" title=\"trait spade::HasPosition\">HasPosition</a>&gt;::<a class=\"associatedtype\" href=\"trait.HasPosition.html#associatedtype.Scalar\" title=\"type spade::HasPosition::Scalar\">Scalar</a>&gt;,</div></div><div class=\"where\">    type <a href=\"https://doc.rust-lang.org/1.85.0/core/iter/traits/iterator/trait.Iterator.html#associatedtype.Item\" class=\"associatedtype\">Item</a> = <a class=\"type\" href=\"handles/type.UndirectedEdgeHandle.html\" title=\"type spade::handles::UndirectedEdgeHandle\">UndirectedEdgeHandle</a>&lt;'a, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Vertex\" title=\"type spade::Triangulation::Vertex\">Vertex</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.DirectedEdge\" title=\"type spade::Triangulation::DirectedEdge\">DirectedEdge</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.UndirectedEdge\" title=\"type spade::Triangulation::UndirectedEdge\">UndirectedEdge</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Face\" title=\"type spade::Triangulation::Face\">Face</a>&gt;;</div>","EdgesInShapeIterator<'_, Self, RectangleMetric<<Self::Vertex as HasPosition>::Scalar>>":"<h3>Notable traits for <code><a class=\"struct\" href=\"iterators/struct.EdgesInShapeIterator.html\" title=\"struct spade::iterators::EdgesInShapeIterator\">EdgesInShapeIterator</a>&lt;'a, T, M&gt;</code></h3><pre><code><div class=\"where\">impl&lt;'a, T, M&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.85.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"iterators/struct.EdgesInShapeIterator.html\" title=\"struct spade::iterators::EdgesInShapeIterator\">EdgesInShapeIterator</a>&lt;'a, T, M&gt;<div class=\"where\">where\n    T: <a class=\"trait\" href=\"trait.Triangulation.html\" title=\"trait spade::Triangulation\">Triangulation</a>,\n    M: DistanceMetric&lt;&lt;T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Vertex\" title=\"type spade::Triangulation::Vertex\">Vertex</a> as <a class=\"trait\" href=\"trait.HasPosition.html\" title=\"trait spade::HasPosition\">HasPosition</a>&gt;::<a class=\"associatedtype\" href=\"trait.HasPosition.html#associatedtype.Scalar\" title=\"type spade::HasPosition::Scalar\">Scalar</a>&gt;,</div></div><div class=\"where\">    type <a href=\"https://doc.rust-lang.org/1.85.0/core/iter/traits/iterator/trait.Iterator.html#associatedtype.Item\" class=\"associatedtype\">Item</a> = <a class=\"type\" href=\"handles/type.UndirectedEdgeHandle.html\" title=\"type spade::handles::UndirectedEdgeHandle\">UndirectedEdgeHandle</a>&lt;'a, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Vertex\" title=\"type spade::Triangulation::Vertex\">Vertex</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.DirectedEdge\" title=\"type spade::Triangulation::DirectedEdge\">DirectedEdge</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.UndirectedEdge\" title=\"type spade::Triangulation::UndirectedEdge\">UndirectedEdge</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Face\" title=\"type spade::Triangulation::Face\">Face</a>&gt;;</div>","VerticesInShapeIterator<'_, Self, CircleMetric<<Self::Vertex as HasPosition>::Scalar>>":"<h3>Notable traits for <code><a class=\"struct\" href=\"iterators/struct.VerticesInShapeIterator.html\" title=\"struct spade::iterators::VerticesInShapeIterator\">VerticesInShapeIterator</a>&lt;'a, T, M&gt;</code></h3><pre><code><div class=\"where\">impl&lt;'a, T, M&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.85.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"iterators/struct.VerticesInShapeIterator.html\" title=\"struct spade::iterators::VerticesInShapeIterator\">VerticesInShapeIterator</a>&lt;'a, T, M&gt;<div class=\"where\">where\n    T: <a class=\"trait\" href=\"trait.Triangulation.html\" title=\"trait spade::Triangulation\">Triangulation</a>,\n    M: DistanceMetric&lt;&lt;T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Vertex\" title=\"type spade::Triangulation::Vertex\">Vertex</a> as <a class=\"trait\" href=\"trait.HasPosition.html\" title=\"trait spade::HasPosition\">HasPosition</a>&gt;::<a class=\"associatedtype\" href=\"trait.HasPosition.html#associatedtype.Scalar\" title=\"type spade::HasPosition::Scalar\">Scalar</a>&gt;,</div></div><div class=\"where\">    type <a href=\"https://doc.rust-lang.org/1.85.0/core/iter/traits/iterator/trait.Iterator.html#associatedtype.Item\" class=\"associatedtype\">Item</a> = <a class=\"type\" href=\"handles/type.VertexHandle.html\" title=\"type spade::handles::VertexHandle\">VertexHandle</a>&lt;'a, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Vertex\" title=\"type spade::Triangulation::Vertex\">Vertex</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.DirectedEdge\" title=\"type spade::Triangulation::DirectedEdge\">DirectedEdge</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.UndirectedEdge\" title=\"type spade::Triangulation::UndirectedEdge\">UndirectedEdge</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Face\" title=\"type spade::Triangulation::Face\">Face</a>&gt;;</div>","VerticesInShapeIterator<'_, Self, RectangleMetric<<Self::Vertex as HasPosition>::Scalar>>":"<h3>Notable traits for <code><a class=\"struct\" href=\"iterators/struct.VerticesInShapeIterator.html\" title=\"struct spade::iterators::VerticesInShapeIterator\">VerticesInShapeIterator</a>&lt;'a, T, M&gt;</code></h3><pre><code><div class=\"where\">impl&lt;'a, T, M&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.85.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"iterators/struct.VerticesInShapeIterator.html\" title=\"struct spade::iterators::VerticesInShapeIterator\">VerticesInShapeIterator</a>&lt;'a, T, M&gt;<div class=\"where\">where\n    T: <a class=\"trait\" href=\"trait.Triangulation.html\" title=\"trait spade::Triangulation\">Triangulation</a>,\n    M: DistanceMetric&lt;&lt;T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Vertex\" title=\"type spade::Triangulation::Vertex\">Vertex</a> as <a class=\"trait\" href=\"trait.HasPosition.html\" title=\"trait spade::HasPosition\">HasPosition</a>&gt;::<a class=\"associatedtype\" href=\"trait.HasPosition.html#associatedtype.Scalar\" title=\"type spade::HasPosition::Scalar\">Scalar</a>&gt;,</div></div><div class=\"where\">    type <a href=\"https://doc.rust-lang.org/1.85.0/core/iter/traits/iterator/trait.Iterator.html#associatedtype.Item\" class=\"associatedtype\">Item</a> = <a class=\"type\" href=\"handles/type.VertexHandle.html\" title=\"type spade::handles::VertexHandle\">VertexHandle</a>&lt;'a, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Vertex\" title=\"type spade::Triangulation::Vertex\">Vertex</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.DirectedEdge\" title=\"type spade::Triangulation::DirectedEdge\">DirectedEdge</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.UndirectedEdge\" title=\"type spade::Triangulation::UndirectedEdge\">UndirectedEdge</a>, T::<a class=\"associatedtype\" href=\"trait.Triangulation.html#associatedtype.Face\" title=\"type spade::Triangulation::Face\">Face</a>&gt;;</div>"}</script></section></div></main></body></html>

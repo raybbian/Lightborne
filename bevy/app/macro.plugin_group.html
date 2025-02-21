@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A macro for generating a well-documented `PluginGroup` from a list of `Plugin` paths."><title>plugin_group in bevy::app - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bevy" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc macro"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../bevy/index.html"><img src="https://bevyengine.org/assets/icon.png" alt="logo"></a><h2><a href="../../bevy/index.html">bevy</a><span class="version">0.15.2</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">plugin_<wbr>group</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#example" title="Example">Example</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="index.html">In bevy::<wbr>app</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">bevy</a>::<wbr><a href="index.html">app</a></span><h1>Macro <span class="macro">plugin_group</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/bevy_app/plugin_group.rs.html#103">Source</a> </span></div><pre class="rust item-decl"><code>macro_rules! plugin_group {
+    {
+        $(#[$group_meta:meta])*
+        $vis:vis struct $group:ident {
+            $(
+                $(#[cfg(feature = $plugin_feature:literal)])?
+                $(#[custom($plugin_meta:meta)])*
+                $($plugin_path:ident::)* : $plugin_name:ident
+            ),*
+            $(
+                $(,)?$(
+                    #[plugin_group]
+                    $(#[cfg(feature = $plugin_group_feature:literal)])?
+                    $(#[custom($plugin_group_meta:meta)])*
+                    $($plugin_group_path:ident::)* : $plugin_group_name:ident
+                ),+
+            )?
+            $(
+                $(,)?$(
+                    #[doc(hidden)]
+                    $(#[cfg(feature = $hidden_plugin_feature:literal)])?
+                    $(#[custom($hidden_plugin_meta:meta)])*
+                    $($hidden_plugin_path:ident::)* : $hidden_plugin_name:ident
+                ),+
+            )?
+
+            $(,)?
+        }
+        $($(#[doc = $post_doc:literal])+)?
+    } =&gt; { ... };
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A macro for generating a well-documented <a href="../prelude/trait.PluginGroup.html" title="trait bevy::prelude::PluginGroup"><code>PluginGroup</code></a> from a list of <a href="../prelude/trait.Plugin.html" title="trait bevy::prelude::Plugin"><code>Plugin</code></a> paths.</p>
+<p>Every plugin must implement the <a href="https://doc.rust-lang.org/1.85.0/core/default/trait.Default.html" title="trait core::default::Default"><code>Default</code></a> trait.</p>
+<h2 id="example"><a class="doc-anchor" href="#example">§</a>Example</h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="macro">plugin_group!</span> {
+    <span class="doccomment">/// Doc comments and annotations are supported: they will be added to the generated plugin
+    /// group.
+    </span><span class="attr">#[derive(Debug)]
+    </span><span class="kw">pub struct </span>PhysicsPlugins {
+        <span class="comment">// If referencing a plugin within the same module, you must prefix it with a colon `:`.
+        </span>:TickratePlugin,
+        <span class="comment">// If referencing a plugin within a different module, there must be three colons `:::`
+        // between the final module and the plugin name.
+        </span>collision::capsule:::CapsuleCollisionPlugin,
+        velocity:::VelocityPlugin,
+        <span class="comment">// If you feature-flag a plugin, it will be automatically documented. There can only be
+        // one automatically documented feature flag, and it must be first. All other
+        // `#[cfg()]` attributes must be wrapped by `#[custom()]`.
+        </span><span class="attr">#[cfg(feature = <span class="string">"external_forces"</span>)]
+        </span>features:::ForcePlugin,
+        <span class="comment">// More complicated `#[cfg()]`s and annotations are not supported by automatic doc
+        // generation, in which case you must wrap it in `#[custom()]`.
+        </span><span class="attr">#[custom(cfg(target_arch = <span class="string">"wasm32"</span>))]
+        </span>web:::WebCompatibilityPlugin,
+        <span class="comment">// You can nest `PluginGroup`s within other `PluginGroup`s, you just need the
+        // `#[plugin_group]` attribute.
+        </span><span class="attr">#[plugin_group]
+        </span>audio:::AudioPlugins,
+        <span class="comment">// You can hide plugins from documentation. Due to macro limitations, hidden plugins
+        // must be last.
+        </span><span class="attr">#[doc(hidden)]
+        </span>internal:::InternalPlugin
+    }
+    <span class="doccomment">/// You may add doc comments after the plugin group as well. They will be appended after
+    /// the documented list of plugins.
+</span>}</code></pre></div>
+</div></details></section></div></main></body></html>

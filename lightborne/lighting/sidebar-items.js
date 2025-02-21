@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["BACKGROUND_LAYER","BLURRED_LAYER","COMBINED_FRAMES_LAYER","FRAMES_LAYER","SHOW_DEBUG_FRAMES_SPRITE"],"fn":["combine_lights","setup","update_debug_frames_sprite"],"mod":["light","material","occluder","render"],"struct":["BackgroundMarker","CombinedLighting","DebugFramesSprite","LightingPlugin"]};

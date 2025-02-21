@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["draw_lights"],"struct":["LineLighting","PointLighting"]};

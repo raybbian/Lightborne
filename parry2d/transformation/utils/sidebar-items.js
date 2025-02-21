@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["push_arc","push_xy_arc","scaled","transform","transformed"]};

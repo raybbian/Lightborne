@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AppExit","RunFixedMainLoopSystem"],"struct":["App","First","FixedFirst","FixedLast","FixedPostUpdate","FixedPreUpdate","FixedUpdate","Last","Main","PostStartup","PostUpdate","PreStartup","PreUpdate","RunFixedMainLoop","SpawnScene","Startup","SubApp","Update"],"trait":["Plugin","PluginGroup"]};

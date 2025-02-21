@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["WeightsCurve","WideKeyframeCurveError"],"struct":["CubicKeyframeCurve","CubicRotationCurve","SteppedKeyframeCurve","WideCubicKeyframeCurve","WideLinearKeyframeCurve","WideSteppedKeyframeCurve"]};

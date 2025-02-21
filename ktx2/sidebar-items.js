@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ParseError"],"struct":["BasicDataFormatDescriptor","ChannelTypeQualifiers","ColorModel","ColorPrimaries","DataFormatDescriptor","DataFormatDescriptorHeader","DataFormatFlags","Format","Header","Reader","SampleInformation","SupercompressionScheme","TransferFunction"]};

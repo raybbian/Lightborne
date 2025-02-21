@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["deactivate_touch_pointers","mouse_pick_events","spawn_mouse_pointer","touch_pick_events"],"mod":["prelude"],"struct":["PointerInputPlugin"]};

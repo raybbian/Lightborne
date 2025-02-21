@@ -1,0 +1,139 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Provides a constructor which can be used for spawning additional components on IntGrid tiles."><title>LdtkIntCell in bevy_ecs_ldtk::app - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bevy_ecs_ldtk" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../bevy_ecs_ldtk/index.html">bevy_<wbr>ecs_<wbr>ldtk</a><span class="version">0.11.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Ldtk<wbr>IntCell</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#derive-macro-usage" title="Derive macro usage">Derive macro usage</a><ul><li><a href="#ldtk_int_cell" title="`#[ldtk_int_cell]`"><code>#[ldtk_int_cell]</code></a></li><li><a href="#from_int_grid_cell" title="`#[from_int_grid_cell]`"><code>#[from_int_grid_cell]</code></a></li><li><a href="#with" title="`#[with(...)]`"><code>#[with(...)]</code></a></li><li><a href="#default" title="`#[default]`"><code>#[default]</code></a></li></ul></li></ul><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.bundle_int_cell" title="bundle_int_cell">bundle_int_cell</a></li></ul><h3><a href="#dyn-compatibility">Dyn Compatibility</a></h3><h3><a href="#implementors">Implementors</a></h3></section><div id="rustdoc-modnav"><h2><a href="index.html">In bevy_<wbr>ecs_<wbr>ldtk::<wbr>app</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">bevy_ecs_ldtk</a>::<wbr><a href="index.html">app</a></span><h1>Trait <span class="trait">LdtkIntCell</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/bevy_ecs_ldtk/app/ldtk_int_cell.rs.html#185-200">Source</a> </span></div><pre class="rust item-decl"><code>pub trait LdtkIntCell {
+    // Required method
+    fn <a href="#tymethod.bundle_int_cell" class="fn">bundle_int_cell</a>(
+        int_grid_cell: <a class="struct" href="../struct.IntGridCell.html" title="struct bevy_ecs_ldtk::IntGridCell">IntGridCell</a>,
+        layer_instance: &amp;<a class="struct" href="../ldtk/struct.LayerInstance.html" title="struct bevy_ecs_ldtk::ldtk::LayerInstance">LayerInstance</a>,
+    ) -&gt; Self;
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Provides a constructor which can be used for spawning additional components on IntGrid tiles.</p>
+<p>After implementing this trait on a <a href="../../bevy_ecs/bundle/trait.Bundle.html" title="trait bevy_ecs::bundle::Bundle">Bundle</a>, you can register it to spawn automatically for a
+given int grid value via <a href="trait.LdtkIntCellAppExt.html" title="trait bevy_ecs_ldtk::app::LdtkIntCellAppExt">LdtkIntCellAppExt</a> on your <a href="../../bevy_app/app/struct.App.html" title="struct bevy_app::app::App">App</a>.</p>
+<p>For common use cases, you’ll want to use derive-macro <code>#[derive(LdtkIntCell)]</code>, but you can
+also provide a custom implementation.</p>
+<p>You can also implement this trait on non-<a href="../../bevy_ecs/bundle/trait.Bundle.html" title="trait bevy_ecs::bundle::Bundle">Bundle</a> types, but only <a href="../../bevy_ecs/bundle/trait.Bundle.html" title="trait bevy_ecs::bundle::Bundle">Bundle</a>s can be registered.</p>
+<p>If there is an IntGrid tile in the LDtk file whose value is NOT registered, an entity will be
+spawned with an <a href="../struct.IntGridCell.html" title="struct bevy_ecs_ldtk::IntGridCell">IntGridCell</a> component, allowing you to flesh it out in your own system.</p>
+<p><em>Derive macro requires the “derive” feature, which is enabled by default</em></p>
+<h3 id="derive-macro-usage"><a class="doc-anchor" href="#derive-macro-usage">§</a>Derive macro usage</h3>
+<p>Using <code>#[derive(LdtkIntCell)]</code> on a <a href="../../bevy_ecs/bundle/trait.Bundle.html" title="trait bevy_ecs::bundle::Bundle">Bundle</a> struct will allow the type to be registered to the
+<a href="../../bevy_app/app/struct.App.html" title="struct bevy_app::app::App">App</a> via <a href="trait.LdtkIntCellAppExt.html" title="trait bevy_ecs_ldtk::app::LdtkIntCellAppExt">LdtkIntCellAppExt</a> functions:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>bevy::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>bevy_ecs_ldtk::prelude::<span class="kw-2">*</span>;
+
+<span class="kw">fn </span>main() {
+    App::empty()
+        .add_plugins(LdtkPlugin)
+        .register_ldtk_int_cell::&lt;MyBundle&gt;(<span class="number">1</span>)
+        <span class="comment">// add other systems, plugins, resources...
+        </span>.run();
+}
+
+<span class="attr">#[derive(Bundle, LdtkIntCell, Default)]
+</span><span class="kw">pub struct </span>MyBundle {
+    a: ComponentA,
+    b: ComponentB,
+    c: ComponentC,
+}</code></pre></div>
+<p>Now, when loading your ldtk file, any IntGrid tiles with the value <code>1</code> will be spawned with as
+tiles with <code>MyBundle</code> inserted.</p>
+<p>By default, each component or nested bundle in the bundle will be consumed from bundle’s
+<a href="https://doc.rust-lang.org/1.85.0/core/default/trait.Default.html" title="trait core::default::Default">Default</a> implementation, which means that deriving (or implementing manually) <a href="https://doc.rust-lang.org/1.85.0/core/default/trait.Default.html" title="trait core::default::Default">Default</a>
+is required (unless all fields are overriden, see below).
+However, this behavior can be overriden with some field attribute macros…</p>
+<h4 id="ldtk_int_cell"><a class="doc-anchor" href="#ldtk_int_cell">§</a><code>#[ldtk_int_cell]</code></h4>
+<p>Indicates that a component or bundle that implements <a href="trait.LdtkIntCell.html" title="trait bevy_ecs_ldtk::app::LdtkIntCell">LdtkIntCell</a> should be created with
+<a href="trait.LdtkIntCell.html#tymethod.bundle_int_cell" title="associated function bevy_ecs_ldtk::app::LdtkIntCell::bundle_int_cell">LdtkIntCell::bundle_int_cell</a>, allowing for nested <a href="trait.LdtkIntCell.html" title="trait bevy_ecs_ldtk::app::LdtkIntCell">LdtkIntCell</a>s.</p>
+<p>Note: the <a href="trait.LdtkIntCell.html" title="trait bevy_ecs_ldtk::app::LdtkIntCell">LdtkIntCell</a> field decorated with this attribute doesn’t have to be a <a href="../../bevy_ecs/bundle/trait.Bundle.html" title="trait bevy_ecs::bundle::Bundle">Bundle</a>.
+This can be useful if a <a href="../../bevy_ecs/component/trait.Component.html" title="trait bevy_ecs::component::Component">Component</a>’s construction requires the additional access to the world
+provided by <a href="trait.LdtkIntCell.html#tymethod.bundle_int_cell" title="associated function bevy_ecs_ldtk::app::LdtkIntCell::bundle_int_cell">LdtkIntCell::bundle_int_cell</a>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[derive(Bundle, LdtkIntCell, Default)]
+</span><span class="kw">pub struct </span>Wall {
+    rigid_body: RigidBody,
+}
+
+<span class="attr">#[derive(Bundle, LdtkIntCell, Default)]
+</span><span class="kw">pub struct </span>DestructibleWall {
+    <span class="attr">#[ldtk_int_cell]
+    </span>wall: Wall,
+    damage: Damage,
+}</code></pre></div>
+<h4 id="from_int_grid_cell"><a class="doc-anchor" href="#from_int_grid_cell">§</a><code>#[from_int_grid_cell]</code></h4>
+<p>Indicates that a component or bundle that implements <a href="https://doc.rust-lang.org/1.85.0/core/convert/trait.From.html" title="trait core::convert::From"><code>From&lt;IntGridCell&gt;</code></a> should be created
+using that conversion.
+This allows for more modular and custom component construction, and for different structs that
+contain the same component to have different constructions of that component, without having to
+<code>impl LdtkIntCell</code> for both of them.
+It also allows you to have an <a href="../struct.IntGridCell.html" title="struct bevy_ecs_ldtk::IntGridCell">IntGridCell</a> field, since all types <code>T</code> implement <code>From&lt;T&gt;</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">impl </span>From&lt;IntGridCell&gt; <span class="kw">for </span>Fluid {
+    <span class="kw">fn </span>from(int_grid_cell: IntGridCell) -&gt; Fluid {
+        <span class="kw">let </span>viscosity = <span class="kw">match </span>int_grid_cell.value {
+            <span class="number">1 </span>=&gt; <span class="number">5</span>,
+            <span class="number">2 </span>=&gt; <span class="number">20</span>,
+            <span class="kw">_ </span>=&gt; <span class="number">0</span>,
+        };
+
+        Fluid {
+            viscosity,
+        }
+    }
+}
+
+<span class="attr">#[derive(Bundle, LdtkIntCell, Default)]
+</span><span class="kw">pub struct </span>Lava {
+    <span class="attr">#[from_int_grid_cell]
+    </span>fluid: Fluid,
+    <span class="attr">#[from_int_grid_cell]
+    </span>int_grid_cell: IntGridCell,
+    damage: Damage,
+}</code></pre></div>
+<h4 id="with"><a class="doc-anchor" href="#with">§</a><code>#[with(...)]</code></h4>
+<p>Indicates that this component or bundle should be initialized with the given
+function.</p>
+<p>Note: The given function should have signature <code>fn (int_grid_cell: IntGridCell) -&gt; T</code>
+where <code>T</code> is the field type. The function should also be accessible in the scope.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>initial_fluid(<span class="kw">_</span>: IntGridCell) -&gt; Fluid {
+    Fluid {
+        viscosity: <span class="number">20
+    </span>}
+}
+
+<span class="attr">#[derive(Bundle, LdtkIntCell, Default)]
+</span><span class="kw">pub struct </span>Lava {
+    <span class="attr">#[with(initial_fluid)]
+    </span>fluid: Fluid,
+    damage: Damage,
+}</code></pre></div>
+<h4 id="default"><a class="doc-anchor" href="#default">§</a><code>#[default]</code></h4>
+<p>Indicates that this component or bundle should be initialized using
+<a href="https://doc.rust-lang.org/1.85.0/core/default/trait.Default.html#tymethod.default" title="associated function core::default::Default::default"><code>Default::default</code></a>.
+This can be useful when implementing <code>Default</code> for the whole <code>IntGridCell</code> is
+not easily possible, because some of the fields do not implement <code>Default</code>.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>other_crate::ForeignComponentWithNoDefault;
+
+<span class="attr">#[derive(Bundle, LdtkIntCell)]
+</span><span class="kw">pub struct </span>MyBundle {
+    <span class="attr">#[default]
+    </span>damage: Damage,
+    <span class="attr">#[with(custom_constructor)]
+    </span>foreign: ForeignComponentWithNoDefault,
+}</code></pre></div>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.bundle_int_cell" class="method"><a class="src rightside" href="../../src/bevy_ecs_ldtk/app/ldtk_int_cell.rs.html#199">Source</a><h4 class="code-header">fn <a href="#tymethod.bundle_int_cell" class="fn">bundle_int_cell</a>(
+    int_grid_cell: <a class="struct" href="../struct.IntGridCell.html" title="struct bevy_ecs_ldtk::IntGridCell">IntGridCell</a>,
+    layer_instance: &amp;<a class="struct" href="../ldtk/struct.LayerInstance.html" title="struct bevy_ecs_ldtk::ldtk::LayerInstance">LayerInstance</a>,
+) -&gt; Self</h4></section></summary><div class="docblock"><p>The constructor used by the plugin when spawning additional components on IntGrid tiles.
+If you need access to more of the <a href="../../bevy_ecs/world/struct.World.html" title="struct bevy_ecs::world::World">World</a>, you can create a system that queries for
+<code>Added&lt;IntGridCell&gt;</code>, and flesh out the entity from there, instead of implementing this
+trait.
+This is because the plugin spawns a tile with an <a href="../struct.IntGridCell.html" title="struct bevy_ecs_ldtk::IntGridCell">IntGridCell</a> component if the tile’s
+value is not registered to the app.</p>
+<p>Note: whether or not the entity is registered to the app, the plugin will insert a
+<a href="../../bevy_render/spatial_bundle/struct.SpatialBundle.html" title="struct bevy_render::spatial_bundle::SpatialBundle">SpatialBundle</a> to the entity <strong>after</strong> this bundle is
+inserted.
+So, any custom implementations of these components within this trait will be overwritten.
+Furthermore, a <a href="../../bevy_ecs_tilemap/tiles/struct.TileBundle.html" title="struct bevy_ecs_tilemap::tiles::TileBundle">bevy_ecs_tilemap::tiles::TileBundle</a> will be inserted <strong>before</strong> this bundle, so
+be careful not to overwrite the components provided by that bundle.</p>
+</div></details></div><h2 id="dyn-compatibility" class="section-header">Dyn Compatibility<a href="#dyn-compatibility" class="anchor">§</a></h2><div class="dyn-compatibility-info"><p>This trait is <b>not</b> <a href="https://doc.rust-lang.org/1.85.0/reference/items/traits.html#object-safety">dyn compatible</a>.</p><p><i>In older versions of Rust, dyn compatibility was called "object safety", so this trait is not object safe.</i></p></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"></div><script src="../../trait.impl/bevy_ecs_ldtk/app/ldtk_int_cell/trait.LdtkIntCell.js" async></script></section></div></main></body></html>

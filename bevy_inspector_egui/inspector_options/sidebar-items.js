@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"derive":["InspectorOptions"],"enum":["Target"],"mod":["std_options"],"struct":["InspectorOptions","ReflectInspectorOptions"],"trait":["InspectorOptionsType"]};

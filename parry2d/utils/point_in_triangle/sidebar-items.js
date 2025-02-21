@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Orientation"],"fn":["corner_direction","is_point_in_triangle"]};

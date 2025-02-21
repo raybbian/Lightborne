@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["local_point_cloud_aabb","local_support_map_aabb","point_cloud_aabb","point_cloud_bounding_sphere"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Node2d"],"mod":["input"],"struct":["Core2d"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"derive":["InspectorOptions"],"mod":["bevy_inspector","dropdown","inspector_egui_impls","inspector_options","prelude","quick","reflect_inspector","restricted_world_view"],"struct":["DefaultInspectorConfigPlugin","InspectorOptions"]};

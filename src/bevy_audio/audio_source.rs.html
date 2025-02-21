@@ -1,0 +1,239 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/bevy_audio-0.15.2/src/audio_source.rs`."><title>audio_source.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="bevy_audio" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../../static.files/storage-59e33391.js"></script><script defer src="../../static.files/src-script-56102188.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">bevy_audio/</div>audio_source.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
+<a href="#2" id="2">2</a>
+<a href="#3" id="3">3</a>
+<a href="#4" id="4">4</a>
+<a href="#5" id="5">5</a>
+<a href="#6" id="6">6</a>
+<a href="#7" id="7">7</a>
+<a href="#8" id="8">8</a>
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+<a href="#42" id="42">42</a>
+<a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
+<a href="#47" id="47">47</a>
+<a href="#48" id="48">48</a>
+<a href="#49" id="49">49</a>
+<a href="#50" id="50">50</a>
+<a href="#51" id="51">51</a>
+<a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a></pre></div><pre class="rust"><code><span class="kw">use </span>alloc::sync::Arc;
+<span class="kw">use </span>bevy_asset::{io::Reader, Asset, AssetLoader, LoadContext};
+<span class="kw">use </span>bevy_reflect::TypePath;
+<span class="kw">use </span>std::io::Cursor;
+
+<span class="doccomment">/// A source of audio data
+</span><span class="attr">#[derive(Asset, Debug, Clone, TypePath)]
+</span><span class="kw">pub struct </span>AudioSource {
+    <span class="doccomment">/// Raw data of the audio source.
+    ///
+    /// The data must be one of the file formats supported by Bevy (`wav`, `ogg`, `flac`, or `mp3`).
+    /// However, support for these file formats is not part of Bevy's [`default feature set`](https://docs.rs/bevy/latest/bevy/index.html#default-features).
+    /// In order to be able to use these file formats, you will have to enable the appropriate [`optional features`](https://docs.rs/bevy/latest/bevy/index.html#optional-features).
+    ///
+    /// It is decoded using [`rodio::decoder::Decoder`](https://docs.rs/rodio/latest/rodio/decoder/struct.Decoder.html).
+    /// The decoder has conditionally compiled methods
+    /// depending on the features enabled.
+    /// If the format used is not enabled,
+    /// then this will panic with an `UnrecognizedFormat` error.
+    </span><span class="kw">pub </span>bytes: Arc&lt;[u8]&gt;,
+}
+
+<span class="kw">impl </span>AsRef&lt;[u8]&gt; <span class="kw">for </span>AudioSource {
+    <span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[u8] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.bytes
+    }
+}
+
+<span class="doccomment">/// Loads files as [`AudioSource`] [`Assets`](bevy_asset::Assets)
+///
+/// This asset loader supports different audio formats based on the enable Bevy features.
+/// The feature `bevy/vorbis` enables loading from `.ogg` files and is enabled by default.
+/// Other file endings can be loaded from with additional features:
+/// `.mp3` with `bevy/mp3`
+/// `.flac` with `bevy/flac`
+/// `.wav` with `bevy/wav`
+</span><span class="attr">#[derive(Default)]
+</span><span class="kw">pub struct </span>AudioLoader;
+
+<span class="kw">impl </span>AssetLoader <span class="kw">for </span>AudioLoader {
+    <span class="kw">type </span>Asset = AudioSource;
+    <span class="kw">type </span>Settings = ();
+    <span class="kw">type </span>Error = std::io::Error;
+
+    <span class="kw">async fn </span>load(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        reader: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>Reader,
+        _settings: <span class="kw-2">&amp;</span><span class="self">Self</span>::Settings,
+        _load_context: <span class="kw-2">&amp;mut </span>LoadContext&lt;<span class="lifetime">'_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;AudioSource, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>bytes = Vec::new();
+        reader.read_to_end(<span class="kw-2">&amp;mut </span>bytes).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(AudioSource {
+            bytes: bytes.into(),
+        })
+    }
+
+    <span class="kw">fn </span>extensions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str] {
+        <span class="kw-2">&amp;</span>[
+            <span class="attr">#[cfg(feature = <span class="string">"mp3"</span>)]
+            </span><span class="string">"mp3"</span>,
+            <span class="attr">#[cfg(feature = <span class="string">"flac"</span>)]
+            </span><span class="string">"flac"</span>,
+            <span class="attr">#[cfg(feature = <span class="string">"wav"</span>)]
+            </span><span class="string">"wav"</span>,
+            <span class="attr">#[cfg(feature = <span class="string">"vorbis"</span>)]
+            </span><span class="string">"oga"</span>,
+            <span class="attr">#[cfg(feature = <span class="string">"vorbis"</span>)]
+            </span><span class="string">"ogg"</span>,
+            <span class="attr">#[cfg(feature = <span class="string">"vorbis"</span>)]
+            </span><span class="string">"spx"</span>,
+        ]
+    }
+}
+
+<span class="doccomment">/// A type implementing this trait can be converted to a [`rodio::Source`] type.
+///
+/// It must be [`Send`] and [`Sync`] in order to be registered.
+/// Types that implement this trait usually contain raw sound data that can be converted into an iterator of samples.
+/// This trait is implemented for [`AudioSource`].
+/// Check the example [`decodable`](https://github.com/bevyengine/bevy/blob/latest/examples/audio/decodable.rs) for how to implement this trait on a custom type.
+</span><span class="kw">pub trait </span>Decodable: Send + Sync + <span class="lifetime">'static </span>{
+    <span class="doccomment">/// The type of the audio samples.
+    /// Usually a [`u16`], [`i16`] or [`f32`], as those implement [`rodio::Sample`].
+    /// Other types can implement the [`rodio::Sample`] trait as well.
+    </span><span class="kw">type </span>DecoderItem: rodio::Sample + Send + Sync;
+
+    <span class="doccomment">/// The type of the iterator of the audio samples,
+    /// which iterates over samples of type [`Self::DecoderItem`].
+    /// Must be a [`rodio::Source`] so that it can provide information on the audio it is iterating over.
+    </span><span class="kw">type </span>Decoder: rodio::Source + Send + Iterator&lt;Item = <span class="self">Self</span>::DecoderItem&gt;;
+
+    <span class="doccomment">/// Build and return a [`Self::Decoder`] of the implementing type
+    </span><span class="kw">fn </span>decoder(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::Decoder;
+}
+
+<span class="kw">impl </span>Decodable <span class="kw">for </span>AudioSource {
+    <span class="kw">type </span>DecoderItem = &lt;rodio::Decoder&lt;Cursor&lt;AudioSource&gt;&gt; <span class="kw">as </span>Iterator&gt;::Item;
+    <span class="kw">type </span>Decoder = rodio::Decoder&lt;Cursor&lt;AudioSource&gt;&gt;;
+
+    <span class="kw">fn </span>decoder(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::Decoder {
+        rodio::Decoder::new(Cursor::new(<span class="self">self</span>.clone())).unwrap()
+    }
+}
+
+<span class="doccomment">/// A trait that allows adding a custom audio source to the object.
+/// This is implemented for [`App`][bevy_app::App] to allow registering custom [`Decodable`] types.
+</span><span class="kw">pub trait </span>AddAudioSource {
+    <span class="doccomment">/// Registers an audio source.
+    /// The type must implement [`Decodable`],
+    /// so that it can be converted to a [`rodio::Source`] type,
+    /// and [`Asset`], so that it can be registered as an asset.
+    /// To use this method on [`App`][bevy_app::App],
+    /// the [audio][super::AudioPlugin] and [asset][bevy_asset::AssetPlugin] plugins must be added first.
+    </span><span class="kw">fn </span>add_audio_source&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self
+    </span><span class="kw">where
+        </span>T: Decodable + Asset,
+        f32: rodio::cpal::FromSample&lt;T::DecoderItem&gt;;
+}
+</code></pre></div></section></main></body></html>

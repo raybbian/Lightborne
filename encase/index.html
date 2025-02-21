@@ -1,0 +1,146 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Provides a mechanism to lay out data into GPU buffers ensuring WGSL’s memory layout requirements are met."><title>encase - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="encase" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../static.files/storage-59e33391.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../encase/index.html"><img src="https://raw.githubusercontent.com/teoxoy/encase/3d6d2e4d7670863e97463a15ceeafac6d13ee73e/logo.svg" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../encase/index.html"><img src="https://raw.githubusercontent.com/teoxoy/encase/3d6d2e4d7670863e97463a15ceeafac6d13ee73e/logo.svg" alt="logo"></a><h2><a href="../encase/index.html">encase</a><span class="version">0.10.0</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#features" title="Features">Features</a></li><li><a href="#motivation" title="Motivation">Motivation</a></li><li><a href="#design" title="Design">Design</a></li><li><a href="#examples" title="Examples">Examples</a></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#macros" title="Macros">Macros</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#traits" title="Traits">Traits</a></li><li><a href="#derives" title="Derive Macros">Derive Macros</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>encase</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/encase/lib.rs.html#1-167">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p align="center"><img src="./logo.svg" width="320px" alt/></p>
+<p>Provides a mechanism to lay out data into GPU buffers ensuring WGSL’s memory layout requirements are met.</p>
+<h3 id="features"><a class="doc-anchor" href="#features">§</a>Features</h3>
+<ul>
+<li>supports all WGSL <a href="https://gpuweb.github.io/gpuweb/wgsl/#host-shareable-types">host-shareable types</a> + wrapper types (<code>&amp;T</code>, <code>&amp;mut T</code>, <code>Box&lt;T&gt;</code>, …)</li>
+<li>supports data types from a multitude of crates as <a href="https://docs.rs/crate/encase/latest/features">features</a></li>
+<li>covers a wide area of use cases (see <a href="#examples">examples</a>)</li>
+</ul>
+<h3 id="motivation"><a class="doc-anchor" href="#motivation">§</a>Motivation</h3>
+<p>Having to manually lay out data into GPU buffers can become very tedious and error prone. How do you make sure the data in the buffer is laid out correctly? Enforce it so that future changes don’t break this delicate balance?</p>
+<p><code>encase</code> gives you the ability to make sure at compile time that your types will be laid out correctly.</p>
+<h3 id="design"><a class="doc-anchor" href="#design">§</a>Design</h3>
+<p>The core trait is <a href="https://docs.rs/encase/latest/encase/trait.ShaderType.html"><code>ShaderType</code></a> which mainly contains metadata about the given type.</p>
+<p>The <a href="https://docs.rs/encase/latest/encase/internal/trait.WriteInto.html"><code>WriteInto</code></a>, <a href="https://docs.rs/encase/latest/encase/internal/trait.ReadFrom.html"><code>ReadFrom</code></a> and <a href="https://docs.rs/encase/latest/encase/internal/trait.CreateFrom.html"><code>CreateFrom</code></a> traits represent the ability of a type to be written into the buffer, read from the buffer and created from the buffer respectively.</p>
+<p>Most data types can implement the above traits via their respective macros:</p>
+<ul>
+<li><a href="https://docs.rs/encase/latest/encase/macro.impl_vector.html"><code>impl_vector!</code></a> for vectors</li>
+<li><a href="https://docs.rs/encase/latest/encase/macro.impl_matrix.html"><code>impl_matrix!</code></a> for matrices</li>
+<li><a href="https://docs.rs/encase/latest/encase/macro.impl_rts_array.html"><code>impl_rts_array!</code></a> for runtime-sized arrays</li>
+<li><a href="https://docs.rs/encase/latest/encase/macro.impl_wrapper.html"><code>impl_wrapper!</code></a> for wrappers</li>
+<li><a href="https://docs.rs/encase/latest/encase/derive.ShaderType.html"><code>ShaderType</code></a> for structs</li>
+</ul>
+<p>The <a href="https://docs.rs/encase/latest/encase/struct.UniformBuffer.html"><code>UniformBuffer</code></a>, <a href="https://docs.rs/encase/latest/encase/struct.StorageBuffer.html"><code>StorageBuffer</code></a>, <a href="https://docs.rs/encase/latest/encase/struct.DynamicUniformBuffer.html"><code>DynamicUniformBuffer</code></a> and <a href="https://docs.rs/encase/latest/encase/struct.DynamicStorageBuffer.html"><code>DynamicStorageBuffer</code></a> structs are wrappers around an underlying raw buffer (a type implementing <a href="https://docs.rs/encase/latest/encase/internal/trait.BufferRef.html"><code>BufferRef</code></a> and/or <a href="https://docs.rs/encase/latest/encase/internal/trait.BufferMut.html"><code>BufferMut</code></a> depending on required capability). They facilitate the read/write/create operations.</p>
+<h3 id="examples"><a class="doc-anchor" href="#examples">§</a>Examples</h3>
+<p>Write affine transform to uniform buffer</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>encase::{ShaderType, UniformBuffer};
+
+<span class="attr">#[derive(ShaderType)]
+</span><span class="kw">struct </span>AffineTransform2D {
+    matrix: glam::Mat2,
+    translate: glam::Vec2
+}
+
+<span class="kw">let </span>transform = AffineTransform2D {
+    matrix: glam::Mat2::IDENTITY,
+    translate: glam::Vec2::ZERO,
+};
+
+<span class="kw">let </span><span class="kw-2">mut </span>buffer = UniformBuffer::new(Vec::&lt;u8&gt;::new());
+buffer.write(<span class="kw-2">&amp;</span>transform).unwrap();
+<span class="kw">let </span>byte_buffer = buffer.into_inner();
+
+<span class="comment">// write byte_buffer to GPU
+
+</span><span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>byte_buffer, <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">0</span>, <span class="number">128</span>, <span class="number">63</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
+<span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">128</span>, <span class="number">63</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>]);</code></pre></div>
+<p>Create vector instance by reading from dynamic uniform buffer at specific offset</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>encase::DynamicUniformBuffer;
+
+<span class="comment">// read byte_buffer from GPU
+</span><span class="kw">let </span>byte_buffer = [<span class="number">1u8</span>; <span class="number">256 </span>+ <span class="number">8</span>];
+
+<span class="kw">let </span><span class="kw-2">mut </span>buffer = DynamicUniformBuffer::new(<span class="kw-2">&amp;</span>byte_buffer);
+buffer.set_offset(<span class="number">256</span>);
+<span class="kw">let </span>vector: mint::Vector2&lt;i32&gt; = buffer.create().unwrap();
+
+<span class="macro">assert_eq!</span>(vector, mint::Vector2 { x: <span class="number">16843009</span>, y: <span class="number">16843009 </span>});</code></pre></div>
+<p>Write and read back data from storage buffer</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>encase::{ShaderType, ArrayLength, StorageBuffer};
+
+<span class="attr">#[derive(ShaderType)]
+</span><span class="kw">struct </span>Positions {
+    length: ArrayLength,
+    <span class="attr">#[size(runtime)]
+    </span>positions: Vec&lt;mint::Point2&lt;f32&gt;&gt;
+}
+
+<span class="kw">let </span><span class="kw-2">mut </span>positions = Positions {
+    length: ArrayLength,
+    positions: Vec::from([
+        mint::Point2 { x: <span class="number">4.5</span>, y: <span class="number">3.4 </span>},
+        mint::Point2 { x: <span class="number">1.5</span>, y: <span class="number">7.4 </span>},
+        mint::Point2 { x: <span class="number">4.3</span>, y: <span class="number">1.9 </span>},
+    ])
+};
+
+<span class="kw">let </span><span class="kw-2">mut </span>byte_buffer: Vec&lt;u8&gt; = Vec::new();
+
+<span class="kw">let </span><span class="kw-2">mut </span>buffer = StorageBuffer::new(<span class="kw-2">&amp;mut </span>byte_buffer);
+buffer.write(<span class="kw-2">&amp;</span>positions).unwrap();
+
+<span class="comment">// write byte_buffer to GPU
+
+// change length on GPU side
+</span>byte_buffer[<span class="number">0</span>] = <span class="number">2</span>;
+
+<span class="comment">// read byte_buffer from GPU
+
+</span><span class="kw">let </span><span class="kw-2">mut </span>buffer = StorageBuffer::new(<span class="kw-2">&amp;mut </span>byte_buffer);
+buffer.read(<span class="kw-2">&amp;mut </span>positions).unwrap();
+
+<span class="macro">assert_eq!</span>(positions.positions.len(), <span class="number">2</span>);
+</code></pre></div>
+<p>Write different data types to dynamic storage buffer</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>encase::{ShaderType, DynamicStorageBuffer};
+
+<span class="kw">let </span><span class="kw-2">mut </span>byte_buffer: Vec&lt;u8&gt; = Vec::new();
+
+<span class="kw">let </span><span class="kw-2">mut </span>buffer = DynamicStorageBuffer::new_with_alignment(<span class="kw-2">&amp;mut </span>byte_buffer, <span class="number">64</span>);
+<span class="kw">let </span>offsets = [
+    buffer.write(<span class="kw-2">&amp;</span>[<span class="number">5.</span>; <span class="number">10</span>]).unwrap(),
+    buffer.write(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">3u32</span>; <span class="number">20</span>]).unwrap(),
+    buffer.write(<span class="kw-2">&amp;</span>glam::Vec3::ONE).unwrap(),
+];
+
+<span class="comment">// write byte_buffer to GPU
+
+</span><span class="macro">assert_eq!</span>(offsets, [<span class="number">0</span>, <span class="number">64</span>, <span class="number">192</span>]);
+</code></pre></div>
+<p>Supports writing to uninitialized memory as well.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::mem::MaybeUninit;
+<span class="kw">use </span>encase::{ShaderType, DynamicStorageBuffer};
+
+<span class="kw">let </span><span class="kw-2">mut </span>uninit_buffer: Vec&lt;MaybeUninit&lt;u8&gt;&gt; = Vec::new();
+
+<span class="kw">let </span><span class="kw-2">mut </span>buffer = DynamicStorageBuffer::new_with_alignment(<span class="kw-2">&amp;mut </span>uninit_buffer, <span class="number">64</span>);
+<span class="kw">let </span>offsets = [
+    buffer.write(<span class="kw-2">&amp;</span>[<span class="number">5.</span>; <span class="number">10</span>]).unwrap(),
+    buffer.write(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">3u32</span>; <span class="number">20</span>]).unwrap(),
+    buffer.write(<span class="kw-2">&amp;</span>glam::Vec3::ONE).unwrap(),
+];
+
+<span class="comment">// SAFETY: Vec&lt;u8&gt; and Vec&lt;MaybeUninit&lt;u8&gt;&gt; share the same layout.
+</span><span class="kw">let </span>byte_buffer: Vec&lt;u8&gt; = <span class="kw">unsafe </span>{ 
+    Vec::from_raw_parts(
+        uninit_buffer.as_mut_ptr().cast(), 
+        uninit_buffer.len(), 
+        uninit_buffer.capacity()
+    ) 
+};
+
+std::mem::forget(uninit_buffer);
+
+<span class="comment">// write byte_buffer to GPU
+
+</span><span class="macro">assert_eq!</span>(offsets, [<span class="number">0</span>, <span class="number">64</span>, <span class="number">192</span>]);
+</code></pre></div>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="internal/index.html" title="mod encase::internal">internal</a></div></li><li><div class="item-name"><a class="mod" href="matrix/index.html" title="mod encase::matrix">matrix</a></div><div class="desc docblock-short">Module containing items necessary to implement <code>ShaderType</code> for matrices</div></li><li><div class="item-name"><a class="mod" href="rts_array/index.html" title="mod encase::rts_array">rts_<wbr>array</a></div><div class="desc docblock-short">Module containing items necessary to implement <code>ShaderType</code> for runtime-sized arrays</div></li><li><div class="item-name"><a class="mod" href="vector/index.html" title="mod encase::vector">vector</a></div><div class="desc docblock-short">Module containing items necessary to implement <code>ShaderType</code> for vectors</div></li></ul><h2 id="macros" class="section-header">Macros<a href="#macros" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="macro" href="macro.impl_matrix.html" title="macro encase::impl_matrix">impl_<wbr>matrix</a></div><div class="desc docblock-short">Used to implement <code>ShaderType</code> for the given matrix type</div></li><li><div class="item-name"><a class="macro" href="macro.impl_rts_array.html" title="macro encase::impl_rts_array">impl_<wbr>rts_<wbr>array</a></div><div class="desc docblock-short">Used to implement <code>ShaderType</code> for the given runtime-sized array type</div></li><li><div class="item-name"><a class="macro" href="macro.impl_vector.html" title="macro encase::impl_vector">impl_<wbr>vector</a></div><div class="desc docblock-short">Used to implement <code>ShaderType</code> for the given vector type</div></li><li><div class="item-name"><a class="macro" href="macro.impl_wrapper.html" title="macro encase::impl_wrapper">impl_<wbr>wrapper</a></div><div class="desc docblock-short">Used to implement <code>ShaderType</code> for the given wrapper type</div></li></ul><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.ArrayLength.html" title="struct encase::ArrayLength">Array<wbr>Length</a></div><div class="desc docblock-short">Helper type meant to be used together with the <a href="derive.ShaderType.html" title="derive encase::ShaderType"><code>ShaderType</code></a> derive macro</div></li><li><div class="item-name"><a class="struct" href="struct.DynamicStorageBuffer.html" title="struct encase::DynamicStorageBuffer">Dynamic<wbr>Storage<wbr>Buffer</a></div><div class="desc docblock-short">Dynamic storage buffer wrapper facilitating RW operations</div></li><li><div class="item-name"><a class="struct" href="struct.DynamicUniformBuffer.html" title="struct encase::DynamicUniformBuffer">Dynamic<wbr>Uniform<wbr>Buffer</a></div><div class="desc docblock-short">Dynamic uniform buffer wrapper facilitating RW operations</div></li><li><div class="item-name"><a class="struct" href="struct.StorageBuffer.html" title="struct encase::StorageBuffer">Storage<wbr>Buffer</a></div><div class="desc docblock-short">Storage buffer wrapper facilitating RW operations</div></li><li><div class="item-name"><a class="struct" href="struct.UniformBuffer.html" title="struct encase::UniformBuffer">Uniform<wbr>Buffer</a></div><div class="desc docblock-short">Uniform buffer wrapper facilitating RW operations</div></li></ul><h2 id="traits" class="section-header">Traits<a href="#traits" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="trait" href="trait.CalculateSizeFor.html" title="trait encase::CalculateSizeFor">Calculate<wbr>Size<wbr>For</a></div><div class="desc docblock-short">Trait implemented for
+<a href="https://gpuweb.github.io/gpuweb/wgsl/#runtime-sized">WGSL runtime-sized arrays</a> and
+<a href="https://gpuweb.github.io/gpuweb/wgsl/#struct-types">WGSL structs containing runtime-sized arrays</a>
+(non fixed-footprint types)</div></li><li><div class="item-name"><a class="trait" href="trait.ShaderSize.html" title="trait encase::ShaderSize">Shader<wbr>Size</a></div><div class="desc docblock-short">Trait implemented for all <a href="https://gpuweb.github.io/gpuweb/wgsl/#fixed-footprint-types">WGSL fixed-footprint types</a></div></li><li><div class="item-name"><a class="trait" href="trait.ShaderType.html" title="trait encase::ShaderType">Shader<wbr>Type</a></div><div class="desc docblock-short">Base trait for all <a href="https://gpuweb.github.io/gpuweb/wgsl/#host-shareable-types">WGSL host-shareable types</a></div></li></ul><h2 id="derives" class="section-header">Derive Macros<a href="#derives" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="derive" href="derive.ShaderType.html" title="derive encase::ShaderType">Shader<wbr>Type</a></div><div class="desc docblock-short">Used to implement <code>ShaderType</code> for structs</div></li></ul></section></div></main></body></html>

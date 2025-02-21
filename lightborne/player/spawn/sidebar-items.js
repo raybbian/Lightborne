@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["add_player_sensors","init_player_bundle"],"struct":["PlayerHurtMarker"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["despawn_angle_indicator","handle_color_switch","preview_light_path","shoot_light","spawn_angle_indicator"],"struct":["AngleMarker","PlayerLightInventory"]};

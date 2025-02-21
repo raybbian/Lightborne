@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["ArrayTextureLoader","MaterialTilemapHandle","MaterialTilemapKey","MaterialTilemapPlugin","StandardTilemapMaterial","TilemapArrayTexture"],"trait":["MaterialTilemap"]};

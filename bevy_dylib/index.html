@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Forces dynamic linking of Bevy."><title>bevy_dylib - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-46132b98.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="bevy_dylib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.85.0 (4d91de4e4 2025-02-17)" data-channel="1.85.0" data-search-js="search-75f5ac3e.js" data-settings-js="settings-0f613d39.js" ><script src="../static.files/storage-59e33391.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="icon" href="https://bevyengine.org/assets/icon.png"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../bevy_dylib/index.html"><img src="https://bevyengine.org/assets/icon.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../bevy_dylib/index.html"><img src="https://bevyengine.org/assets/icon.png" alt="logo"></a><h2><a href="../bevy_dylib/index.html">bevy_<wbr>dylib</a><span class="version">0.15.2</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#warning" title="Warning">Warning</a></li><li><a href="#enabling-dynamic-linking" title="Enabling dynamic linking">Enabling dynamic linking</a><ul><li><a href="#the-recommended-way" title="The recommended way">The recommended way</a></li><li><a href="#the-unrecommended-way" title="The unrecommended way">The unrecommended way</a></li><li><a href="#the-manual-way" title="The manual way">The manual way</a></li></ul></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>bevy_dylib</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/bevy_dylib/lib.rs.html#1-59">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Forces dynamic linking of Bevy.</p>
+<p>Dynamic linking causes Bevy to be built and linked as a dynamic library. This will make
+incremental builds compile much faster.</p>
+<h2 id="warning"><a class="doc-anchor" href="#warning">§</a>Warning</h2>
+<p>Do not enable this feature for release builds because this would require you to ship
+<code>libstd.so</code> and <code>libbevy_dylib.so</code> with your game.</p>
+<h2 id="enabling-dynamic-linking"><a class="doc-anchor" href="#enabling-dynamic-linking">§</a>Enabling dynamic linking</h2><h3 id="the-recommended-way"><a class="doc-anchor" href="#the-recommended-way">§</a>The recommended way</h3>
+<p>The easiest way to enable dynamic linking is to use the <code>--features bevy/dynamic_linking</code> flag when
+using the <code>cargo run</code> command:</p>
+<p><code>cargo run --features bevy/dynamic_linking</code></p>
+<h3 id="the-unrecommended-way"><a class="doc-anchor" href="#the-unrecommended-way">§</a>The unrecommended way</h3>
+<p>It is also possible to enable the <code>dynamic_linking</code> feature inside of the <code>Cargo.toml</code> file. This is
+unrecommended because it requires you to remove this feature every time you want to create a
+release build to avoid having to ship additional files with your game.</p>
+<p>To enable dynamic linking inside of the <code>Cargo.toml</code> file add the <code>dynamic_linking</code> feature to the
+bevy dependency:</p>
+<p><code>features = ["dynamic_linking"]</code></p>
+<h3 id="the-manual-way"><a class="doc-anchor" href="#the-manual-way">§</a>The manual way</h3>
+<p>Manually enabling dynamic linking is achieved by adding <code>bevy_dylib</code> as a dependency and
+adding the following code to the <code>main.rs</code> file:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[allow(unused_imports)]
+</span><span class="kw">use </span>bevy_dylib;</code></pre></div>
+<p>It is recommended to disable the <code>bevy_dylib</code> dependency in release mode by adding the
+following code to the <code>use</code> statement to avoid having to ship additional files with your game:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[allow(unused_imports)]
+#[cfg(debug_assertions)] </span><span class="comment">// new
+</span><span class="kw">use </span>bevy_dylib;</code></pre></div>
+</div></details></section></div></main></body></html>

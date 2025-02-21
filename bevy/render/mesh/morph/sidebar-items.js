@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAX_MORPH_WEIGHTS"],"enum":["MorphBuildError"],"struct":["MeshMorphWeights","MorphAttributes","MorphTargetImage","MorphWeights"]};
