@@ -6,8 +6,8 @@ use crate::{
     shared::{GameState, ResetLevel},
 };
 use crystal::CrystalPlugin;
-use platform::{MovingPlatformBundle, PlatformPlugin};
 use entity::SpikeBundle;
+use platform::PlatformPlugin;
 use misc::{init_start_marker, ButtonBundle, StartFlagBundle};
 use setup::LevelSetupPlugin;
 use walls::{spawn_wall_collision, WallBundle};
@@ -32,7 +32,6 @@ impl Plugin for LevelManagementPlugin {
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
             .register_ldtk_entity::<ButtonBundle>("Button")
             .register_ldtk_entity::<StartFlagBundle>("Start")
-            .register_ldtk_entity::<MovingPlatformBundle>("MovingPlatform")
             .register_ldtk_int_cell_for_layer::<WallBundle>("Terrain", 1)
             .register_ldtk_int_cell_for_layer::<SpikeBundle>("Terrain", 2)
             .add_systems(

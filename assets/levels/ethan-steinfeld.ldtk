@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 734,
+	"nextUid": 735,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -6660,13 +6660,54 @@
 							"defUid": 730,
 							"px": [144,152],
 							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [ { "cx": 22, "cy": 19 }, { "cx": 22, "cy": 12 } ], "__tile": null, "defUid": 731, "realEditorValues": [ {
-									"id": "V_String",
-									"params": ["22,19"]
-								}, {
-									"id": "V_String",
-									"params": ["22,12"]
-								} ] },
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [
+									{ "cx": 22, "cy": 19 },
+									{ "cx": 22, "cy": 12 },
+									{ "cx": 25, "cy": 12 },
+									{ "cx": 25, "cy": 9 },
+									{ "cx": 22, "cy": 9 },
+									{ "cx": 18, "cy": 11 },
+									{ "cx": 16, "cy": 8 },
+									{ "cx": 13, "cy": 10 },
+									{ "cx": 9, "cy": 10 }
+								], "__tile": null, "defUid": 731, "realEditorValues": [
+									{
+										"id": "V_String",
+										"params": ["22,19"]
+									},
+									{
+										"id": "V_String",
+										"params": ["22,12"]
+									},
+									{
+										"id": "V_String",
+										"params": ["25,12"]
+									},
+									{
+										"id": "V_String",
+										"params": ["25,9"]
+									},
+									{
+										"id": "V_String",
+										"params": ["22,9"]
+									},
+									{
+										"id": "V_String",
+										"params": ["18,11"]
+									},
+									{
+										"id": "V_String",
+										"params": ["16,8"]
+									},
+									{
+										"id": "V_String",
+										"params": ["13,10"]
+									},
+									{
+										"id": "V_String",
+										"params": ["9,10"]
+									}
+								] },
 								{ "__identifier": "default_state", "__type": "Bool", "__value": true, "__tile": null, "defUid": 732, "realEditorValues": [{
 									"id": "V_Bool",
 									"params": [ true ]
@@ -6675,106 +6716,6 @@
 							],
 							"__worldX": 144,
 							"__worldY": 152
-						},
-						{
-							"__identifier": "MovingPlatform",
-							"__grid": [14,12],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
-							"__smartColor": "#BE4A2F",
-							"iid": "3a4ddea0-e920-11ef-a942-4b1a1a8d6cc0",
-							"width": 8,
-							"height": 8,
-							"defUid": 730,
-							"px": [112,96],
-							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
-							],
-							"__worldX": 112,
-							"__worldY": 96
-						},
-						{
-							"__identifier": "MovingPlatform",
-							"__grid": [17,11],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
-							"__smartColor": "#BE4A2F",
-							"iid": "3ad58530-e920-11ef-a942-f3fe4f775458",
-							"width": 8,
-							"height": 8,
-							"defUid": 730,
-							"px": [136,88],
-							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
-							],
-							"__worldX": 136,
-							"__worldY": 88
-						},
-						{
-							"__identifier": "MovingPlatform",
-							"__grid": [12,10],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
-							"__smartColor": "#BE4A2F",
-							"iid": "3b57d490-e920-11ef-a942-8fb546eb096d",
-							"width": 8,
-							"height": 8,
-							"defUid": 730,
-							"px": [96,80],
-							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
-							],
-							"__worldX": 96,
-							"__worldY": 80
-						},
-						{
-							"__identifier": "MovingPlatform",
-							"__grid": [21,8],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
-							"__smartColor": "#BE4A2F",
-							"iid": "3b944150-e920-11ef-a942-1949a1fcc501",
-							"width": 8,
-							"height": 8,
-							"defUid": 730,
-							"px": [168,64],
-							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
-							],
-							"__worldX": 168,
-							"__worldY": 64
-						},
-						{
-							"__identifier": "MovingPlatform",
-							"__grid": [27,11],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
-							"__smartColor": "#BE4A2F",
-							"iid": "3bde69b0-e920-11ef-a942-e375bfcf96b4",
-							"width": 8,
-							"height": 8,
-							"defUid": 730,
-							"px": [216,88],
-							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [], "__tile": null, "defUid": 731, "realEditorValues": [] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 732, "realEditorValues": [] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [] }
-							],
-							"__worldX": 216,
-							"__worldY": 88
 						}
 					]
 				},
