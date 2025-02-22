@@ -61,30 +61,7 @@ pub struct HurtMarker;
 
 /// Component for spikes
 #[derive(Default, Component)]
-pub struct Spike {
-    // name: String,
-    num_deaths: u32,
-}
-
-/// method to increase num_deaths of spike
-impl Spike {
-    pub fn add_death(&mut self) {
-        self.num_deaths += 1;
-    }
-}
-
-/// IntGrid implementation of Spike
-impl From<IntGridCell> for Spike {
-    fn from(cell_instance: IntGridCell) -> Self {
-        match cell_instance.value {
-            2 => Spike {
-                // name: "baseSpike".to_string(),
-                num_deaths: 0,
-            },
-            _ => unreachable!(),
-        }
-    }
-}
+pub struct Spike;
 
 /// Bundle for spikes
 #[derive(Default, Bundle, LdtkIntCell)]

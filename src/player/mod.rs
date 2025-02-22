@@ -19,7 +19,7 @@ use crate::{
     shared::{GameState, ResetLevel},
 };
 
-use kill::{kill_player_on_spike, reset_player_on_level_switch, reset_player_position};
+use kill::{kill_player_on_hurt_intersection, reset_player_on_level_switch, reset_player_position};
 use light::{
     despawn_angle_indicator, handle_color_switch, preview_light_path, shoot_light,
     spawn_angle_indicator, PlayerLightInventory,
@@ -90,7 +90,7 @@ impl Plugin for PlayerManagementPlugin {
         )
         .add_systems(
             Update,
-            kill_player_on_spike.in_set(LevelSystems::Simulation),
+            kill_player_on_hurt_intersection.in_set(LevelSystems::Simulation),
         )
         .add_systems(Update, set_semisolid.in_set(LevelSystems::Simulation))
         .add_systems(

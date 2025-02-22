@@ -11,7 +11,7 @@ use crate::{
     shared::{GroupLabel, ResetLevel},
 };
 
-use super::{CurrentLevel, LevelSystems};
+use super::{entity::HurtMarker, CurrentLevel, LevelSystems};
 
 /// [`Plugin`] for managing all things related to [`Crystal`]s. This plugin responds to the
 /// addition and removal of [`Activated`] [`Component`]s and updates the sprite and collider of
@@ -205,6 +205,7 @@ pub struct CrystalBundle {
     #[from_int_grid_cell]
     cell: IntGridCell,
     collider_based_occluder: ColliderBasedOccluder,
+    hurt_marker: HurtMarker,
 }
 
 impl Default for CrystalBundle {
@@ -213,6 +214,7 @@ impl Default for CrystalBundle {
             collider_based_occluder: ColliderBasedOccluder { indent: 2.0 },
             crystal: Crystal::default(),
             cell: IntGridCell::default(),
+            hurt_marker: HurtMarker,
         }
     }
 }
