@@ -44,7 +44,7 @@ pub struct FrameMaskUniforms {
     pub frame_count_x: i32,
     pub frame_count_y: i32,
     pub frame_index: i32,
-    pub _webgl_padding: f32,
+    pub _wasm_padding: f32,
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
@@ -69,8 +69,8 @@ pub struct BlurMaterial {
     #[texture(0)]
     #[sampler(1)]
     pub image: Handle<Image>,
-    // WASM Build requires that this struct be 16-byte aligned
-    pub _webgl_padding: Vec2,
+    // WebGL2 requires this struct be 16-byte aligned
+    pub _wasm_padding: Vec2,
 }
 
 impl Material2d for BlurMaterial {
@@ -101,7 +101,7 @@ impl Material2d for BackgroundMaterial {
     }
 }
 
-// WASM build requires all of these structs be 16-byte aligned
+// WebGL2 requires thes structs be 16-byte aligned
 #[cfg(test)]
 mod tests {
     use super::*;

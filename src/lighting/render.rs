@@ -90,7 +90,7 @@ impl FromWorld for LightingRenderData {
                         frame_count_x: 4,
                         frame_count_y: 4,
                         frame_index: i,
-                        _webgl_padding: 0.0,
+                        _wasm_padding: 0.0,
                     },
                     color: Vec4::new(1. - (i as f32 / 16.0), 0.0, i as f32 / 16.0, 1.0),
                 })
@@ -100,7 +100,7 @@ impl FromWorld for LightingRenderData {
         let mut materials = world.resource_mut::<Assets<BlurMaterial>>();
         let blur_material = materials.add(BlurMaterial {
             image: combined_frames_image.clone(),
-            _webgl_padding: Vec2::ZERO,
+            _wasm_padding: Vec2::ZERO,
         });
 
         let background_image: Handle<Image> = world

@@ -47,8 +47,8 @@ pub struct LightMaterial {
     #[uniform(0)]
     pub color: LinearRgba,
     pub alpha_mode: AlphaMode2d,
-    // WASM build requires this struct be 16-byte aligned
-    pub _webgl_padding: Vec2,
+    // WebGL2 requires this struct be 16-byte aligned
+    pub _wasm_padding: Vec2,
 }
 
 impl Material2d for LightMaterial {
@@ -61,7 +61,7 @@ impl Material2d for LightMaterial {
     }
 }
 
-// WASM build requires all of these structs be 16-byte aligned
+// WebGL2 requires these structs be 16-byte aligned
 #[cfg(test)]
 mod tests {
     use super::*;
