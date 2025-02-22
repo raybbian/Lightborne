@@ -97,6 +97,7 @@ impl FromWorld for LightingRenderData {
         let mut materials = world.resource_mut::<Assets<BlurMaterial>>();
         let blur_material = materials.add(BlurMaterial {
             image: combined_frames_image.clone(),
+            webgl_padding: Vec2::ZERO,
         });
 
         let background_image: Handle<Image> = world

@@ -47,6 +47,8 @@ pub struct LightMaterial {
     #[uniform(0)]
     pub color: LinearRgba,
     pub alpha_mode: AlphaMode2d,
+    // WASM build requires this struct be 16-byte aligned
+    pub webgl_padding: Vec2,
 }
 
 impl Material2d for LightMaterial {
@@ -56,5 +58,17 @@ impl Material2d for LightMaterial {
 
     fn alpha_mode(&self) -> AlphaMode2d {
         self.alpha_mode
+    }
+}
+
+// WASM build requires all of these structs be 16-byte aligned
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::mem;
+
+    #[test]
+    fn light_material_alignment() {
+        assert_eq!(mem::size_of::<LightMaterial>() % 16, 0);
     }
 }

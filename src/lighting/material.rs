@@ -65,6 +65,8 @@ pub struct BlurMaterial {
     #[texture(0)]
     #[sampler(1)]
     pub image: Handle<Image>,
+    // WASM Build requires that this struct be 16-byte aligned
+    pub webgl_padding: Vec2,
 }
 
 impl Material2d for BlurMaterial {
@@ -92,5 +94,37 @@ impl Material2d for BackgroundMaterial {
     }
     fn alpha_mode(&self) -> AlphaMode2d {
         AlphaMode2d::Blend
+    }
+}
+
+// WASM build requires all of these structs be 16-byte aligned
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::mem;
+
+    #[test]
+    fn gradient_light_material_alignment() {
+        assert_eq!(mem::size_of::<GradientLightMaterial>() % 16, 0);
+    }
+
+    #[test]
+    fn combine_frames_material_alignment() {
+        assert_eq!(mem::size_of::<CombineFramesMaterial>() % 16, 0);
+    }
+
+    #[test]
+    fn frame_mask_material_alignment() {
+        assert_eq!(mem::size_of::<FrameMaskMaterial>() % 16, 0);
+    }
+
+    #[test]
+    fn blur_material_alignment() {
+        assert_eq!(mem::size_of::<BlurMaterial>() % 16, 0);
+    }
+
+    #[test]
+    fn background_material_alignment() {
+        assert_eq!(mem::size_of::<BackgroundMaterial>() % 16, 0);
     }
 }
