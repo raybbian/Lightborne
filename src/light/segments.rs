@@ -5,7 +5,7 @@ use enum_map::EnumMap;
 use super::{
     render::{LightMaterial, LightRenderData},
     sensor::{HitByLightEvent, LightSensor},
-    LightColor, LightRaySource, LIGHT_SPEED,
+    LightBeamSource, LightColor, LIGHT_SPEED,
 };
 use crate::{lighting::light::LineLighting, shared::GroupLabel};
 
@@ -28,19 +28,19 @@ pub struct LightSegmentBundle {
 /// despawned every frame. See [`simulate_light_sources`] for details.
 #[derive(Resource)]
 pub struct LightSegmentCache {
-    table: EnumMap<LightColor, Vec<Entity>>,
+    segments: EnumMap<LightColor, Vec<Entity>>,
 }
 
 impl FromWorld for LightSegmentCache {
     fn from_world(world: &mut World) -> Self {
         let mut cache = LightSegmentCache {
-            table: EnumMap::default(),
+            segments: EnumMap::default(),
         };
         let render_data = world.resource::<LightRenderData>();
 
         let mut segment_bundles: EnumMap<LightColor, LightSegmentBundle> = EnumMap::default();
 
-        for (color, _) in cache.table.iter_mut() {
+        for (color, _) in cache.segments.iter_mut() {
             segment_bundles[color] = LightSegmentBundle {
                 marker: LightSegmentMarker,
                 mesh: render_data.mesh.clone(),
@@ -54,7 +54,7 @@ impl FromWorld for LightSegmentCache {
             }
         }
 
-        for (color, segments) in cache.table.iter_mut() {
+        for (color, segments) in cache.segments.iter_mut() {
             while segments.len() < color.num_bounces() + 1 {
                 let mut cmds = world.spawn(());
                 cmds.insert(segment_bundles[color].clone());
@@ -96,20 +96,115 @@ impl FromWorld for LightBounceSfx {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct LightBeamIntersection {
+    pub entity: Entity,
+    pub point: Vec2,
+    pub time: f32,
+}
+
+/// Stores information about the trajectory of a LightBeam
+#[derive(Debug)]
+pub struct LightBeamPlayback {
+    pub intersections: Vec<LightBeamIntersection>,
+    pub end_point: Vec2,
+}
+
+impl LightBeamPlayback {
+    pub fn iter_points<'a>(
+        &'a self,
+        source: &'a LightBeamSource,
+    ) -> impl Iterator<Item = Vec2> + 'a {
+        std::iter::once(source.start_pos)
+            .chain(
+                self.intersections
+                    .iter()
+                    .map(|intersection| intersection.point),
+            )
+            .chain(std::iter::once(self.end_point))
+    }
+}
+
+#[derive(Default, Debug, Component)]
+pub struct PrevLightBeamPlayback {
+    pub intersections: Vec<Option<LightBeamIntersection>>,
+}
+
+impl PrevLightBeamPlayback {
+    pub fn from_color(color: LightColor) -> Self {
+        PrevLightBeamPlayback {
+            intersections: vec![None; color.num_bounces() + 1],
+        }
+    }
+}
+
+pub fn play_light_beam(
+    rapier_context: &mut RapierContext,
+    source: &LightBeamSource,
+) -> LightBeamPlayback {
+    let mut ray_pos = source.start_pos;
+    let mut ray_dir = source.start_dir;
+    let collision_groups = match source.color {
+        LightColor::White => CollisionGroups::new(
+            GroupLabel::WHITE_RAY,
+            GroupLabel::TERRAIN | GroupLabel::LIGHT_SENSOR,
+        ),
+        LightColor::Blue => CollisionGroups::new(
+            GroupLabel::BLUE_RAY,
+            GroupLabel::TERRAIN | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
+        ),
+        _ => CollisionGroups::new(
+            GroupLabel::LIGHT_RAY,
+            GroupLabel::TERRAIN | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
+        ),
+    };
+
+    let mut ray_qry = QueryFilter::new().groups(collision_groups);
+    let mut remaining_time = source.time_traveled;
+
+    let mut playback = LightBeamPlayback {
+        intersections: vec![],
+        end_point: Vec2::ZERO,
+    };
+
+    for _ in 0..source.color.num_bounces() + 1 {
+        let Some((entity, intersection)) =
+            rapier_context.cast_ray_and_get_normal(ray_pos, ray_dir, remaining_time, true, ray_qry)
+        else {
+            let final_point = ray_pos + ray_dir * remaining_time;
+            playback.end_point = final_point;
+            break;
+        };
+
+        remaining_time -= intersection.time_of_impact;
+
+        playback.intersections.push(LightBeamIntersection {
+            entity,
+            point: intersection.point,
+            time: source.time_traveled - remaining_time,
+        });
+
+        playback.end_point = intersection.point;
+
+        ray_pos = intersection.point;
+        ray_dir = ray_dir.reflect(intersection.normal);
+        ray_qry = ray_qry.exclude_collider(entity);
+    }
+
+    playback
+}
+
 /// [`System`] that runs on [`Update`], calculating the [`Transform`] of light segments from the
-/// corresponding [`LightRaySource`]. Note that this calculation happens every frame, so instead of
+/// corresponding [`LightBeamSource`]. Note that this calculation happens every frame, so instead of
 /// rapidly spawning/despawning the entities, we spawn them and cache them in the
 /// [`LightSegmentCache`], then modify their [`Visibility`] and [`Transform`]s.
 ///
 /// If needed, optimization work can be done by recalculating only segments that are currently
 /// changing (segments already "stabilized" usually won't move).
-///
-/// Similar logic is duplicated in [`preview_light_path`](crate::player::light::preview_light_path),
-/// these two systems should be merged.
 #[allow(clippy::too_many_arguments)]
 pub fn simulate_light_sources(
     mut commands: Commands,
-    mut q_light_sources: Query<&mut LightRaySource>,
+    mut q_light_sources: Query<(&mut LightBeamSource, &mut PrevLightBeamPlayback)>,
     mut q_rapier: Query<&mut RapierContext>,
     mut ev_hit_by_light: EventWriter<HitByLightEvent>,
     q_light_sensor: Query<&LightSensor>,
@@ -120,71 +215,57 @@ pub fn simulate_light_sources(
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
         return;
     };
+    // Reborrow!!!
+    let rapier_context = rapier_context.into_inner();
 
-    for mut source in q_light_sources.iter_mut() {
-        let mut ray_pos = source.start_pos;
-        let mut ray_dir = source.start_dir;
-        let collision_groups = match source.color {
-            LightColor::White => CollisionGroups::new(
-                GroupLabel::WHITE_RAY,
-                GroupLabel::TERRAIN | GroupLabel::LIGHT_SENSOR,
-            ),
-            LightColor::Blue => CollisionGroups::new(
-                GroupLabel::BLUE_RAY,
-                GroupLabel::TERRAIN | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
-            ),
-            _ => CollisionGroups::new(
-                GroupLabel::LIGHT_RAY,
-                GroupLabel::TERRAIN | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
-            ),
-        };
+    for (mut source, mut prev_playback) in q_light_sources.iter_mut() {
+        let playback = play_light_beam(rapier_context, &source);
 
-        let mut ray_qry = QueryFilter::new().groups(collision_groups);
-
-        let mut pts: Vec<Vec2> = vec![ray_pos];
-        let mut remaining_time = source.time_traveled;
-        let mut bounces = 0;
-        for _ in 0..source.color.num_bounces() + 1 {
-            let Some((entity, intersection)) = rapier_context.cast_ray_and_get_normal(
-                ray_pos,
-                ray_dir,
-                remaining_time,
-                true,
-                ray_qry,
-            ) else {
-                let final_point = ray_pos + ray_dir * remaining_time;
-                pts.push(final_point);
-                break;
-            };
-
-            if intersection.time_of_impact < 0.01 {
-                break;
+        let mut pts: Vec<Vec2> = playback.iter_points(&source).collect();
+        for &x in playback.intersections.iter() {
+            if q_light_sensor.get(x.entity).is_ok() {
+                ev_hit_by_light.send(HitByLightEvent(x.entity));
             }
-
-            remaining_time -= intersection.time_of_impact;
-
-            pts.push(intersection.point);
-
-            bounces += 1;
-            if bounces > source.num_bounces {
-                source.num_bounces = bounces;
-                // Add sound effects as child because this current entity could have been hit again
-                commands.entity(entity).with_child((
-                    AudioPlayer::new(light_bounce_sfx.0[bounces - 1].clone()),
-                    PlaybackSettings::DESPAWN,
-                ));
-            }
-
-            if q_light_sensor.get(entity).is_ok() {
-                ev_hit_by_light.send(HitByLightEvent(entity));
-            };
-
-            ray_pos = intersection.point;
-            ray_dir = ray_dir.reflect(intersection.normal);
-            ray_qry = ray_qry.exclude_collider(entity);
         }
 
-        for (i, segment) in segment_cache.table[source.color].iter().enumerate() {
+        let max_intersections = source.color.num_bounces() + 1;
+        let intersections = playback.intersections.len();
+        for i in 0..intersections {
+            let prev_x = prev_playback.intersections[i];
+            let new_x = playback.intersections[i];
+
+            let is_same_intersection =
+                prev_x.is_some_and(|prev_x| prev_x.point.abs_diff_eq(new_x.point, 1.0));
+            let is_further = prev_x.is_none_or(|prev_x| prev_x.time < new_x.time);
+
+            // diff intersection
+            if !is_same_intersection {
+                let x_info = if prev_x.is_some_and(|_| is_further) {
+                    prev_x.unwrap()
+                } else {
+                    new_x
+                };
+
+                prev_playback.intersections[i] = Some(new_x);
+                prev_playback.intersections[i + 1..max_intersections].fill(None);
+
+                // update points
+                pts.truncate(i + 1);
+                pts.push(x_info.point);
+
+                // update new time traveled amount
+                source.time_traveled = x_info.time;
+
+                // play sound
+                commands.entity(x_info.entity).with_child((
+                    AudioPlayer::new(light_bounce_sfx.0[i].clone()),
+                    PlaybackSettings::DESPAWN,
+                ));
+                break;
+            }
+        }
+
+        for (i, segment) in segment_cache.segments[source.color].iter().enumerate() {
             let Ok((mut c_transform, mut c_visibility)) = q_segments.get_mut(*segment) else {
                 panic!("Segment did not have visibility or transform");
             };
@@ -210,17 +291,17 @@ pub fn simulate_light_sources(
 }
 
 /// [`System`] that runs on [`FixedUpdate`], advancing the distance the light beam can travel.
-pub fn tick_light_sources(mut q_light_sources: Query<&mut LightRaySource>) {
+pub fn tick_light_sources(mut q_light_sources: Query<&mut LightBeamSource>) {
     for mut source in q_light_sources.iter_mut() {
         source.time_traveled += LIGHT_SPEED;
     }
 }
 
 /// [`System`] that is responsible for hiding all of the [`LightSegment`](LightSegmentBundle)s
-/// and despawning [`LightRaySource`]s when the level changes.
+/// and despawning [`LightBeamSource`]s when the level changes.
 pub fn cleanup_light_sources(
     mut commands: Commands,
-    q_light_sources: Query<Entity, With<LightRaySource>>,
+    q_light_sources: Query<Entity, With<LightBeamSource>>,
     segment_cache: Res<LightSegmentCache>,
     mut q_segments: Query<(&mut Transform, &mut Visibility), With<LightSegmentMarker>>,
 ) {
@@ -231,7 +312,7 @@ pub fn cleanup_light_sources(
         commands.entity(entity).despawn_recursive();
     }
 
-    segment_cache.table.iter().for_each(|(_, items)| {
+    segment_cache.segments.iter().for_each(|(_, items)| {
         for &entity in items.iter() {
             let (mut transform, mut visibility) = q_segments
                 .get_mut(entity)

@@ -7,6 +7,7 @@ use enum_map::Enum;
 use render::{LightMaterial, LightRenderData};
 use segments::{
     cleanup_light_sources, simulate_light_sources, tick_light_sources, LightSegmentCache,
+    PrevLightBeamPlayback,
 };
 use sensor::{reset_light_sensors, update_light_sensors, HitByLightEvent};
 
@@ -123,11 +124,10 @@ impl LightColor {
 /// [`shoot_light`](crate::player::light::shoot_light), and simulated in
 /// [`simulate_light_sources`]
 #[derive(Component)]
-#[require(Transform, Visibility, Sprite)]
-pub struct LightRaySource {
+#[require(Transform, Visibility, Sprite, PrevLightBeamPlayback)]
+pub struct LightBeamSource {
     pub start_pos: Vec2,
     pub start_dir: Vec2,
     pub time_traveled: f32,
     pub color: LightColor,
-    pub num_bounces: usize,
 }
