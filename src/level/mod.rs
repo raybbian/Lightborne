@@ -6,7 +6,7 @@ use crate::{
     shared::{GameState, ResetLevel},
 };
 use crystal::CrystalPlugin;
-use entity::{SpikeBundle, SemiSolidPlatformBundle};
+use entity::{SemiSolidPlatformBundle, SpikeBundle};
 use misc::{init_start_marker, ButtonBundle, StartFlagBundle};
 use setup::LevelSetupPlugin;
 use walls::{spawn_wall_collision, WallBundle};
