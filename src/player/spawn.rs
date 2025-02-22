@@ -27,7 +27,11 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
             ..default()
         },
         controller_output: KinematicCharacterControllerOutput::default(),
-        collider: Collider::cuboid(6.0, 9.0),
+        collider: Collider::compound(vec![(
+            Vect::new(0.0, -2.0),
+            Rot::default(),
+            Collider::cuboid(6.0, 7.0),
+        )]),
         collision_groups: CollisionGroups::new(GroupLabel::PLAYER_COLLIDER, GroupLabel::TERRAIN),
         player_movement: PlayerMovement::default(),
         player_state: PlayerState::Idle,
@@ -55,7 +59,11 @@ pub fn add_player_sensors(mut commands: Commands, q_player: Query<Entity, Added<
 
     commands.entity(player).with_children(|parent| {
         parent
-            .spawn(Collider::cuboid(5.0, 6.0))
+            .spawn(Collider::compound(vec![(
+                Vect::new(0.0, -2.0),
+                Rot::default(),
+                Collider::cuboid(4.0, 5.0),
+            )]))
             .insert(Sensor)
             .insert(RigidBody::Dynamic)
             .insert(GravityScale(0.0))

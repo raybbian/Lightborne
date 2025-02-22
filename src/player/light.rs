@@ -101,7 +101,10 @@ pub fn shoot_light(
     let mut source_sprite = Sprite::from_image(asset_server.load("light/compass.png"));
     source_sprite.color = Color::srgb(2.0, 2.0, 2.0);
     let mut outer_source_sprite = Sprite::from_image(asset_server.load("light/compass-gold.png"));
-    outer_source_sprite.color = Color::from(player_inventory.current_color).mix(&Color::BLACK, 0.2);
+    outer_source_sprite.color = player_inventory
+        .current_color
+        .light_beam_color()
+        .mix(&Color::BLACK, 0.2);
 
     let id = commands
         .spawn(LightRaySource {
@@ -186,7 +189,7 @@ pub fn preview_light_path(
         gizmos.line_2d(
             ray_pos,
             intersection.point,
-            Color::from(inventory.current_color).darker(0.3),
+            inventory.current_color.light_beam_color().darker(0.3),
         );
 
         ray_pos = intersection.point;

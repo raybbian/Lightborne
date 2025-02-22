@@ -10,7 +10,7 @@ use crate::{
 };
 use crystal::CrystalPlugin;
 use entity::{SemiSolidPlatformBundle, SpikeBundle};
-use misc::{init_start_marker, ButtonBundle, StartFlagBundle};
+use misc::{color_buttons, init_start_marker, ButtonBundle, StartFlagBundle};
 use setup::LevelSetupPlugin;
 use walls::{spawn_wall_collision, WallBundle};
 
@@ -37,7 +37,8 @@ impl Plugin for LevelManagementPlugin {
             .register_ldtk_int_cell_for_layer::<SemiSolidPlatformBundle>("Terrain", 15)
             .add_systems(
                 PreUpdate,
-                (spawn_wall_collision, init_start_marker).in_set(LevelSystems::Processing),
+                (spawn_wall_collision, init_start_marker, color_buttons)
+                    .in_set(LevelSystems::Processing),
             )
             .add_systems(Update, switch_level)
             .configure_sets(
