@@ -26,8 +26,8 @@ impl Plugin for CameraPlugin {
                     .after(PhysicsSet::Writeback)
                     .in_set(LevelSystems::Simulation),
             )
+            // Has event reader, so place in update
             .add_systems(Update, handle_move_camera);
-        // update after physics writeback to prevent jittering
     }
 }
 

@@ -7,14 +7,13 @@ use enum_map::Enum;
 use render::{LightMaterial, LightRenderData};
 use segments::{
     cleanup_light_sources, simulate_light_sources, tick_light_sources, LightSegmentCache,
+    PrevLightBeamPlayback,
 };
-use sensor::{reset_light_sensors, update_light_sensors, HitByLightEvent};
 
 use crate::{level::LevelSystems, shared::ResetLevel};
 
 mod render;
 pub mod segments;
-pub mod sensor;
 
 /// The speed of the light beam in units per [`FixedUpdate`].
 const LIGHT_SPEED: f32 = 8.0;
@@ -30,21 +29,11 @@ impl Plugin for LightManagementPlugin {
         app.add_plugins(Material2dPlugin::<LightMaterial>::default())
             .init_resource::<LightRenderData>()
             .init_resource::<LightSegmentCache>()
-            .add_event::<HitByLightEvent>()
-            .add_systems(
-                Update,
-                (simulate_light_sources, update_light_sensors)
-                    .chain()
-                    .in_set(LevelSystems::Simulation),
-            )
             .add_systems(
                 FixedUpdate,
-                (cleanup_light_sources, reset_light_sensors).run_if(on_event::<ResetLevel>),
+                (simulate_light_sources, tick_light_sources).in_set(LevelSystems::Simulation),
             )
-            .add_systems(
-                FixedUpdate,
-                tick_light_sources.in_set(LevelSystems::Simulation),
-            );
+            .add_systems(Update, cleanup_light_sources.run_if(on_event::<ResetLevel>));
     }
 }
 
@@ -123,11 +112,10 @@ impl LightColor {
 /// [`shoot_light`](crate::player::light::shoot_light), and simulated in
 /// [`simulate_light_sources`]
 #[derive(Component)]
-#[require(Transform, Visibility, Sprite)]
-pub struct LightRaySource {
+#[require(Transform, Visibility, Sprite, PrevLightBeamPlayback)]
+pub struct LightBeamSource {
     pub start_pos: Vec2,
     pub start_dir: Vec2,
     pub time_traveled: f32,
     pub color: LightColor,
-    pub num_bounces: usize,
 }

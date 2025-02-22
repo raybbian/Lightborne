@@ -76,12 +76,27 @@ pub struct SpikeBundle {
 /// for fixed [`LdtkEntity`]s.
 #[derive(Default, Bundle)]
 pub struct FixedEntityBundle {
-    collider: Collider,
-    rigid_body: RigidBody,
-    collision_groups: CollisionGroups,
+    pub collider: Collider,
+    pub rigid_body: RigidBody,
+    pub collision_groups: CollisionGroups,
 }
 
-/// IntGrid implementation of FixedEntityBundle
+impl From<&EntityInstance> for FixedEntityBundle {
+    fn from(entity_instance: &EntityInstance) -> Self {
+        match entity_instance.identifier.as_ref() {
+            "Sensor" => FixedEntityBundle {
+                collider: Collider::cuboid(4., 4.),
+                rigid_body: RigidBody::Fixed,
+                collision_groups: CollisionGroups::new(
+                    GroupLabel::LIGHT_SENSOR,
+                    GroupLabel::LIGHT_RAY | GroupLabel::WHITE_RAY | GroupLabel::BLUE_RAY,
+                ),
+            },
+            _ => unreachable!(),
+        }
+    }
+}
+
 impl From<IntGridCell> for FixedEntityBundle {
     fn from(cell_instance: IntGridCell) -> Self {
         match cell_instance.value {

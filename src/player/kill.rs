@@ -3,7 +3,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    level::{entity::HurtMarker, misc::StartFlag, CurrentLevel},
+    level::{entity::HurtMarker, start_flag::StartFlag, CurrentLevel},
     shared::{GameState, ResetLevel},
 };
 
