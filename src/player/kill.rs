@@ -57,16 +57,19 @@ pub fn reset_player_on_level_switch(
         ),
         With<PlayerMarker>,
     >,
+    current_level: Res<CurrentLevel>,
 ) {
     let Ok((mut movement, mut inventory, mut state, mut transform)) = q_player.get_single_mut()
     else {
         return;
     };
 
+    // FIXME: workaround for crouch transform
     *transform = transform.with_scale(Vec3::ONE);
+
     *state = PlayerState::Idle;
     *movement = PlayerMovement::default();
-    *inventory = PlayerLightInventory::default();
+    *inventory = PlayerLightInventory::colors(&current_level.allowed_colors);
 }
 
 /// Kills player upon touching a HURT_BOX

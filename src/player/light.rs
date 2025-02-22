@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::{math::Real, plugin::RapierContext, prelude::CollisionGroups, prelude::*};
-use enum_map::EnumMap;
+use enum_map::{enum_map, EnumMap};
 
 use crate::{
     input::CursorWorldCoords,
@@ -12,10 +12,25 @@ use super::PlayerMarker;
 
 /// A [`Component`] used to track Lyra's current shooting color as well as the number of beams of
 /// that color remaining.
-#[derive(Component, Default)]
+#[derive(Component, Default, Debug)]
 pub struct PlayerLightInventory {
     current_color: LightColor,
-    sources: EnumMap<LightColor, Option<Entity>>,
+    /// Is true if the color is available
+    sources: EnumMap<LightColor, bool>,
+}
+
+impl PlayerLightInventory {
+    pub fn colors(colors: &Vec<LightColor>) -> Self {
+        PlayerLightInventory {
+            current_color: colors[0],
+            sources: enum_map! {
+                LightColor::Green => colors.contains(&LightColor::Green),
+                LightColor::Blue => colors.contains(&LightColor::Blue),
+                LightColor::Red => colors.contains(&LightColor::Red),
+                LightColor::White => colors.contains(&LightColor::White),
+            },
+        }
+    }
 }
 
 #[derive(Component)]
@@ -85,7 +100,7 @@ pub fn shoot_light(
     let Ok(cursor_pos) = q_cursor.get_single() else {
         return;
     };
-    if player_inventory.sources[player_inventory.current_color].is_some() {
+    if !player_inventory.sources[player_inventory.current_color] {
         return;
     }
 
@@ -106,7 +121,7 @@ pub fn shoot_light(
         .light_beam_color()
         .mix(&Color::BLACK, 0.2);
 
-    let id = commands
+    commands
         .spawn(LightRaySource {
             start_pos: ray_pos,
             start_dir: ray_dir,
@@ -116,13 +131,12 @@ pub fn shoot_light(
         })
         .insert(source_sprite)
         .insert(source_transform)
-        .with_child(outer_source_sprite)
-        .id();
+        .with_child(outer_source_sprite);
 
     // Bevy's Mut or ResMut doesn't let you borrow multiple fields of a struct, so sometimes you
     // need to "reborrow" it to turn it into &mut. See https://bevy-cheatbook.github.io/pitfalls/split-borrows.html
     let player_inventory = &mut *player_inventory;
-    player_inventory.sources[player_inventory.current_color] = Some(id);
+    player_inventory.sources[player_inventory.current_color] = false;
 }
 
 /// [`System`] that uses [`Gizmos`] to preview the light path while the left mouse button is held
@@ -147,7 +161,7 @@ pub fn preview_light_path(
     let Ok(cursor_pos) = q_cursor.get_single() else {
         return;
     };
-    if inventory.sources[inventory.current_color].is_some() {
+    if !inventory.sources[inventory.current_color] {
         return;
     }
 
@@ -179,6 +193,12 @@ pub fn preview_light_path(
         let Some((entity, intersection)) =
             rapier_context.cast_ray_and_get_normal(ray_pos, ray_dir, Real::MAX, true, ray_qry)
         else {
+            let final_point = ray_pos + ray_dir * Real::MAX;
+            gizmos.line_2d(
+                ray_pos,
+                final_point,
+                inventory.current_color.light_beam_color().darker(0.3),
+            );
             break;
         };
 

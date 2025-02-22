@@ -5,6 +5,7 @@ use bevy_ecs_ldtk::{prelude::*, systems::process_ldtk_levels};
 
 use crate::{
     camera::{MoveCameraEvent, CAMERA_ANIMATION_SECS, CAMERA_HEIGHT, CAMERA_WIDTH},
+    light::LightColor,
     player::{LdtkPlayerBundle, PlayerMarker},
     shared::{GameState, ResetLevel},
 };
@@ -62,6 +63,7 @@ pub struct CurrentLevel {
     pub level_iid: LevelIid,
     pub level_entity: Option<Entity>,
     pub world_box: Rect,
+    pub allowed_colors: Vec<LightColor>,
 }
 
 /// [`SystemSet`] used to distinguish different types of systems
@@ -88,6 +90,7 @@ fn switch_level(
     mut current_level: ResMut<CurrentLevel>,
     on_level_switch_finish_cb: Local<OnFinishLevelSwitchCallback>,
     mut ev_move_camera: EventWriter<MoveCameraEvent>,
+    mut ev_level_switch: EventWriter<ResetLevel>,
 ) {
     let Ok(transform) = q_player.get_single() else {
         return;
@@ -134,12 +137,21 @@ fn switch_level(
                         callback: Some(on_level_switch_finish_cb.0),
                         curve: EasingCurve::new(0.0, 1.0, EaseFunction::SineInOut),
                     });
+                } else {
+                    ev_level_switch.send(ResetLevel::Switching);
                 }
+
+                let allowed_colors = level
+                    .iter_enums_field("AllowedColors")
+                    .expect("AllowedColors should be enum array level field.")
+                    .map(|color_str| color_str.into())
+                    .collect::<Vec<LightColor>>();
 
                 *current_level = CurrentLevel {
                     level_iid: level_iid.clone(),
                     level_entity: Some(entity),
                     world_box,
+                    allowed_colors,
                 };
                 *level_selection = LevelSelection::iid(level_iid.to_string());
             }
