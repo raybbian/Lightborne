@@ -98,6 +98,7 @@ fn update_crystal_cache(
 
 /// System that will initialize all the crystals, storing their entities in the appropriate level
 /// -> crystal color location in the crystal cache.
+#[allow(clippy::type_complexity)]
 fn init_crystal_cache_and_ids(
     mut commands: Commands,
     q_crystal_id: Query<(&GridCoords, &Parent, &CrystalId), (Added<CrystalId>, Without<Crystal>)>,
@@ -121,7 +122,7 @@ fn init_crystal_cache_and_ids(
         };
         coords_map
             .entry(level_iid.clone())
-            .or_insert(HashMap::new())
+            .or_default()
             .insert(*coords, crystal_id.0);
 
         commands.entity(**parent).insert(Visibility::Hidden);
@@ -140,7 +141,7 @@ fn init_crystal_cache_and_ids(
         let actual_color = CrystalColor {
             color: crystal.color.color,
             id: coords_map
-                .get(&level_iid)
+                .get(level_iid)
                 .and_then(|mp| mp.get(coord))
                 .copied()
                 .unwrap_or(0),
@@ -149,9 +150,9 @@ fn init_crystal_cache_and_ids(
         crystal_cache
             .levels
             .entry(level_iid.clone())
-            .or_insert(HashMap::new())
+            .or_default()
             .entry(actual_color)
-            .or_insert(Vec::new())
+            .or_default()
             .push(entity);
 
         crystal.color = actual_color;

@@ -181,7 +181,7 @@ pub fn spawn_wall_collision(
                                             | GroupLabel::LIGHT_RAY
                                             | GroupLabel::WHITE_RAY
                                             | GroupLabel::STRAND
-                                            | GroupLabel::BLUE_RAY
+                                            | GroupLabel::BLUE_RAY,
                                     ))
                                     .insert(RigidBody::Fixed)
                                     .insert(Friction::new(1.0))

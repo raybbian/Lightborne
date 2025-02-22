@@ -106,6 +106,7 @@ impl FromWorld for LightBounceSfx {
 ///
 /// Similar logic is duplicated in [`preview_light_path`](crate::player::light::preview_light_path),
 /// these two systems should be merged.
+#[allow(clippy::too_many_arguments)]
 pub fn simulate_light_sources(
     mut commands: Commands,
     mut q_light_sources: Query<&mut LightRaySource>,
@@ -174,7 +175,7 @@ pub fn simulate_light_sources(
                 ));
             }
 
-            if let Ok(_) = q_light_sensor.get(entity) {
+            if q_light_sensor.get(entity).is_ok() {
                 ev_hit_by_light.send(HitByLightEvent(entity));
             };
 

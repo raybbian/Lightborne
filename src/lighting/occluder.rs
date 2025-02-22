@@ -94,7 +94,7 @@ fn spawn_collider_occluders(
 ) {
     for (entity, (point_1, point_2)) in q_colliders
         .iter()
-        .filter_map(
+        .map(
             |(entity, collider, collider_based_occluder)| match collider.as_typed_shape() {
                 ColliderView::Cuboid(cub) => {
                     let (half_x, half_y) = cub.half_extents().into();
@@ -102,7 +102,7 @@ fn spawn_collider_occluders(
                     let half_y = half_y - collider_based_occluder.indent;
                     let four_corners = [(-1., -1.), (-1., 1.), (1., 1.), (1., -1.)]
                         .map(|(x, y)| Vec2::new(half_x * x, half_y * y));
-                    return Some((
+                    (
                         entity,
                         [
                             (four_corners[0], four_corners[1]),
@@ -110,7 +110,7 @@ fn spawn_collider_occluders(
                             (four_corners[2], four_corners[3]),
                             (four_corners[3], four_corners[0]),
                         ],
-                    ));
+                    )
                 }
                 _ => panic!("Tried adding occluder based on non-cuboid collider"),
             },
@@ -196,9 +196,10 @@ fn vector_to_segment(p: Vec2, a: Vec2, b: Vec2) -> Vec2 {
     let closest_point = a + t * ab;
 
     // Return vector towards the segment
-    return closest_point - p;
+    closest_point - p
 }
 
+#[allow(clippy::type_complexity)]
 fn draw_occluders(
     mut meshes: ResMut<Assets<Mesh>>,
 
@@ -302,14 +303,12 @@ fn create_occluder_polygon(
     point_1_to_segment: Vec2,
     point_2_to_segment: Vec2,
 ) -> [Vec2; 4] {
-    let polygon = [
+    [
         point_1,
         point_2,
         point_2 - point_2_to_segment.normalize() * 1000.0,
         point_1 - point_1_to_segment.normalize() * 1000.0,
-    ];
-
-    polygon
+    ]
 }
 fn polygon_mesh(vertices: &[Vec2]) -> Mesh {
     let mut triangles = Vec::new();

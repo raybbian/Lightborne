@@ -50,7 +50,7 @@ const COMBINED_FRAMES_LAYER: RenderLayers = RenderLayers::layer(3);
 const BLURRED_LAYER: RenderLayers = RenderLayers::layer(4);
 fn setup(mut commands: Commands, lighting_render_data: Res<LightingRenderData>) {
     commands.spawn((
-        Camera2d::default(),
+        Camera2d,
         Camera {
             target: lighting_render_data.blurred_image.clone().into(),
             clear_color: Color::NONE.into(),
@@ -61,7 +61,7 @@ fn setup(mut commands: Commands, lighting_render_data: Res<LightingRenderData>) 
     ));
 
     commands.spawn((
-        Camera2d::default(),
+        Camera2d,
         Camera {
             target: lighting_render_data.combined_frames_image.clone().into(),
             clear_color: Color::NONE.into(),
@@ -72,7 +72,7 @@ fn setup(mut commands: Commands, lighting_render_data: Res<LightingRenderData>) 
     ));
 
     commands.spawn((
-        Camera2d::default(),
+        Camera2d,
         Camera {
             target: lighting_render_data.frames_image.clone().into(),
             clear_color: Color::NONE.into(),

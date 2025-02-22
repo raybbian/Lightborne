@@ -71,15 +71,15 @@ impl From<&EntityInstance> for LightSensorBundle {
                     id: *id,
                 };
 
-                return Self {
+                Self {
                     collider: Collider::cuboid(4., 4.),
                     sensor: Sensor,
                     collision_groups: CollisionGroups::new(
                         GroupLabel::LIGHT_SENSOR,
-                        GroupLabel::LIGHT_RAY | GroupLabel::WHITE_RAY | GroupLabel::BLUE_RAY
+                        GroupLabel::LIGHT_RAY | GroupLabel::WHITE_RAY | GroupLabel::BLUE_RAY,
                     ),
                     light_sensor: LightSensor::new(sensor_color),
-                };
+                }
             }
             _ => unreachable!(),
         }

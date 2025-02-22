@@ -48,20 +48,18 @@ fn new_render_image(width: u32, height: u32) -> Image {
     image.texture_descriptor.usage =
         TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST | TextureUsages::RENDER_ATTACHMENT;
     image.sampler = ImageSampler::nearest();
-    return image;
+    image
 }
 
 impl FromWorld for LightingRenderData {
     fn from_world(world: &mut World) -> Self {
         let mut meshes = world.resource_mut::<Assets<Mesh>>();
 
-        let gradient_mesh = meshes
-            .add(Mesh::from(Rectangle::new(320. * 4., 180. * 4.)))
-            .into();
-        let combine_frames_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.))).into();
-        let blur_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.))).into();
-        let background_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.))).into();
-        let default_occluder_mesh = meshes.add(Mesh::from(Rectangle::new(1., 1.))).into();
+        let gradient_mesh = meshes.add(Mesh::from(Rectangle::new(320. * 4., 180. * 4.)));
+        let combine_frames_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.)));
+        let blur_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.)));
+        let background_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.)));
+        let default_occluder_mesh = meshes.add(Mesh::from(Rectangle::new(1., 1.)));
 
         let mut images = world.resource_mut::<Assets<Image>>();
 
@@ -86,7 +84,6 @@ impl FromWorld for LightingRenderData {
 
         let mut materials = world.resource_mut::<Assets<FrameMaskMaterial>>();
         let frame_mask_materials = (0..16)
-            .into_iter()
             .map(|i| {
                 materials.add(FrameMaskMaterial {
                     frame_count_x: 4,
