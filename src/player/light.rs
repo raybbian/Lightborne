@@ -193,7 +193,7 @@ pub fn preview_light_path(
         let Some((entity, intersection)) =
             rapier_context.cast_ray_and_get_normal(ray_pos, ray_dir, Real::MAX, true, ray_qry)
         else {
-            let final_point = ray_pos + ray_dir * Real::MAX;
+            let final_point = ray_pos + ray_dir * 1000.;
             gizmos.line_2d(
                 ray_pos,
                 final_point,
