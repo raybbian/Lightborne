@@ -1,4 +1,3 @@
-
 #import bevy_render::globals::Globals
 #import bevy_sprite::mesh2d_vertex_output::VertexOutput
 
@@ -6,8 +5,6 @@
 @group(2) @binding(1) var light_sampler: sampler;
 @group(2) @binding(2) var background_image: texture_2d<f32>;
 @group(2) @binding(3) var background_sampler: sampler;
-
-
 
 @fragment
 fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {

@@ -1,18 +1,10 @@
-
 #import bevy_render::globals::Globals
 #import bevy_sprite::mesh2d_vertex_output::VertexOutput
-
-// @group(2) @binding(0) var texture_image: texture_2d<f32>;
-// @group(2) @binding(1) var texture_sampler: sampler;
-// @group(2) @binding(2) var<uniform> light_colors: array<vec4<f32>, 16>; // RGB color of the light
-
 
 @group(2) @binding(0) var texture_image: texture_2d<f32>;
 @group(2) @binding(1) var texture_sampler: sampler;
 @group(2) @binding(0) var light_image: texture_2d<f32>;
 @group(2) @binding(1) var light_sampler: sampler;
-
-
 
 @fragment
 fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
