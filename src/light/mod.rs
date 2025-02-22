@@ -78,7 +78,7 @@ impl From<LightColor> for LightMaterial {
         LightMaterial {
             color: color.into(),
             alpha_mode: AlphaMode2d::Blend,
-            webgl_padding: Vec2::ZERO,
+            _webgl_padding: Vec2::ZERO,
         }
     }
 }

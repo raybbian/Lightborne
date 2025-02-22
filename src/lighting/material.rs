@@ -66,7 +66,7 @@ pub struct BlurMaterial {
     #[sampler(1)]
     pub image: Handle<Image>,
     // WASM Build requires that this struct be 16-byte aligned
-    pub webgl_padding: Vec2,
+    pub _webgl_padding: Vec2,
 }
 
 impl Material2d for BlurMaterial {

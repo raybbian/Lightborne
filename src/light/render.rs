@@ -48,7 +48,7 @@ pub struct LightMaterial {
     pub color: LinearRgba,
     pub alpha_mode: AlphaMode2d,
     // WASM build requires this struct be 16-byte aligned
-    pub webgl_padding: Vec2,
+    pub _webgl_padding: Vec2,
 }
 
 impl Material2d for LightMaterial {
