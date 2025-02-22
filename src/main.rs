@@ -1,6 +1,6 @@
-use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
+use bevy::{asset::AssetMetaCheck, diagnostic::LogDiagnosticsPlugin};
 use bevy_rapier2d::prelude::*;
 
 use camera::CameraPlugin;
@@ -39,6 +39,11 @@ fn main() {
                         prevent_default_event_handling: false,
                         ..default()
                     }),
+                    ..default()
+                })
+                .set(AssetPlugin {
+                    //https://github.com/bevyengine/bevy_github_ci_template/issues/48
+                    meta_check: AssetMetaCheck::Never,
                     ..default()
                 }),
         )
