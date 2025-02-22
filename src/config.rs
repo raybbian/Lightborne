@@ -24,7 +24,7 @@ impl Default for Config {
         Config {
             level_config: LevelConfig {
                 level_index: 9,
-                level_path: "assets/lightborne.ldtk".into(),
+                level_path: "levels/lightborne.ldtk".into(),
             },
             debug_config: DebugConfig::default(),
         }
