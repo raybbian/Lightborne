@@ -1,29 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::light::sensor::{LightSensor, LightSensorBundle};
-
-/// [`Component`] to mark buttons in the level.
-#[derive(Default, Component)]
-pub struct ButtonMarker;
-
-/// [`Bundle`] registered with Ldtk to spawn buttons.
-#[derive(Bundle, LdtkEntity)]
-pub struct ButtonBundle {
-    #[default]
-    marker: ButtonMarker,
-    #[sprite_sheet]
-    sprite_sheet: Sprite,
-    #[from_entity_instance]
-    light_sensor: LightSensorBundle,
-}
-
-pub fn color_buttons(mut q_buttons: Query<(&mut Sprite, &LightSensor), Added<ButtonMarker>>) {
-    for (mut sprite, sensor) in q_buttons.iter_mut() {
-        sprite.color = sensor.toggle_color.color.button_color();
-    }
-}
-
 /// [`Component`] to mark start flags in the level. Used to query for when start flags are loaded
 /// by Ldtk.
 #[derive(Default, Component)]

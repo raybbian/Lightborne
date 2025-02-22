@@ -56,7 +56,10 @@ fn main() {
         .add_plugins(PausePlugin)
         .add_plugins(CameraPlugin)
         .add_plugins(LightingPlugin)
-        .add_plugins(DebugPlugin::default())
+        .add_plugins(DebugPlugin {
+            frame_time: false,
+            ..default()
+        })
         .insert_state(GameState::Playing)
         .add_event::<ResetLevel>()
         .add_systems(Startup, init_cursor_world_coords)

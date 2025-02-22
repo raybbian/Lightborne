@@ -2,23 +2,25 @@ use std::time::Duration;
 
 use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{prelude::*, systems::process_ldtk_levels};
+use sensor::{color_sensors, reset_light_sensors, update_light_sensors, LightSensorBundle};
 
 use crate::{
     camera::{MoveCameraEvent, CAMERA_ANIMATION_SECS, CAMERA_HEIGHT, CAMERA_WIDTH},
-    light::LightColor,
+    light::{segments::simulate_light_sources, LightColor},
     player::{LdtkPlayerBundle, PlayerMarker},
     shared::{GameState, ResetLevel},
 };
 use crystal::CrystalPlugin;
 use entity::{SemiSolidPlatformBundle, SpikeBundle};
-use misc::{color_buttons, init_start_marker, ButtonBundle, StartFlagBundle};
 use setup::LevelSetupPlugin;
+use start_flag::{init_start_marker, StartFlagBundle};
 use walls::{spawn_wall_collision, WallBundle};
 
 pub mod crystal;
 pub mod entity;
-pub mod misc;
+pub mod sensor;
 mod setup;
+pub mod start_flag;
 mod walls;
 
 /// [`Plugin`] that handles everything related to the level.
@@ -31,17 +33,24 @@ impl Plugin for LevelManagementPlugin {
             .add_plugins(CrystalPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
-            .register_ldtk_entity::<ButtonBundle>("Button")
+            .register_ldtk_entity::<LightSensorBundle>("Sensor")
             .register_ldtk_entity::<StartFlagBundle>("Start")
             .register_ldtk_int_cell_for_layer::<WallBundle>("Terrain", 1)
             .register_ldtk_int_cell_for_layer::<SpikeBundle>("Terrain", 2)
             .register_ldtk_int_cell_for_layer::<SemiSolidPlatformBundle>("Terrain", 15)
             .add_systems(
                 PreUpdate,
-                (spawn_wall_collision, init_start_marker, color_buttons)
+                (spawn_wall_collision, init_start_marker, color_sensors)
                     .in_set(LevelSystems::Processing),
             )
-            .add_systems(Update, switch_level)
+            .add_systems(Update, reset_light_sensors.run_if(on_event::<ResetLevel>))
+            .add_systems(
+                FixedUpdate,
+                (
+                    switch_level,
+                    update_light_sensors.after(simulate_light_sources),
+                ),
+            )
             .configure_sets(
                 PreUpdate,
                 LevelSystems::Processing.after(process_ldtk_levels),

@@ -4,10 +4,9 @@ use enum_map::EnumMap;
 
 use super::{
     render::{LightMaterial, LightRenderData},
-    sensor::LightSensor,
     LightBeamSource, LightColor, LIGHT_SPEED,
 };
-use crate::{lighting::light::LineLighting, shared::GroupLabel};
+use crate::{level::sensor::LightSensor, lighting::light::LineLighting, shared::GroupLabel};
 
 /// Marker [`Component`] used to query for light segments.
 #[derive(Default, Component, Clone, Debug)]

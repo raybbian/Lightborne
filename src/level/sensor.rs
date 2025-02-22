@@ -1,92 +1,93 @@
 use bevy::{prelude::*, time::Stopwatch};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
-use std::time::Duration;
 
-use crate::{
-    level::crystal::{CrystalColor, CrystalToggleEvent},
-    shared::GroupLabel,
-};
+use crate::level::crystal::{CrystalColor, CrystalToggleEvent};
 
-use super::LightColor;
+use super::{entity::FixedEntityBundle, LightColor};
 
 /// [`Component`] added to entities receptive to light. The
 /// [`activation_timer`](LightSensor::activation_timer) should be initialized in the
 /// `From<&EntityInstance>` implemenation for the [`LightSensorBundle`], if not default.
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct LightSensor {
     /// Stores the cumulative time light has been hitting the sensor
     pub cumulative_exposure: Stopwatch,
-    /// The amount of time the light beam needs to be hitting the sensor for activation
-    pub activation_timer: Timer,
+    /// Stores the amount of light stored in the sensor, from 0 to 1.
+    pub meter: f32,
     /// Number of light beams hitting the sensor
     pub hit_count: usize,
+    /// Active state of the sensor
+    pub is_active: bool,
     /// The color of the crystals to toggle
     pub toggle_color: CrystalColor,
-    /// If the sensor was previously hit or not
-    pub was_hit: Option<bool>,
+    /// Meter's rate of change, per fixed timestep tick.
+    rate: f32,
 }
 
 impl LightSensor {
-    fn new(toggle_color: CrystalColor) -> Self {
+    fn new(toggle_color: CrystalColor, millis: i32) -> Self {
+        let rate = 1.0 / (millis as f32) * (1000.0 / 64.0);
         LightSensor {
-            activation_timer: Timer::new(Duration::from_millis(300), TimerMode::Once),
+            meter: 0.0,
             cumulative_exposure: Stopwatch::default(),
             hit_count: 0,
-            was_hit: None,
+            is_active: false,
             toggle_color,
+            rate,
         }
     }
 
     fn reset(&mut self) {
-        self.activation_timer.reset();
+        self.meter = 0.0;
         self.hit_count = 0;
-        self.was_hit = None;
+        self.is_active = false;
         self.cumulative_exposure.reset();
+    }
+}
+
+impl From<&EntityInstance> for LightSensor {
+    fn from(entity_instance: &EntityInstance) -> Self {
+        let light_color: LightColor = entity_instance
+            .get_enum_field("light_color")
+            .expect("light_color needs to be an enum field on all buttons")
+            .into();
+
+        let id = entity_instance
+            .get_int_field("id")
+            .expect("id needs to be an int field on all buttons");
+
+        let millis = *entity_instance
+            .get_int_field("activation_time")
+            .expect("activation_time needs to be a float field on all sensors");
+
+        let sensor_color = CrystalColor {
+            color: light_color,
+            id: *id,
+        };
+
+        LightSensor::new(sensor_color, millis)
+    }
+}
+
+pub fn color_sensors(mut q_buttons: Query<(&mut Sprite, &LightSensor), Added<LightSensor>>) {
+    for (mut sprite, sensor) in q_buttons.iter_mut() {
+        sprite.color = sensor.toggle_color.color.button_color();
     }
 }
 
 /// [`Bundle`] that includes all the [`Component`]s needed for a [`LightSensor`] to function
 /// properly.
-#[derive(Bundle)]
+#[derive(Bundle, LdtkEntity)]
 pub struct LightSensorBundle {
-    collider: Collider,
+    #[sprite_sheet]
+    sprite_sheet: Sprite,
+    #[from_entity_instance]
+    physics: FixedEntityBundle,
+    #[default]
     sensor: Sensor,
-    collision_groups: CollisionGroups,
+    #[from_entity_instance]
     light_sensor: LightSensor,
-}
-
-impl From<&EntityInstance> for LightSensorBundle {
-    fn from(entity_instance: &EntityInstance) -> Self {
-        match entity_instance.identifier.as_ref() {
-            "Button" => {
-                let light_color: LightColor = entity_instance
-                    .get_enum_field("light_color")
-                    .expect("light_color needs to be an enum field on all buttons")
-                    .into();
-
-                let id = entity_instance
-                    .get_int_field("id")
-                    .expect("id needs to be an int field on all buttons");
-
-                let sensor_color = CrystalColor {
-                    color: light_color,
-                    id: *id,
-                };
-
-                Self {
-                    collider: Collider::cuboid(4., 4.),
-                    sensor: Sensor,
-                    collision_groups: CollisionGroups::new(
-                        GroupLabel::LIGHT_SENSOR,
-                        GroupLabel::LIGHT_RAY | GroupLabel::WHITE_RAY | GroupLabel::BLUE_RAY,
-                    ),
-                    light_sensor: LightSensor::new(sensor_color),
-                }
-            }
-            _ => unreachable!(),
-        }
-    }
 }
 
 /// [`System`] that resets the [`LightSensor`]s when a [`LevelSwitchEvent`] is received.
@@ -116,32 +117,31 @@ pub fn update_light_sensors(
             sensor.cumulative_exposure.tick(time.delta());
         }
 
-        match (was_hit, sensor.was_hit) {
-            (_, None) => {
-                sensor.activation_timer.pause();
-            }
-            (true, Some(false)) => {
-                sensor.activation_timer.unpause();
-                sensor.activation_timer.reset();
-            }
-            (false, Some(true)) => {
-                sensor.activation_timer.reset();
-            }
-            _ => (),
-        }
+        let juice = if was_hit { sensor.rate } else { -sensor.rate };
+        sensor.meter += juice;
 
-        sensor.was_hit = Some(was_hit);
-        sensor.activation_timer.tick(time.delta());
-
-        if sensor.activation_timer.just_finished() {
+        let mut send_toggle = || {
             ev_crystal_toggle.send(CrystalToggleEvent {
                 color: sensor.toggle_color,
             });
-
             commands.entity(entity).with_child((
                 AudioPlayer::new(asset_server.load("sfx/button.wav")),
                 PlaybackSettings::DESPAWN,
             ));
+        };
+
+        if sensor.meter > 1.0 {
+            if !sensor.is_active {
+                send_toggle();
+                sensor.is_active = true;
+            }
+            sensor.meter = 1.0;
+        } else if sensor.meter < 0.0 {
+            if sensor.is_active {
+                send_toggle();
+                sensor.is_active = false;
+            }
+            sensor.meter = 0.0;
         }
     }
 }

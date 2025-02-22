@@ -9,13 +9,11 @@ use segments::{
     cleanup_light_sources, simulate_light_sources, tick_light_sources, LightSegmentCache,
     PrevLightBeamPlayback,
 };
-use sensor::{reset_light_sensors, update_light_sensors};
 
 use crate::{level::LevelSystems, shared::ResetLevel};
 
 mod render;
 pub mod segments;
-pub mod sensor;
 
 /// The speed of the light beam in units per [`FixedUpdate`].
 const LIGHT_SPEED: f32 = 8.0;
@@ -32,19 +30,10 @@ impl Plugin for LightManagementPlugin {
             .init_resource::<LightRenderData>()
             .init_resource::<LightSegmentCache>()
             .add_systems(
-                Update,
-                (simulate_light_sources, update_light_sensors)
-                    .chain()
-                    .in_set(LevelSystems::Simulation),
-            )
-            .add_systems(
                 FixedUpdate,
-                (cleanup_light_sources, reset_light_sensors).run_if(on_event::<ResetLevel>),
+                (simulate_light_sources, tick_light_sources).in_set(LevelSystems::Simulation),
             )
-            .add_systems(
-                FixedUpdate,
-                tick_light_sources.in_set(LevelSystems::Simulation),
-            );
+            .add_systems(Update, cleanup_light_sources.run_if(on_event::<ResetLevel>));
     }
 }
 

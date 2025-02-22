@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 1318,
+	"nextUid": 1320,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -9968,7 +9968,7 @@
 			"fieldDefs": []
 		},
 		{
-			"identifier": "Button",
+			"identifier": "Sensor",
 			"uid": 143,
 			"tags": [],
 			"exportToToc": false,
@@ -10066,6 +10066,43 @@
 					"regex": null,
 					"acceptFileTypes": null,
 					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "activation_time",
+					"doc": "Activation time of sensor, in millis",
+					"__type": "Int",
+					"uid": 1319,
+					"type": "F_Int",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "NameAndValue",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": true,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": 100,
+					"max": 2000,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": { "id": "V_Int", "params": [400] },
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -10273,7 +10310,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [21,20],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -10289,7 +10326,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 1128,
 							"__worldY": 160
@@ -10311,7 +10349,7 @@
 							"__worldY": 144
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [16,2],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -10327,7 +10365,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 1088,
 							"__worldY": 16
@@ -10953,7 +10992,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [23,21],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -10969,7 +11008,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2104,
 							"__worldY": 352
@@ -11608,7 +11648,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [11,5],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -11624,13 +11664,14 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2328,
 							"__worldY": 224
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [5,21],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -11646,7 +11687,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2280,
 							"__worldY": 352
@@ -12266,7 +12308,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [32,21],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -12282,13 +12324,14 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 576,
 							"__worldY": 168
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [16,1],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -12304,7 +12347,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 448,
 							"__worldY": 8
@@ -12723,7 +12767,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [16,1],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -12739,13 +12783,14 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 768,
 							"__worldY": 8
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [7,1],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -12761,7 +12806,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 696,
 							"__worldY": 8
@@ -13289,7 +13335,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [21,20],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -13305,13 +13351,14 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 1448,
 							"__worldY": 160
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [12,1],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -13327,7 +13374,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 1376,
 							"__worldY": 8
@@ -13955,7 +14003,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [0,5],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -13971,7 +14019,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 800, "__tile": null, "defUid": 1319, "realEditorValues": [{ "id": "V_Int", "params": [800] }] }
 							],
 							"__worldX": 1280,
 							"__worldY": 224
@@ -14535,7 +14584,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [12,13],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -14551,13 +14600,14 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 800, "__tile": null, "defUid": 1319, "realEditorValues": [{ "id": "V_Int", "params": [800] }] }
 							],
 							"__worldX": 1696,
 							"__worldY": 288
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [10,13],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -14573,7 +14623,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 1680,
 							"__worldY": 288
@@ -15249,7 +15300,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [21,2],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -15265,13 +15316,14 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2400,
 							"__worldY": -176
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [9,1],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -15287,13 +15339,14 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 1, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [1] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 1, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [1] }] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2304,
 							"__worldY": -184
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [34,2],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -15309,13 +15362,14 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [2] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [2] }] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2504,
 							"__worldY": -176
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [23,20],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -15331,13 +15385,14 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2416,
 							"__worldY": -32
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [12,21],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -15353,13 +15408,14 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 1, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [1] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 1, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [1] }] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2328,
 							"__worldY": -24
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [8,20],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -15375,13 +15431,14 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [2] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [2] }] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2296,
 							"__worldY": -32
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [1,11],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -15397,7 +15454,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 3, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [3] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 3, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [3] }] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2240,
 							"__worldY": -104
@@ -15833,7 +15891,7 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [9,7],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -15849,7 +15907,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [0] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [0] }] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 72,
 							"__worldY": 56
@@ -16420,7 +16479,7 @@
 							"__worldY": 344
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [16,0],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -16436,13 +16495,14 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2688,
 							"__worldY": 184
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [16,21],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -16458,13 +16518,14 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2688,
 							"__worldY": 352
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [17,21],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -16480,13 +16541,14 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2696,
 							"__worldY": 352
 						},
 						{
-							"__identifier": "Button",
+							"__identifier": "Sensor",
 							"__grid": [34,21],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -16502,7 +16564,8 @@
 									"id": "V_String",
 									"params": ["Blue"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] }
 							],
 							"__worldX": 2832,
 							"__worldY": 352
