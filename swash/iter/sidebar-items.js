@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["BitmapStrikes","Chars","ColorPalettes","Features","Fonts","Instances","LocalizedStrings","Variations","WritingSystems"]};

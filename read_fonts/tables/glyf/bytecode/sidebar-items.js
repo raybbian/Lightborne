@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Opcode"],"fn":["decode_all"],"struct":["DecodeError","Decoder","InlineOperands","Instruction"]};

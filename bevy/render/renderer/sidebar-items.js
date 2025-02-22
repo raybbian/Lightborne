@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["RenderGraphRunnerError"],"fn":["initialize_renderer","render_system"],"struct":["RenderAdapter","RenderAdapterInfo","RenderContext","RenderDevice","RenderInstance","RenderQueue","WgpuWrapper"]};

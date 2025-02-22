@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"trait":["EGL1_0","EGL1_1","EGL1_2","EGL1_3","EGL1_4","EGL1_5"]};

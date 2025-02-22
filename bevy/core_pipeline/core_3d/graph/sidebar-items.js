@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Node3d"],"mod":["input"],"struct":["Core3d"]};

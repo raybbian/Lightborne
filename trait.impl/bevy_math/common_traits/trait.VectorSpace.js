@@ -1,9 +1,0 @@
-(function() {
-    var implementors = Object.fromEntries([["bevy",[]],["bevy_color",[["impl <a class=\"trait\" href=\"bevy_math/common_traits/trait.VectorSpace.html\" title=\"trait bevy_math::common_traits::VectorSpace\">VectorSpace</a> for <a class=\"struct\" href=\"bevy_color/struct.Laba.html\" title=\"struct bevy_color::Laba\">Laba</a>"],["impl <a class=\"trait\" href=\"bevy_math/common_traits/trait.VectorSpace.html\" title=\"trait bevy_math::common_traits::VectorSpace\">VectorSpace</a> for <a class=\"struct\" href=\"bevy_color/struct.LinearRgba.html\" title=\"struct bevy_color::LinearRgba\">LinearRgba</a>"],["impl <a class=\"trait\" href=\"bevy_math/common_traits/trait.VectorSpace.html\" title=\"trait bevy_math::common_traits::VectorSpace\">VectorSpace</a> for <a class=\"struct\" href=\"bevy_color/struct.Oklaba.html\" title=\"struct bevy_color::Oklaba\">Oklaba</a>"],["impl <a class=\"trait\" href=\"bevy_math/common_traits/trait.VectorSpace.html\" title=\"trait bevy_math::common_traits::VectorSpace\">VectorSpace</a> for <a class=\"struct\" href=\"bevy_color/struct.Srgba.html\" title=\"struct bevy_color::Srgba\">Srgba</a>"],["impl <a class=\"trait\" href=\"bevy_math/common_traits/trait.VectorSpace.html\" title=\"trait bevy_math::common_traits::VectorSpace\">VectorSpace</a> for <a class=\"struct\" href=\"bevy_color/struct.Xyza.html\" title=\"struct bevy_color::Xyza\">Xyza</a>"]]],["bevy_math",[]]]);
-    if (window.register_implementors) {
-        window.register_implementors(implementors);
-    } else {
-        window.pending_implementors = implementors;
-    }
-})()
-//{"start":57,"fragment_lengths":[11,1334,17]}

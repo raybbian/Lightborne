@@ -1,9 +1,0 @@
-(function() {
-    var implementors = Object.fromEntries([["bevy",[]],["bevy_animation",[["impl <a class=\"trait\" href=\"bevy_ecs/entity/visit_entities/trait.VisitEntities.html\" title=\"trait bevy_ecs::entity::visit_entities::VisitEntities\">VisitEntities</a> for <a class=\"struct\" href=\"bevy_animation/struct.AnimationTarget.html\" title=\"struct bevy_animation::AnimationTarget\">AnimationTarget</a>"]]],["bevy_ecs",[]],["bevy_hierarchy",[["impl <a class=\"trait\" href=\"bevy_ecs/entity/visit_entities/trait.VisitEntities.html\" title=\"trait bevy_ecs::entity::visit_entities::VisitEntities\">VisitEntities</a> for <a class=\"struct\" href=\"bevy_hierarchy/struct.Parent.html\" title=\"struct bevy_hierarchy::Parent\">Parent</a>"]]],["bevy_mesh",[["impl <a class=\"trait\" href=\"bevy_ecs/entity/visit_entities/trait.VisitEntities.html\" title=\"trait bevy_ecs::entity::visit_entities::VisitEntities\">VisitEntities</a> for <a class=\"struct\" href=\"bevy_mesh/skinning/struct.SkinnedMesh.html\" title=\"struct bevy_mesh::skinning::SkinnedMesh\">SkinnedMesh</a>"]]],["bevy_window",[["impl <a class=\"trait\" href=\"bevy_ecs/entity/visit_entities/trait.VisitEntities.html\" title=\"trait bevy_ecs::entity::visit_entities::VisitEntities\">VisitEntities</a> for <a class=\"enum\" href=\"bevy_window/enum.WindowRef.html\" title=\"enum bevy_window::WindowRef\">WindowRef</a>"]]]]);
-    if (window.register_implementors) {
-        window.register_implementors(implementors);
-    } else {
-        window.pending_implementors = implementors;
-    }
-})()
-//{"start":57,"fragment_lengths":[11,341,16,314,333,308]}

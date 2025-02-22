@@ -1,1 +1,0 @@
-searchState.loadedDescShard("bevy_dylib", 0, "Forces dynamic linking of Bevy.")

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["GamepadAxis","GamepadButton","KeyCode","MouseButton"],"struct":["Axis","ButtonInput","Gamepad","GamepadSettings","TouchInput","Touches"]};

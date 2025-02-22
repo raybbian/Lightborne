@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["register_bevy_impls","register_glam_impls","register_std_impls"],"struct":["InspectorEguiImpl"],"trait":["InspectorPrimitive"]};

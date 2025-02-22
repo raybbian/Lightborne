@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["PickingInteraction"],"fn":["update_focus","update_interactions"],"struct":["HoverMap","PreviousHoverMap"]};

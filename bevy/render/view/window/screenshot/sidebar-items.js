@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["save_to_disk","trigger_screenshots"],"struct":["Captured","CapturedScreenshots","Capturing","Screenshot","ScreenshotCaptured","ScreenshotPlugin","ScreenshotToScreenPipeline"]};

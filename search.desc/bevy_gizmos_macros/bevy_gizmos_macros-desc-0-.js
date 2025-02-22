@@ -1,1 +1,0 @@
-searchState.loadedDescShard("bevy_gizmos_macros", 0, "Derive implementations for <code>bevy_gizmos</code>.\nImplements the <code>GizmoConfigGroup</code> trait for a gizmo config …")

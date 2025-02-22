@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Source","StrikeWith"],"mod":["image","outline"],"struct":["Render","ScaleContext","Scaler","ScalerBuilder"],"type":["PaletteIndex","StrikeIndex"]};

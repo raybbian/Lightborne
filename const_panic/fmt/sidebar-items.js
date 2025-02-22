@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["FmtKind","NumberFmt"],"mod":["char_formatting"],"struct":["FmtArg","IsCustomType","IsPanicFmt","IsStdType"],"trait":["PanicFmt"]};

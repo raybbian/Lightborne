@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["IRRADIANCE_VOLUME_SHADER_HANDLE"],"struct":["IrradianceVolume"]};

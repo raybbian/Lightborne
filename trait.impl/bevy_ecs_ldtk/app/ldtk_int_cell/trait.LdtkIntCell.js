@@ -1,9 +1,0 @@
-(function() {
-    var implementors = Object.fromEntries([["lightborne",[["impl <a class=\"trait\" href=\"bevy_ecs_ldtk/app/ldtk_int_cell/trait.LdtkIntCell.html\" title=\"trait bevy_ecs_ldtk::app::ldtk_int_cell::LdtkIntCell\">LdtkIntCell</a> for <a class=\"struct\" href=\"lightborne/level/crystal/struct.CrystalBundle.html\" title=\"struct lightborne::level::crystal::CrystalBundle\">CrystalBundle</a>"],["impl <a class=\"trait\" href=\"bevy_ecs_ldtk/app/ldtk_int_cell/trait.LdtkIntCell.html\" title=\"trait bevy_ecs_ldtk::app::ldtk_int_cell::LdtkIntCell\">LdtkIntCell</a> for <a class=\"struct\" href=\"lightborne/level/crystal/struct.CrystalIdBundle.html\" title=\"struct lightborne::level::crystal::CrystalIdBundle\">CrystalIdBundle</a>"],["impl <a class=\"trait\" href=\"bevy_ecs_ldtk/app/ldtk_int_cell/trait.LdtkIntCell.html\" title=\"trait bevy_ecs_ldtk::app::ldtk_int_cell::LdtkIntCell\">LdtkIntCell</a> for <a class=\"struct\" href=\"lightborne/level/entity/struct.SemiSolidPlatformBundle.html\" title=\"struct lightborne::level::entity::SemiSolidPlatformBundle\">SemiSolidPlatformBundle</a>"],["impl <a class=\"trait\" href=\"bevy_ecs_ldtk/app/ldtk_int_cell/trait.LdtkIntCell.html\" title=\"trait bevy_ecs_ldtk::app::ldtk_int_cell::LdtkIntCell\">LdtkIntCell</a> for <a class=\"struct\" href=\"lightborne/level/entity/struct.SpikeBundle.html\" title=\"struct lightborne::level::entity::SpikeBundle\">SpikeBundle</a>"],["impl <a class=\"trait\" href=\"bevy_ecs_ldtk/app/ldtk_int_cell/trait.LdtkIntCell.html\" title=\"trait bevy_ecs_ldtk::app::ldtk_int_cell::LdtkIntCell\">LdtkIntCell</a> for <a class=\"struct\" href=\"lightborne/level/walls/struct.WallBundle.html\" title=\"struct lightborne::level::walls::WallBundle\">WallBundle</a>"]]]]);
-    if (window.register_implementors) {
-        window.register_implementors(implementors);
-    } else {
-        window.pending_implementors = implementors;
-    }
-})()
-//{"start":57,"fragment_lengths":[1689]}

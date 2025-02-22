@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Order"],"macro":["grid","grid_cm"],"struct":["Grid","GridColIter","GridRowIter"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["new_render_image"],"struct":["LightingRenderData"]};

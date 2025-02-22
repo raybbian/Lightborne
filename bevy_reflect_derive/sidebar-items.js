@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"attr":["reflect_remote","reflect_trait"],"derive":["FromReflect","Reflect","TypePath"],"macro":["impl_from_reflect_opaque","impl_reflect","impl_reflect_opaque","impl_type_path"]};

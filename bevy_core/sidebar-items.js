@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["update_frame_count"],"mod":["prelude"],"struct":["FrameCount","FrameCountPlugin","Name","NameOrEntity","NameOrEntityItem","NonSendMarker","TaskPoolOptions","TaskPoolPlugin","TaskPoolThreadAssignmentPolicy","TypeRegistrationPlugin"]};

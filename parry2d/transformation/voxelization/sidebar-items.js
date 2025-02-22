@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["FillMode","VoxelValue"],"struct":["Voxel","VoxelSet","VoxelizedVolume"]};

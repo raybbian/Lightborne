@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["HEX_DIRECTIONS","HEX_OFFSETS"],"enum":["HexColDirection","HexDirection","HexRowDirection"],"struct":["HexNeighbors"]};

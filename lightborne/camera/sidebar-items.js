@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CAMERA_ANIMATION_SECS","CAMERA_HEIGHT","CAMERA_WIDTH"],"enum":["MoveCameraEvent"],"fn":["handle_move_camera","move_camera","set_state_playing","setup_camera"],"struct":["Animation","BackgroundCamera","CameraPlugin","MainCamera","SetStatePlayingCallback"]};

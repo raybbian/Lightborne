@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["zoom_in","zoom_menu_buttons","zoom_out"],"mod":["kb_shortcuts"]};

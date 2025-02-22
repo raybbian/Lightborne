@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["DrawError","Engine","Hinting","OutlineGlyphFormat","SmoothMode","Target"],"mod":["error","pen"],"struct":["AdjustedMetrics","DrawSettings","GlyphStyles","HintingInstance","HintingOptions","OutlineGlyph","OutlineGlyphCollection"],"trait":["OutlinePen"]};

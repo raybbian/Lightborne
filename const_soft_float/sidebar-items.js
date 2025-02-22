@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["soft_f32","soft_f64"]};

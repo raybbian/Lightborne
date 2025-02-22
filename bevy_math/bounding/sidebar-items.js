@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Aabb2d","Aabb3d","AabbCast2d","AabbCast3d","BoundingCircle","BoundingCircleCast","BoundingSphere","BoundingSphereCast","RayCast2d","RayCast3d"],"trait":["Bounded2d","Bounded3d","BoundedExtrusion","BoundingVolume","IntersectsVolume"]};

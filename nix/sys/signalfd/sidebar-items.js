@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SIGNALFD_SIGINFO_SIZE"],"fn":["signalfd"],"struct":["SfdFlags","SignalFd","siginfo"]};

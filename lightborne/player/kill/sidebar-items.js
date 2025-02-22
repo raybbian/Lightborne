@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["kill_player_on_spike","reset_player_on_level_switch","reset_player_position"]};

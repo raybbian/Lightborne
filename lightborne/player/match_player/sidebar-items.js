@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["match_pixel","post_update_match_player_pixel","pre_update_match_player_pixel","update_match_player_z"],"struct":["MatchPlayerPixel","MatchPlayerZ"]};

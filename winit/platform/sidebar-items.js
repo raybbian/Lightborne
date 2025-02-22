@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["modifier_supplement","pump_events","run_on_demand","scancode","startup_notify","x11"]};

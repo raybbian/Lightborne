@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["propagate_transforms","sync_simple_transforms"]};

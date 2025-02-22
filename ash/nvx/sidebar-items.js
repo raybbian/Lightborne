@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["binary_import","image_view_handle","multiview_per_view_attributes"]};

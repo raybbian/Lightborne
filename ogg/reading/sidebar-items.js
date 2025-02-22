@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["OggReadError"],"struct":["BasePacketReader","OggPage","PacketReader","PageParser"]};

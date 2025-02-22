@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["performance_query","shader_integer_functions2"]};

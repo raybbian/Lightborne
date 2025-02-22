@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Capsule3dBuilder","Cone3dBuilder","ConicalFrustum3dBuilder","Cylinder3dBuilder","Plane3dBuilder","Torus3dBuilder"],"trait":["GizmoPrimitive3d"]};

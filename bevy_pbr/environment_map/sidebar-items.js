@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["ENVIRONMENT_MAP_SHADER_HANDLE"],"struct":["EnvironmentMapIds","EnvironmentMapLight","EnvironmentMapViewLightProbeInfo","ReflectionProbeBundle"]};

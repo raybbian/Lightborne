@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["hash","hash_with"],"mod":["id_type_map","undoer"],"struct":["History"]};

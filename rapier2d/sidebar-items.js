@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["VERSION"],"externcrate":["crossbeam","na","parry"],"mod":["control","counters","data","dynamics","geometry","math","pipeline","prelude","utils"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["PointerAction","PointerButton","PointerId","PressDirection"],"fn":["update_pointer_map"],"struct":["Location","PointerInput","PointerInteraction","PointerLocation","PointerMap","PointerPress"]};

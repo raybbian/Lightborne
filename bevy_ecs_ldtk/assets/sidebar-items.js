@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["LdtkProjectData"],"struct":["InternalLevels","LdtkAssetPlugin","LdtkJsonWithMetadata","LdtkProject","LevelIndices","LevelMetadata"],"trait":["LevelMetadataAccessor"]};

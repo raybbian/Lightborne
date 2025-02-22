@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["decorate_string","display_timing","hlsl_functionality1","surfaceless_query","user_type"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["init_start_marker"],"struct":["ButtonBundle","ButtonMarker","StartFlag","StartFlagBundle","StartMarker"]};

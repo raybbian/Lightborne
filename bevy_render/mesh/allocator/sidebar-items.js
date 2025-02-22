@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["allocate_and_free_meshes"],"struct":["MeshAllocator","MeshAllocatorPlugin","MeshAllocatorSettings","MeshBufferSlice"]};

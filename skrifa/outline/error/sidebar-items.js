@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CffError","DrawError","ReadError","ToPathError"],"struct":["HintError"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Annulus2dBuilder","Line2dBuilder","Segment2dBuilder"],"trait":["GizmoPrimitive2d"]};

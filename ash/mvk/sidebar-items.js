@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["ios_surface","macos_surface"]};

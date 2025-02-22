@@ -1,1 +1,0 @@
-searchState.loadedDescShard("assert_type_match", 0, "An attribute macro that can be used to statically verify …")

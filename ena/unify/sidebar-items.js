@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["InPlace","NoError","Snapshot","UnificationTable","VarValue"],"trait":["EqUnifyValue","UnificationStore","UnificationStoreBase","UnificationStoreMut","UnifyKey","UnifyValue"],"type":["InPlaceUnificationTable","UnificationStorage","UnificationTableStorage"]};

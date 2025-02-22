@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["mixer"],"struct":["DynamicMixer","DynamicMixerController"]};

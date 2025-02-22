@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["InstanceRecord","VariationAxisRecord"],"type":["AxisInstanceArrays","Fvar"]};

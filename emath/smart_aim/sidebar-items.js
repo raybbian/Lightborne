@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["best_in_range_f64"]};

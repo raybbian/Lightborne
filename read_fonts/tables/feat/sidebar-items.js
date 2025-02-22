@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["FeatureName","SettingName"],"type":["Feat","SettingNameArray"]};

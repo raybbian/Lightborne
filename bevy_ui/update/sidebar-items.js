@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["update_clipping_system","update_target_camera_system"]};

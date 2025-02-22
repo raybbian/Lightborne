@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CHUNK_SIZE_2D"],"enum":["HexCoordSystem","IsoCoordSystem","TilemapTexture","TilemapType"],"struct":["TilemapGridSize","TilemapId","TilemapRenderSettings","TilemapSize","TilemapSpacing","TilemapTextureSize","TilemapTileSize"]};

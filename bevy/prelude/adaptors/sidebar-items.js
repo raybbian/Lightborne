@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["ChainCurve","ConstantCurve","ContinuationCurve","CurveReparamCurve","ForeverCurve","FunctionCurve","GraphCurve","LinearReparamCurve","MapCurve","PingPongCurve","ReparamCurve","RepeatCurve","ReverseCurve","ZipCurve"]};

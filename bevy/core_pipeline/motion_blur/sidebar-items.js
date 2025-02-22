@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MOTION_BLUR_SHADER_HANDLE"],"mod":["node","pipeline"],"struct":["MotionBlur","MotionBlurBundle","MotionBlurPlugin"]};

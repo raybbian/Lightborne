@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Location","LocationRef","Size"],"type":["NormalizedCoord"]};

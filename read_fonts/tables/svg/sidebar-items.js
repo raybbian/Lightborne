@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["SVGDocumentRecord"],"type":["SVGDocumentList","Svg"]};

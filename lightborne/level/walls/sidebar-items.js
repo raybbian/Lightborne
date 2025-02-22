@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["spawn_wall_collision"],"struct":["Wall","WallBundle"]};

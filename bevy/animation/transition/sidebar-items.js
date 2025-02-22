@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["advance_transitions","expire_completed_transitions"],"struct":["AnimationTransition","AnimationTransitions"]};

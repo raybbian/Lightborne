@@ -1,9 +1,0 @@
-(function() {
-    var type_impls = Object.fromEntries([["parry2d",[["<details class=\"toggle implementors-toggle\" open><summary><section id=\"impl-AsBytes-for-Matrix%3CN,+Const%3C2%3E,+Const%3C1%3E,+ArrayStorage%3CN,+2,+1%3E%3E\" class=\"impl\"><a class=\"src rightside\" href=\"src/parry2d/utils/as_bytes.rs.html#26\">Source</a><a href=\"#impl-AsBytes-for-Matrix%3CN,+Const%3C2%3E,+Const%3C1%3E,+ArrayStorage%3CN,+2,+1%3E%3E\" class=\"anchor\">§</a><h3 class=\"code-header\">impl&lt;N: <a class=\"trait\" href=\"simba/scalar/real/trait.RealField.html\" title=\"trait simba::scalar::real::RealField\">RealField</a>&gt; <a class=\"trait\" href=\"parry2d/utils/trait.AsBytes.html\" title=\"trait parry2d::utils::AsBytes\">AsBytes</a> for <a class=\"type\" href=\"nalgebra/base/alias/type.Vector2.html\" title=\"type nalgebra::base::alias::Vector2\">Vector2</a>&lt;N&gt;</h3></section></summary><div class=\"impl-items\"><details class=\"toggle method-toggle\" open><summary><section id=\"method.as_bytes\" class=\"method trait-impl\"><a class=\"src rightside\" href=\"src/parry2d/utils/as_bytes.rs.html#26\">Source</a><a href=\"#method.as_bytes\" class=\"anchor\">§</a><h4 class=\"code-header\">fn <a href=\"parry2d/utils/trait.AsBytes.html#tymethod.as_bytes\" class=\"fn\">as_bytes</a>(&amp;self) -&gt; &amp;[<a class=\"primitive\" href=\"https://doc.rust-lang.org/1.85.0/std/primitive.u8.html\">u8</a>] <a href=\"#\" class=\"tooltip\" data-notable-ty=\"&amp;[u8]\">ⓘ</a></h4></section></summary><div class='docblock'>Converts <code>self</code> to a slice of bytes.</div></details></div></details>","AsBytes","parry2d::math::Vector","parry2d::math::CrossMatrix"]]]]);
-    if (window.register_type_impls) {
-        window.register_type_impls(type_impls);
-    } else {
-        window.pending_type_impls = type_impls;
-    }
-})()
-//{"start":55,"fragment_lengths":[1613]}

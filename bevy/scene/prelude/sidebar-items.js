@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["SceneFilter"],"struct":["DynamicScene","DynamicSceneBuilder","DynamicSceneBundle","DynamicSceneRoot","Scene","SceneBundle","SceneRoot","SceneSpawner"]};

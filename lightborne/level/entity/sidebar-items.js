@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["adjust_semisolid_colliders","set_semisolid"],"struct":["FixedEntityBundle","HurtMarker","SemiSolid","SemiSolidPlatformBundle","Spike","SpikeBundle"]};

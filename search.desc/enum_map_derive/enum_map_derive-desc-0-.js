@@ -1,1 +1,0 @@
-searchState.loadedDescShard("enum_map_derive", 0, "Procedural macro implementing <code>#[derive(Enum)]</code>\nDerive macro generating an implementation of trait <code>Enum</code>.")

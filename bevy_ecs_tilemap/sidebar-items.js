@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["helpers","map","prelude","tiles"],"struct":["FrustumCulling","MaterialTilemapBundle","TilemapFirstSet","TilemapPlugin"],"type":["TilemapBundle"]};

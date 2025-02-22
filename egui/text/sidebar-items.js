@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["TAB_SIZE"],"enum":["FontFamily"],"struct":["CCursor","FontData","FontDefinitions","Fonts","Galley","LayoutJob","LayoutSection","TextFormat","TextWrapping"]};

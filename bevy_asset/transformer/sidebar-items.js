@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["IdentityAssetTransformer","TransformedAsset","TransformedSubAsset"],"trait":["AssetTransformer"]};

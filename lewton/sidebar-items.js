@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["VorbisError"],"mod":["audio","header","inside_ogg","samples"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["GameState","ResetLevel"],"struct":["GroupLabel"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Style"],"struct":["Attributes","Stretch","Weight"]};

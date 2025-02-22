@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["fuzzy_indices","fuzzy_match"],"struct":["ClangdMatcher"]};

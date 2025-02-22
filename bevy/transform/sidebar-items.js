@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["TransformSystem"],"mod":["bundles","commands","components","helper","plugins","systems","traits"],"struct":["TransformPlugin"],"trait":["TransformPoint"]};

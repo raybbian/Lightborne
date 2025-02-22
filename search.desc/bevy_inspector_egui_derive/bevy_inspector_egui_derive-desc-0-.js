@@ -1,1 +1,0 @@
-searchState.loadedDescShard("bevy_inspector_egui_derive", 0, "Derive macro used to derive <code>InspectorOptions</code>")

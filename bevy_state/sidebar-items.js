@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["app","commands","condition","prelude","reflect","state","state_scoped","state_scoped_events"]};

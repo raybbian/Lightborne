@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AccessibilitySystem"],"struct":["AccessibilityNode","AccessibilityPlugin","AccessibilityRequested","ActionRequest","Focus","ManageAccessibilityUpdates"]};

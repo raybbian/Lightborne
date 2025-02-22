@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["SelectionMode"],"fn":["hierarchy_ui"],"struct":["Hierarchy","SelectedEntities"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Align"],"fn":["center_size_in_rect"],"struct":["Align2"]};

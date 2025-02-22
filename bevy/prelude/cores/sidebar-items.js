@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ChunkedUnevenCoreError","EvenCoreError","InterpolationDatum","UnevenCoreError"],"fn":["even_interp","uneven_interp"],"struct":["ChunkedUnevenCore","EvenCore","UnevenCore"]};

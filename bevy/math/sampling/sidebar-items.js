@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["mesh_sampling","shape_sampling","standard"],"struct":["BoundaryOf","InteriorOf","UniformMeshSampler"],"trait":["FromRng","ShapeSample"]};

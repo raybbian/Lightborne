@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AllocationError","Dedicated","DeviceMapError","MapError","OutOfMemory"],"struct":["AllocationFlags","Config","DeviceProperties","GpuAllocator","MappedMemoryRange","MemoryBlock","MemoryHeap","MemoryPropertyFlags","MemoryType","Request","UsageFlags"],"trait":["MemoryDevice"]};

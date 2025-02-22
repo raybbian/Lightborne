@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["bundles","commands","components","helper","plugins","systems","traits"]};

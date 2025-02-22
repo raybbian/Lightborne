@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["add_circle_quadrant","rounded_rectangle"]};

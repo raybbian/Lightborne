@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["snapshot_vec","undo_log","unify"]};

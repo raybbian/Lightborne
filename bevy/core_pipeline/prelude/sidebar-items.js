@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Camera2d","Camera2dBundle","Camera3d","Camera3dBundle"]};

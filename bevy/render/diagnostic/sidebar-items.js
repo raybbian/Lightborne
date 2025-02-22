@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["PassSpanGuard","RenderDiagnosticsPlugin","TimeSpanGuard"],"trait":["RecordDiagnostics"]};

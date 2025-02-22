@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"trait":["RawLevelAccessor"],"type":["IterLevels","IterLevelsWithIndices","IterRootLevels","IterRootLevelsWithIndices","IterWorldLevels","IterWorldLevelsWithIndices"]};

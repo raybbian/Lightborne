@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["tags"],"struct":["ValueRecord"],"type":["Mvar"]};

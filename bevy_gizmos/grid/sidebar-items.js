@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["GridBuilder2d","GridBuilder3d"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["prepare_post_processing_pipelines","prepare_post_processing_uniforms"],"struct":["ChromaticAberration","ChromaticAberrationUniform","PostProcessingNode","PostProcessingPipeline","PostProcessingPipelineId","PostProcessingPipelineKey","PostProcessingPlugin","PostProcessingUniformBufferOffsets","PostProcessingUniformBuffers"]};

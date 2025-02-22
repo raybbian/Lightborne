@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CollisionEvent"],"struct":["ContactForceEvent","ContactModificationContextView","PairFilterContextView","QueryFilter","QueryFilterFlags"],"trait":["BevyPhysicsHooks"]};

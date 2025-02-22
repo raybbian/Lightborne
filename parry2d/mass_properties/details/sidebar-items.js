@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["convex_polygon_area_and_center_of_mass","trimesh_area_and_center_of_mass"]};

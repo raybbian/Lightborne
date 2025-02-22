@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["FieldType","OffsetType"],"struct":["ArrayOffset","Field","RecordResolver","ResolvedOffset","StringOffset"],"trait":["SomeArray","SomeRecord","SomeString","SomeTable"]};

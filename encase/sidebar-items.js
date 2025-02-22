@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"derive":["ShaderType"],"macro":["impl_matrix","impl_rts_array","impl_vector","impl_wrapper"],"mod":["internal","matrix","rts_array","vector"],"struct":["ArrayLength","DynamicStorageBuffer","DynamicUniformBuffer","StorageBuffer","UniformBuffer"],"trait":["CalculateSizeFor","ShaderSize","ShaderType"]};

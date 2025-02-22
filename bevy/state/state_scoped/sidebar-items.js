@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["clear_state_scoped_entities"],"struct":["StateScoped"]};

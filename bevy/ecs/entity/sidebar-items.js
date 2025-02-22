@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"derive":["VisitEntities","VisitEntitiesMut"],"struct":["Entities","Entity","EntityHash","EntityHasher","EntityLocation","ReserveEntitiesIterator","SceneEntityMapper"],"trait":["EntityMapper","MapEntities","VisitEntities","VisitEntitiesMut"],"type":["EntityHashMap","EntityHashSet"]};

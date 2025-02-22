@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CursorGrab","IMEPurpose","ResizeDirection","SystemTheme","ViewportClass","ViewportCommand","WindowLevel","X11WindowType"],"struct":["IconData","ImmediateViewport","ViewportBuilder","ViewportId","ViewportIdPair","ViewportOutput"],"type":["DeferredViewportUiCallback","ImmediateViewportRendererCallback","ViewportIdMap","ViewportIdSet"]};

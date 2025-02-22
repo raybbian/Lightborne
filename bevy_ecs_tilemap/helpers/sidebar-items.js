@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["filling","geometry","hex_grid","projection","selection","square_grid","transform"]};

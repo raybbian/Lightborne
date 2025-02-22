@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Brush","ColorGlyphFormat","CompositeMode","Extend","PaintCachedColorGlyph","PaintError"],"struct":["ColorGlyph","ColorGlyphCollection","ColorStop","Transform"],"trait":["ColorPainter"]};

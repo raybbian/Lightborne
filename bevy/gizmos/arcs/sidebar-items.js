@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Arc2dBuilder","Arc3dBuilder"]};

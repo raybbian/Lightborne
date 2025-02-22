@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["ui_for_value","ui_for_value_readonly"],"struct":["Context","InspectorUi"],"trait":["ProjectorReflect"],"type":["ShortCircuitFn","ShortCircuitFnMany","ShortCircuitFnReadonly"]};

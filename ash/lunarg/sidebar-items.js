@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["direct_driver_loading"]};

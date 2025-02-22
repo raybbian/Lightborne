@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["from_reflect_with_fallback"],"struct":["AppTypeRegistry","ReflectBundle","ReflectBundleFns","ReflectComponent","ReflectComponentFns","ReflectFromWorld","ReflectFromWorldFns","ReflectMapEntities","ReflectResource","ReflectResourceFns","ReflectVisitEntities","ReflectVisitEntitiesMut"],"trait":["ReflectCommandExt"]};

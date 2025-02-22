@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["BORDER","CORNERS","TEXTURED","UNTEXTURED"]};

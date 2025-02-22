@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["NO_SYMBOL"],"fn":["keysym"],"mod":["key"],"struct":["KeyCode","Keysym"],"type":["RawKeyCode","RawKeysym"]};

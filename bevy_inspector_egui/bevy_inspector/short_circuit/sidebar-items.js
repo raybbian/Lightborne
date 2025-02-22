@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["short_circuit","short_circuit_many","short_circuit_readonly"]};

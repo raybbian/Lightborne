@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["RequestedAxis","RunMode","SizingMode","TaffyError"],"mod":["traits"],"struct":["Cache","CollapsibleMarginSet","Layout","LayoutInput","LayoutOutput","NodeId","TaffyTree"],"type":["TaffyResult"]};

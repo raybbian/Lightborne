@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["LIGHT_SHADER_PATH"],"struct":["LightMaterial","LightRenderData"]};

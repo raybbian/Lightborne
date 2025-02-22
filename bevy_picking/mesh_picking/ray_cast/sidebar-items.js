@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Backfaces","RayCastVisibility"],"fn":["ray_aabb_intersection_3d","ray_mesh_intersection"],"struct":["MeshRayCast","RayCastBackfaces","RayCastSettings","RayMeshHit","SimplifiedMesh"]};

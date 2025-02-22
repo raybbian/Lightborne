@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["incircle","insphere","orient2d","orient3d"],"struct":["Coord","Coord3D"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["mesh_sampling","shape_sampling","standard"]};

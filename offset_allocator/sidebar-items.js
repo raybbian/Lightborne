@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["ext"],"struct":["Allocation","Allocator","StorageReport","StorageReportFull","StorageReportFullRegion"],"trait":["NodeIndex","NodeIndexNonMax"]};

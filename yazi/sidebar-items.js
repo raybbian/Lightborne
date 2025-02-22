@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CompressionLevel","CompressionStrategy","Error","Format"],"fn":["compress","decompress"],"struct":["Adler32","Decoder","DecoderStream","Encoder","EncoderStream"]};

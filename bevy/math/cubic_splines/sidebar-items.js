@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CubicNurbsError"],"struct":["CubicBSpline","CubicBezier","CubicBezierError","CubicCardinalSpline","CubicCurve","CubicHermite","CubicNurbs","CubicSegment","InsufficientDataError","LinearSpline","RationalCurve","RationalSegment"],"trait":["CubicGenerator","CyclicCubicGenerator","RationalGenerator"]};

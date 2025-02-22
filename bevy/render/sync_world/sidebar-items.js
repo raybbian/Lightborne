@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["MainEntity","RenderEntity","SyncToRenderWorld","SyncWorldPlugin","TemporaryRenderEntity"],"type":["MainEntityHashMap","MainEntityHashSet"]};

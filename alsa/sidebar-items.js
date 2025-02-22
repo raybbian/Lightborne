@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Direction","Round","ValueOr"],"mod":["card","ctl","device_name","direct","hctl","mixer","pcm","poll","rawmidi","seq"],"struct":["Error","Output"],"type":["Result"]};

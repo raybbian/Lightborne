@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["NoUndo","Snapshot","VecLog"],"trait":["Rollback","Snapshots","UndoLogs"]};

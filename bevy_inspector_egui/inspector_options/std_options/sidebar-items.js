@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["EntityDisplay","NumberDisplay","QuatDisplay"],"struct":["EntityOptions","NumberOptions","QuatOptions","RangeOptions"]};

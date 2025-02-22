@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["CacheStorage","FrameCache","FramePublisher"],"trait":["CacheTrait","ComputerMut"]};
