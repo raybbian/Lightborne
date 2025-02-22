@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier2d::{math::Real, plugin::RapierContext};
+use bevy_rapier2d::plugin::RapierContext;
 use enum_map::{enum_map, EnumMap};
 use itertools::Itertools;
 
@@ -170,7 +170,7 @@ pub fn preview_light_path(
     let dummy_source = LightBeamSource {
         start_pos: ray_pos,
         start_dir: ray_dir,
-        time_traveled: Real::MAX,
+        time_traveled: 10000.0, // LOL
         color: inventory.current_color,
     };
     let playback = play_light_beam(rapier_context.into_inner(), &dummy_source);
