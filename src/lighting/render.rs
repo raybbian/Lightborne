@@ -6,7 +6,7 @@ use bevy::{
 };
 
 use super::material::{
-    BackgroundMaterial, BlurMaterial, CombineFramesMaterial, FrameMaskMaterial,
+    BackgroundMaterial, BlurMaterial, CombineFramesMaterial, FrameMaskMaterial, FrameMaskUniforms,
     GradientLightMaterial,
 };
 
@@ -86,9 +86,12 @@ impl FromWorld for LightingRenderData {
         let frame_mask_materials = (0..16)
             .map(|i| {
                 materials.add(FrameMaskMaterial {
-                    frame_count_x: 4,
-                    frame_count_y: 4,
-                    frame_index: i,
+                    frame_info: FrameMaskUniforms {
+                        frame_count_x: 4,
+                        frame_count_y: 4,
+                        frame_index: i,
+                        _webgl_padding: 0.0,
+                    },
                     color: Vec4::new(1. - (i as f32 / 16.0), 0.0, i as f32 / 16.0, 1.0),
                 })
             })

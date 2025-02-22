@@ -39,15 +39,19 @@ impl Material2d for CombineFramesMaterial {
     }
 }
 
+#[derive(Clone, Debug, ShaderType)]
+pub struct FrameMaskUniforms {
+    pub frame_count_x: i32,
+    pub frame_count_y: i32,
+    pub frame_index: i32,
+    pub _webgl_padding: f32,
+}
+
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct FrameMaskMaterial {
     #[uniform(0)]
-    pub frame_count_x: i32,
+    pub frame_info: FrameMaskUniforms,
     #[uniform(1)]
-    pub frame_count_y: i32,
-    #[uniform(2)]
-    pub frame_index: i32,
-    #[uniform(3)]
     pub color: Vec4,
 }
 
@@ -111,6 +115,11 @@ mod tests {
     #[test]
     fn combine_frames_material_alignment() {
         assert_eq!(mem::size_of::<CombineFramesMaterial>() % 16, 0);
+    }
+
+    #[test]
+    fn frame_mask_uniform_alignment() {
+        assert_eq!(mem::size_of::<FrameMaskUniforms>() % 16, 0);
     }
 
     #[test]
