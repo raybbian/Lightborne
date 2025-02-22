@@ -6655,64 +6655,29 @@
 							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
 							"__smartColor": "#BE4A2F",
 							"iid": "8a4a3c30-e920-11ef-8ea2-5145a41b5639",
-							"width": 16,
+							"width": 8,
 							"height": 8,
 							"defUid": 730,
 							"px": [144,152],
 							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [
-									{ "cx": 22, "cy": 19 },
-									{ "cx": 22, "cy": 12 },
-									{ "cx": 25, "cy": 12 },
-									{ "cx": 25, "cy": 9 },
-									{ "cx": 22, "cy": 9 },
-									{ "cx": 18, "cy": 11 },
-									{ "cx": 16, "cy": 8 },
-									{ "cx": 13, "cy": 10 },
-									{ "cx": 9, "cy": 10 }
-								], "__tile": null, "defUid": 731, "realEditorValues": [
-									{
-										"id": "V_String",
-										"params": ["22,19"]
-									},
-									{
-										"id": "V_String",
-										"params": ["22,12"]
-									},
-									{
-										"id": "V_String",
-										"params": ["25,12"]
-									},
-									{
-										"id": "V_String",
-										"params": ["25,9"]
-									},
-									{
-										"id": "V_String",
-										"params": ["22,9"]
-									},
-									{
-										"id": "V_String",
-										"params": ["18,11"]
-									},
-									{
-										"id": "V_String",
-										"params": ["16,8"]
-									},
-									{
-										"id": "V_String",
-										"params": ["13,10"]
-									},
-									{
-										"id": "V_String",
-										"params": ["9,10"]
-									}
-								] },
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [ { "cx": 22, "cy": 19 }, { "cx": 22, "cy": 15 }, { "cx": 18, "cy": 15 }, { "cx": 20, "cy": 17 } ], "__tile": null, "defUid": 731, "realEditorValues": [ {
+									"id": "V_String",
+									"params": ["22,19"]
+								}, {
+									"id": "V_String",
+									"params": ["22,15"]
+								}, {
+									"id": "V_String",
+									"params": ["18,15"]
+								}, {
+									"id": "V_String",
+									"params": ["20,17"]
+								} ] },
 								{ "__identifier": "default_state", "__type": "Bool", "__value": true, "__tile": null, "defUid": 732, "realEditorValues": [{
 									"id": "V_Bool",
 									"params": [ true ]
 								}] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 5, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [5] }] }
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [20] }] }
 							],
 							"__worldX": 144,
 							"__worldY": 152
