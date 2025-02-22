@@ -15928,6 +15928,22 @@
 							"fieldInstances": [],
 							"__worldX": 32,
 							"__worldY": 152
+						},
+						{
+							"__identifier": "Lyra",
+							"__grid": [4,18],
+							"__pivot": [0.5,1],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FF0044",
+							"iid": "c99d0020-e920-11ef-ad55-bbb5f6b76040",
+							"width": 16,
+							"height": 19,
+							"defUid": 106,
+							"px": [36,152],
+							"fieldInstances": [],
+							"__worldX": 36,
+							"__worldY": 152
 						}
 					]
 				},
@@ -16530,22 +16546,6 @@
 							],
 							"__worldX": 2832,
 							"__worldY": 352
-						},
-						{
-							"__identifier": "Lyra",
-							"__grid": [2,19],
-							"__pivot": [0.5,1],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FF0044",
-							"iid": "c99d0020-e920-11ef-ad55-bbb5f6b76040",
-							"width": 16,
-							"height": 19,
-							"defUid": 106,
-							"px": [20,160],
-							"fieldInstances": [],
-							"__worldX": 2580,
-							"__worldY": 344
 						}
 					]
 				},
