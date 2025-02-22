@@ -5,18 +5,10 @@ pub struct ConfigPlugin;
 
 impl Plugin for ConfigPlugin {
     fn build(&self, app: &mut App) {
-        let config_path = if let Ok(true) = std::fs::exists("Lightborne.toml") {
-            "Lightborne.toml"
-        } else {
-            "Lightborne_example.toml"
+        let config: Config = match std::fs::read_to_string("Lightborne.toml") {
+            Ok(contents) => toml::from_str(&contents).expect("Failed to parse Lightborne.toml"),
+            Err(_) => Config::default(),
         };
-        let config: Config =
-            toml::from_str(&std::fs::read_to_string(config_path).unwrap_or_else(|_| {
-                panic!("Failed to find {config_path}. Is it in the right place?")
-            }))
-            .unwrap_or_else(|_| {
-                panic!("Failed to parse {config_path}. Is it formatted correctly?")
-            });
         app.insert_resource(config);
     }
 }
@@ -27,7 +19,19 @@ pub struct Config {
     pub debug_config: DebugConfig,
 }
 
-#[derive(Deserialize)]
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            level_config: LevelConfig {
+                level_index: 9,
+                level_path: "assets/lightborne.ldtk".into(),
+            },
+            debug_config: DebugConfig::default(),
+        }
+    }
+}
+
+#[derive(Deserialize, Default)]
 pub struct DebugConfig {
     pub ui: bool,
 }
