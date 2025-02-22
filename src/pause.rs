@@ -46,6 +46,7 @@ fn despawn_pause(mut commands: Commands, query: Query<Entity, With<PauseMarker>>
 
 fn toggle_pause(state: Res<State<GameState>>, mut next_state: ResMut<NextState<GameState>>) {
     next_state.set(match state.get() {
+        GameState::Switching => state.get().clone(),
         GameState::Paused => GameState::Playing,
         GameState::Playing => GameState::Paused,
     })

@@ -1,7 +1,10 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{prelude::*, systems::process_ldtk_levels};
 
 use crate::{
+    camera::{MoveCameraEvent, CAMERA_ANIMATION_SECS, CAMERA_HEIGHT, CAMERA_WIDTH},
     player::{LdtkPlayerBundle, PlayerMarker},
     shared::{GameState, ResetLevel},
 };
@@ -70,15 +73,20 @@ pub enum LevelSystems {
 }
 
 /// [`System`] that will run on [`Update`] to check if the Player has moved to another level. If
-/// the player has, then a [`LevelSwitchEvent`] will be sent out to notify other systems.
+/// the player has, then a MoveCameraEvent is sent. After the animation is finished, the Camera
+/// handling code will send a LevelSwitch event that will notify other systems to cleanup the
+/// levels.
+#[allow(clippy::too_many_arguments)]
 fn switch_level(
     q_player: Query<&Transform, With<PlayerMarker>>,
     q_level: Query<(Entity, &LevelIid)>,
     mut level_selection: ResMut<LevelSelection>,
     ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
-    mut ev_reset_level: EventWriter<ResetLevel>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     mut current_level: ResMut<CurrentLevel>,
+    on_level_switch_finish_cb: Local<OnFinishLevelSwitchCallback>,
+    mut ev_move_camera: EventWriter<MoveCameraEvent>,
 ) {
     let Ok(transform) = q_player.get_single() else {
         return;
@@ -101,8 +109,30 @@ fn switch_level(
 
         if world_box.contains(transform.translation.xy()) {
             if current_level.level_iid != *level_iid {
-                if !current_level.level_iid.get().is_empty() {
-                    ev_reset_level.send(ResetLevel::Switching);
+                // relies on camera to reset the state back to switching??
+                if !current_level.level_iid.to_string().is_empty() {
+                    next_game_state.set(GameState::Switching);
+
+                    let (x_min, x_max) = (
+                        world_box.min.x + CAMERA_WIDTH * 0.5,
+                        world_box.max.x - CAMERA_WIDTH * 0.5,
+                    );
+                    let (y_min, y_max) = (
+                        world_box.min.y + CAMERA_HEIGHT * 0.5,
+                        world_box.max.y - CAMERA_HEIGHT * 0.5,
+                    );
+
+                    let new_pos = Vec2::new(
+                        transform.translation.x.max(x_min).min(x_max),
+                        transform.translation.y.max(y_min).min(y_max),
+                    );
+
+                    ev_move_camera.send(MoveCameraEvent::Animated {
+                        to: new_pos,
+                        duration: Duration::from_secs_f32(CAMERA_ANIMATION_SECS),
+                        callback: Some(on_level_switch_finish_cb.0),
+                        curve: EasingCurve::new(0.0, 1.0, EaseFunction::SineInOut),
+                    });
                 }
 
                 *current_level = CurrentLevel {
@@ -115,4 +145,20 @@ fn switch_level(
             break;
         }
     }
+}
+
+pub struct OnFinishLevelSwitchCallback(pub SystemId);
+
+impl FromWorld for OnFinishLevelSwitchCallback {
+    fn from_world(world: &mut World) -> Self {
+        OnFinishLevelSwitchCallback(world.register_system(on_finish_level_switch))
+    }
+}
+
+pub fn on_finish_level_switch(
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut ev_reset_level: EventWriter<ResetLevel>,
+) {
+    next_game_state.set(GameState::Playing);
+    ev_reset_level.send(ResetLevel::Switching);
 }
