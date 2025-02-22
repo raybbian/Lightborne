@@ -9,7 +9,7 @@ use segments::{
     cleanup_light_sources, simulate_light_sources, tick_light_sources, LightSegmentCache,
     PrevLightBeamPlayback,
 };
-use sensor::{reset_light_sensors, update_light_sensors, HitByLightEvent};
+use sensor::{reset_light_sensors, update_light_sensors};
 
 use crate::{level::LevelSystems, shared::ResetLevel};
 
@@ -31,7 +31,6 @@ impl Plugin for LightManagementPlugin {
         app.add_plugins(Material2dPlugin::<LightMaterial>::default())
             .init_resource::<LightRenderData>()
             .init_resource::<LightSegmentCache>()
-            .add_event::<HitByLightEvent>()
             .add_systems(
                 Update,
                 (simulate_light_sources, update_light_sensors)

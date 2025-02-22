@@ -1,4 +1,4 @@
-use bevy::{ecs::entity::EntityHashSet, prelude::*, time::Stopwatch};
+use bevy::{prelude::*, time::Stopwatch};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::time::Duration;
@@ -10,11 +10,6 @@ use crate::{
 
 use super::LightColor;
 
-/// [`Event`] used to notify other entities to trigger based on collision with light.
-/// An included [`Entity`] is used to indicate the corresponding [`LightSensor`].
-#[derive(Event)]
-pub struct HitByLightEvent(pub Entity);
-
 /// [`Component`] added to entities receptive to light. The
 /// [`activation_timer`](LightSensor::activation_timer) should be initialized in the
 /// `From<&EntityInstance>` implemenation for the [`LightSensorBundle`], if not default.
@@ -24,22 +19,30 @@ pub struct LightSensor {
     pub cumulative_exposure: Stopwatch,
     /// The amount of time the light beam needs to be hitting the sensor for activation
     pub activation_timer: Timer,
-    /// Whether or not the sensor was hit the previous frame
-    pub was_hit: bool,
+    /// Number of light beams hitting the sensor
+    pub hit_count: usize,
     /// The color of the crystals to toggle
     pub toggle_color: CrystalColor,
+    /// If the sensor was previously hit or not
+    pub was_hit: Option<bool>,
 }
 
 impl LightSensor {
     fn new(toggle_color: CrystalColor) -> Self {
-        let mut timer = Timer::new(Duration::from_millis(300), TimerMode::Once);
-        timer.pause();
         LightSensor {
-            activation_timer: timer,
+            activation_timer: Timer::new(Duration::from_millis(300), TimerMode::Once),
             cumulative_exposure: Stopwatch::default(),
-            was_hit: false,
+            hit_count: 0,
+            was_hit: None,
             toggle_color,
         }
+    }
+
+    fn reset(&mut self) {
+        self.activation_timer.reset();
+        self.hit_count = 0;
+        self.was_hit = None;
+        self.cumulative_exposure.reset();
     }
 }
 
@@ -89,10 +92,7 @@ impl From<&EntityInstance> for LightSensorBundle {
 /// [`System`] that resets the [`LightSensor`]s when a [`LevelSwitchEvent`] is received.
 pub fn reset_light_sensors(mut q_sensors: Query<&mut LightSensor>) {
     for mut sensor in q_sensors.iter_mut() {
-        sensor.activation_timer.reset();
-        sensor.activation_timer.pause();
-        sensor.was_hit = false;
-        sensor.cumulative_exposure.reset();
+        sensor.reset()
     }
 }
 
@@ -105,31 +105,32 @@ pub fn reset_light_sensors(mut q_sensors: Query<&mut LightSensor>) {
 pub fn update_light_sensors(
     mut commands: Commands,
     mut q_sensors: Query<(Entity, &mut LightSensor)>,
-    mut ev_hit_by_light: EventReader<HitByLightEvent>,
     mut ev_crystal_toggle: EventWriter<CrystalToggleEvent>,
     asset_server: Res<AssetServer>,
     time: Res<Time>,
 ) {
-    let mut hit_sensors: EntityHashSet = EntityHashSet::default();
-    for ev in ev_hit_by_light.read() {
-        hit_sensors.insert(ev.0);
-    }
-
     for (entity, mut sensor) in q_sensors.iter_mut() {
-        let was_hit = hit_sensors.contains(&entity);
+        let was_hit = sensor.hit_count > 0;
 
         if was_hit {
-            if !sensor.was_hit {
-                sensor.activation_timer.unpause();
-            }
             sensor.cumulative_exposure.tick(time.delta());
         }
 
-        // if prev sensor state was different than current, we reset its timer
-        if sensor.was_hit != was_hit {
-            sensor.activation_timer.reset();
+        match (was_hit, sensor.was_hit) {
+            (_, None) => {
+                sensor.activation_timer.pause();
+            }
+            (true, Some(false)) => {
+                sensor.activation_timer.unpause();
+                sensor.activation_timer.reset();
+            }
+            (false, Some(true)) => {
+                sensor.activation_timer.reset();
+            }
+            _ => (),
         }
 
+        sensor.was_hit = Some(was_hit);
         sensor.activation_timer.tick(time.delta());
 
         if sensor.activation_timer.just_finished() {
@@ -142,7 +143,5 @@ pub fn update_light_sensors(
                 PlaybackSettings::DESPAWN,
             ));
         }
-
-        sensor.was_hit = was_hit;
     }
 }
