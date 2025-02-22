@@ -1,4 +1,3 @@
-
 #import bevy_render::globals::Globals
 #import bevy_sprite::mesh2d_vertex_output::VertexOutput
 
@@ -8,7 +7,7 @@ struct FrameMaskUniforms {
     frame_count_x: i32,
     frame_count_y: i32,
     frame_index: i32,
-    _webgl_padding: f32,
+    _wasm_padding: f32,
 }
 @group(2) @binding(0) var<uniform> frame_info: FrameMaskUniforms;
 @group(2) @binding(1) var<uniform> color: vec4<f32>;
