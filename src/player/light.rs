@@ -20,7 +20,7 @@ pub struct PlayerLightInventory {
 }
 
 impl PlayerLightInventory {
-    pub fn colors(colors: &Vec<LightColor>) -> Self {
+    pub fn colors(colors: &[LightColor]) -> Self {
         PlayerLightInventory {
             current_color: colors[0],
             sources: enum_map! {
