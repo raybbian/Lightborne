@@ -21,6 +21,7 @@ mod input;
 mod level;
 mod light;
 mod lighting;
+mod particle;
 mod pause;
 mod player;
 mod shared;
