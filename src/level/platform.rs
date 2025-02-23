@@ -181,13 +181,54 @@ pub fn move_platforms(
         With<PlayerMarker>
     >,
     rapier_context: ReadDefaultRapierContext,
-    time: Res<Time>
+    time: Res<Time>,
+    mut ev_reset_level: EventWriter<ResetLevel>
 ) {
+    let player_single = player_q.get_single_mut();
+    if player_single.is_err() {
+        return;
+    }
+    let mut player = player_single.unwrap();
+    let mut entity_below_player: Option<Entity>;
+    entity_below_player = None;
+    let mut entity_above_player: Option<Entity>;
+    entity_above_player = None;
+    if let Some((found_entity, _)) = rapier_context.cast_shape( // Note: Query Filter is needed!
+        Vec2::new(player.3.translation.x, player.3.translation.y - 10.0),
+        0.0,
+        Vec2::new(0.0, -1.0),
+        &Collider::cuboid(8.0, 0.375),
+        ShapeCastOptions {
+            max_time_of_impact: 0.0,
+            target_distance: 0.0,
+            stop_at_penetration: true,
+            compute_impact_geometry_on_penetration: false
+        },
+        QueryFilter::default()
+    ) {
+        entity_below_player = Some(found_entity);
+    }
+
+    if let Some((found_entity, _)) = rapier_context.cast_shape( // Note: Query Filter is needed!
+        Vec2::new(player.3.translation.x, player.3.translation.y + 10.0),
+        0.0,
+        Vec2::new(0.0, -1.0),
+        &Collider::cuboid(8.0, 0.375),
+        ShapeCastOptions {
+            max_time_of_impact: 0.0,
+            target_distance: 0.0,
+            stop_at_penetration: true,
+            compute_impact_geometry_on_penetration: false
+        },
+        QueryFilter::default()
+    ) {
+        entity_above_player = Some(found_entity);
+    }
+    
     for (mut platform, mut transform, mut rigid_body, mut velocity, entity, global_transform) in level_q.iter_mut() {
         if platform.is_init.is_none() {
             continue;
         }
-        let mut player = player_q.get_single_mut().unwrap();
         let path = platform.path.clone();
         //print!("Path is {:?} ", platform.path);
         let speed = platform.speed;
@@ -225,6 +266,23 @@ pub fn move_platforms(
             player.3.translation.x += direction_vec.x * speed * time.delta_secs();
         }
 
+        
+        if !entity_above_player.is_none() {
+            if entity_above_player.unwrap().eq(&entity) {
+                if player.2.grounded && platform.curr_velocity.unwrap().y < 0.0 {
+                    ev_reset_level.send(ResetLevel::Respawn);
+                }
+            }
+        }
+        
+
+        if !entity_below_player.is_none() {
+            if entity_below_player.unwrap().eq(&entity) {
+                player.3.translation += Vec3::new(direction_vec.x, direction_vec.y, 0.0) * speed * time.delta_secs();
+            }
+        }
+
+        /*
         if let Some((found_entity, _)) = rapier_context.cast_shape(
             Vec2::new(player.3.translation.x, player.3.translation.y - 10.0),
             0.0,
@@ -242,6 +300,7 @@ pub fn move_platforms(
                 player.3.translation += Vec3::new(direction_vec.x, direction_vec.y, 0.0) * speed * time.delta_secs();
             }
         }
+        */
 
         //impulse.impulse = direction_and_velocity;
         let distance = current_position.distance(curr_segment.unwrap().as_vec2());
