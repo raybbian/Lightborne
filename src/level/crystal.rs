@@ -31,8 +31,14 @@ impl Plugin for CrystalPlugin {
                 )
                     .in_set(LevelSystems::Processing),
             )
-            .add_systems(Update, on_crystal_changed.in_set(LevelSystems::Simulation))
-            .add_systems(FixedUpdate, reset_crystals.run_if(on_event::<ResetLevel>));
+            // Has event reader, so must be on update
+            .add_systems(
+                Update,
+                (
+                    on_crystal_changed.in_set(LevelSystems::Simulation),
+                    reset_crystals.run_if(on_event::<ResetLevel>),
+                ),
+            );
 
         for i in 3..=10 {
             app.register_ldtk_int_cell_for_layer::<CrystalBundle>("Terrain", i);

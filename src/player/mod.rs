@@ -77,24 +77,26 @@ impl Plugin for PlayerManagementPlugin {
                 .in_set(LevelSystems::Simulation)
                 .after(update_cursor_world_coords),
         )
+        // Has an event reader, so should be place in update
+        .add_systems(Update, reset_player_position)
+        .add_systems(
+            Update,
+            (
+                quick_reset
+                    .run_if(input_just_pressed(KeyCode::KeyR))
+                    .run_if(in_state(GameState::Playing)),
+                reset_player_on_level_switch.run_if(on_event::<ResetLevel>),
+            ),
+        )
         .add_systems(
             FixedUpdate,
-            reset_player_on_level_switch.run_if(on_event::<ResetLevel>),
-        )
-        .add_systems(FixedUpdate, reset_player_position)
-        .add_systems(
-            Update,
-            quick_reset
-                .run_if(input_just_pressed(KeyCode::KeyR))
-                .run_if(in_state(GameState::Playing)),
+            (
+                kill_player_on_hurt_intersection.in_set(LevelSystems::Simulation),
+                set_semisolid.in_set(LevelSystems::Simulation),
+            ),
         )
         .add_systems(
-            Update,
-            kill_player_on_hurt_intersection.in_set(LevelSystems::Simulation),
-        )
-        .add_systems(Update, set_semisolid.in_set(LevelSystems::Simulation))
-        .add_systems(
-            Update,
+            PreUpdate,
             adjust_semisolid_colliders.in_set(LevelSystems::Processing),
         )
         .add_systems(FixedUpdate, update_strand.in_set(LevelSystems::Simulation))
