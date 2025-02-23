@@ -25,7 +25,7 @@ const PLAYER_GRAVITY: f32 = 0.15;
 #[derive(Component, Default)]
 pub struct PlayerMovement {
     /// Holds information that is passed into the rapier character controller's translation
-    pub velocity: Vec2,
+    velocity: Vec2,
     should_jump_ticks_remaining: isize,
     coyote_time_ticks_remaining: isize,
     jump_boost_ticks_remaining: isize,
@@ -46,15 +46,25 @@ pub fn move_player(
         (
             &mut KinematicCharacterController,
             &KinematicCharacterControllerOutput,
-            &mut PlayerMovement,
+            &mut PlayerMovement
         ),
         With<PlayerMarker>,
     >,
+    constraint_q: Query<(Entity, &ImpulseJoint), With<PlayerMarker>>,
     keys: Res<ButtonInput<KeyCode>>,
+    mut commands: Commands
 ) {
     let Ok((mut controller, output, mut player)) = q_player.get_single_mut() else {
         return;
     };
+    
+    if keys.pressed(KeyCode::KeyA)
+        || keys.pressed(KeyCode::KeyD)
+        || keys.pressed(KeyCode::Space) {
+        for (entity, _) in constraint_q.iter() {
+            commands.entity(entity).remove::<ImpulseJoint>();
+        }
+    }
 
     if output.grounded {
         player.coyote_time_ticks_remaining = COYOTE_TIME_TICKS;

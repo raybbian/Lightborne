@@ -4441,10 +4441,10 @@
 			"width": 8,
 			"height": 8,
 			"resizableX": true,
-			"resizableY": false,
+			"resizableY": true,
 			"minWidth": 8,
 			"maxWidth": null,
-			"minHeight": null,
+			"minHeight": 8,
 			"maxHeight": null,
 			"keepAspectRatio": false,
 			"tileOpacity": 1,
@@ -6655,29 +6655,114 @@
 							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
 							"__smartColor": "#BE4A2F",
 							"iid": "8a4a3c30-e920-11ef-8ea2-5145a41b5639",
-							"width": 8,
+							"width": 16,
 							"height": 8,
 							"defUid": 730,
 							"px": [144,152],
 							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [ { "cx": 22, "cy": 19 }, { "cx": 22, "cy": 15 }, { "cx": 18, "cy": 15 }, { "cx": 20, "cy": 17 } ], "__tile": null, "defUid": 731, "realEditorValues": [ {
-									"id": "V_String",
-									"params": ["22,19"]
-								}, {
-									"id": "V_String",
-									"params": ["22,15"]
-								}, {
-									"id": "V_String",
-									"params": ["18,15"]
-								}, {
-									"id": "V_String",
-									"params": ["20,17"]
-								} ] },
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [
+									{ "cx": 22, "cy": 19 },
+									{ "cx": 22, "cy": 15 },
+									{ "cx": 18, "cy": 15 },
+									{ "cx": 20, "cy": 17 },
+									{ "cx": 28, "cy": 9 },
+									{ "cx": 7, "cy": 5 },
+									{ "cx": 11, "cy": 5 },
+									{ "cx": 7, "cy": 5 },
+									{ "cx": 11, "cy": 5 },
+									{ "cx": 7, "cy": 5 },
+									{ "cx": 11, "cy": 5 },
+									{ "cx": 9, "cy": 14 },
+									{ "cx": 16, "cy": 7 },
+									{ "cx": 16, "cy": 13 },
+									{ "cx": 16, "cy": 7 },
+									{ "cx": 16, "cy": 13 },
+									{ "cx": 16, "cy": 7 },
+									{ "cx": 16, "cy": 13 },
+									{ "cx": 22, "cy": 19 }
+								], "__tile": null, "defUid": 731, "realEditorValues": [
+									{
+										"id": "V_String",
+										"params": ["22,19"]
+									},
+									{
+										"id": "V_String",
+										"params": ["22,15"]
+									},
+									{
+										"id": "V_String",
+										"params": ["18,15"]
+									},
+									{
+										"id": "V_String",
+										"params": ["20,17"]
+									},
+									{
+										"id": "V_String",
+										"params": ["28,9"]
+									},
+									{
+										"id": "V_String",
+										"params": ["7,5"]
+									},
+									{
+										"id": "V_String",
+										"params": ["11,5"]
+									},
+									{
+										"id": "V_String",
+										"params": ["7,5"]
+									},
+									{
+										"id": "V_String",
+										"params": ["11,5"]
+									},
+									{
+										"id": "V_String",
+										"params": ["7,5"]
+									},
+									{
+										"id": "V_String",
+										"params": ["11,5"]
+									},
+									{
+										"id": "V_String",
+										"params": ["9,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["16,7"]
+									},
+									{
+										"id": "V_String",
+										"params": ["16,13"]
+									},
+									{
+										"id": "V_String",
+										"params": ["16,7"]
+									},
+									{
+										"id": "V_String",
+										"params": ["16,13"]
+									},
+									{
+										"id": "V_String",
+										"params": ["16,7"]
+									},
+									{
+										"id": "V_String",
+										"params": ["16,13"]
+									},
+									{
+										"id": "V_String",
+										"params": ["22,19"]
+									}
+								] },
 								{ "__identifier": "default_state", "__type": "Bool", "__value": true, "__tile": null, "defUid": 732, "realEditorValues": [{
 									"id": "V_Bool",
 									"params": [ true ]
 								}] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [20] }] }
+								{ "__identifier": "speed", "__type": "Float", "__value": 25, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [25] }] }
 							],
 							"__worldX": 144,
 							"__worldY": 152

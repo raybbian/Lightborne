@@ -1,15 +1,14 @@
 use std::{default, mem::discriminant};
 
-use bevy::{prelude::*, state::commands, text::cosmic_text::ttf_parser::loca, utils::hashbrown::hash_map::IterMut};
+use bevy::{input::keyboard::Key, prelude::*, state::commands, text::cosmic_text::ttf_parser::loca, utils::hashbrown::hash_map::IterMut};
 use bevy_ecs_ldtk::{ldtk::{ldtk_fields, FieldInstance}, prelude::*};
-use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::{na::Rotation, prelude::*};
 use bevy::log::LogPlugin;
 use bevy::math;
 
-use crate::{player::{PlayerBundle, PlayerMarker}, shared::{GameState, GroupLabel, ResetLevel}};
+use crate::{level::entity::Spike, player::{self, PlayerBundle, PlayerMarker}, shared::{GameState, GroupLabel, ResetLevel}};
 
 use super::{entity, LevelSystems};
-use super::super::player::movement::PlayerMovement;
 
 
 /// Plugin for handling platforms
@@ -20,10 +19,10 @@ impl Plugin for PlatformPlugin {
         app.add_event::<PlatformToggleEvent>()
             //.add_systems(PreUpdate,(initialize_platforms,).in_set(LevelSystems::Processing).run_if(on_event::<ResetLevel>))
             .add_systems(Update, on_platform_changed.in_set(LevelSystems::Simulation).run_if(on_event::<ResetLevel>))
-            .add_systems(FixedUpdate, move_platforms.in_set(LevelSystems::Processing))
+            .add_systems(FixedUpdate, move_platforms.in_set(LevelSystems::Simulation))
             .register_ldtk_entity::<MovingPlatformBundle>("MovingPlatform")
             .add_systems(PreUpdate, initialize_platforms.in_set(LevelSystems::Simulation))
-            .add_systems(FixedUpdate, adjust_player.in_set(LevelSystems::Processing))
+            //.add_systems(FixedUpdate, adjust_player.in_set(LevelSystems::Processing))
             .add_systems(FixedUpdate, reset_platforms.run_if(on_event::<ResetLevel>));
     }
 }
@@ -84,8 +83,8 @@ impl Default for PlatformPhysicsBundle {
             collider: Collider::cuboid(8.0, 8.0), // shape of platform
             velocity: Velocity::zero(),
             friction: Friction {
-                coefficient: 10.0,
-                combine_rule: CoefficientCombineRule::Multiply
+                coefficient: 0.0,
+                combine_rule: CoefficientCombineRule::Min
             }
         }
     }
@@ -118,14 +117,15 @@ pub struct PlatformToggleEvent {
  */
 pub fn initialize_platforms(
     mut commands: Commands,
-    mut level_q: Query<(&mut MovingPlatform, &mut Transform, &GlobalTransform, &mut RigidBody, &mut Collider, &GridCoords), Added<MovingPlatform>>,
+    mut level_q: Query<(Entity, &mut MovingPlatform, &mut Transform, &GlobalTransform, &mut RigidBody, &mut Collider, &GridCoords, &mut Sprite), Added<MovingPlatform>>,
     player_q: Query<&GlobalTransform, With<PlayerMarker>>,
     asset_server: Res<AssetServer>
 ) {
-    for (mut platform, mut local_transform, global_transform, mut rigid_body, mut collider, grid_coords) in level_q.iter_mut() {
+    for (entity, mut platform, mut local_transform, global_transform, mut rigid_body, mut collider, grid_coords, mut sprite) in level_q.iter_mut() {
         // Initialization:
 
         println!("Added platform!");
+        commands.entity(entity).insert(Ccd::enabled());
         if platform.curr_segment.is_none() {
             println!("Path is {:?} ", platform.path);
             println!("Default State is {:?} ", platform.default_state);
@@ -145,7 +145,7 @@ pub fn initialize_platforms(
             //for mut vector in &mut platform.path {
                 //*vector = *vector * 2;
             //}
-            print!("path: {:?} ", platform.path);
+            println!("path: {:?} ", platform.path);
         }
 
         if platform.curr_direction.is_none() {
@@ -161,20 +161,33 @@ pub fn initialize_platforms(
 
         //gravity.0 = 0.0;
         //*locked_axes = LockedAxes::ROTATION_LOCKED;
-        *rigid_body = RigidBody::KinematicPositionBased;
-        *collider = Collider::cuboid(platform.width as f32, platform.height as f32); // shape of platform
+        *rigid_body = RigidBody::KinematicVelocityBased;
+        println!("width: {:?}, height: {:?} ", platform.width, platform.height);
+        //*collider = Collider::cuboid((platform.width as f32 * 64.0).powf(1.0/3.0), (platform.height as f32 * 64.0).powf(1.0/3.0)); // shape of platform
         platform.is_init = Some(true);
     }
 }
 
 pub fn move_platforms(
-    mut level_q: Query<(&mut MovingPlatform, &mut Transform, &mut RigidBody, &mut Velocity)>,
+    mut level_q: Query<(&mut MovingPlatform, &mut Transform, &mut RigidBody, &mut Velocity, Entity, &GlobalTransform), Without<PlayerMarker>>,
+    mut player_q: Query<
+        (
+            Entity,
+            & KinematicCharacterController,
+            & KinematicCharacterControllerOutput,
+            &mut Transform,
+            & GlobalTransform
+        ),
+        With<PlayerMarker>
+    >,
+    rapier_context: ReadDefaultRapierContext,
     time: Res<Time>
 ) {
-    for (mut platform, mut transform, mut rigid_body, mut velocity) in level_q.iter_mut() {
+    for (mut platform, mut transform, mut rigid_body, mut velocity, entity, global_transform) in level_q.iter_mut() {
         if platform.is_init.is_none() {
             continue;
         }
+        let mut player = player_q.get_single_mut().unwrap();
         let path = platform.path.clone();
         //print!("Path is {:?} ", platform.path);
         let speed = platform.speed;
@@ -196,13 +209,39 @@ pub fn move_platforms(
         let direction_and_velocity = direction_vec * speed;
         platform.curr_velocity = Some(direction_and_velocity.clone());
 
-        velocity.linvel = direction_and_velocity;
-
+        //velocity.linvel = direction_and_velocity;
 
         let direction_vec_3d = Vec3::new(curr_segment.unwrap().x as f32 - current_position.x, -(curr_segment.unwrap().y as f32 - current_position.y), 0.0).normalize();
         transform.translation += direction_vec_3d * platform.speed * time.delta_secs();
 
+        let relative_horizontal = global_transform.translation().x - player.4.translation();
+        let horizontal_distance = relative_horizontal.x.abs() - 8.0; // player width is 8.0
+        let relative_height = (player.4.translation().y - 9.5) - (global_transform.translation().y + (platform.height as f32 / 2.0)); // player height is 19
+        let mut diff_sign = false;
+        if (relative_horizontal.x > 0.0 && direction_vec.x < 0.0) || (relative_horizontal.x < 0.0 && direction_vec.x > 0.0) {
+            diff_sign = true
+        }
+        if horizontal_distance <= platform.width as f32 / 2.0 && relative_height < 0.0 && relative_height > -(platform.height as f32 + 19.0) && diff_sign { // player height again
+            player.3.translation.x += direction_vec.x * speed * time.delta_secs();
+        }
 
+        if let Some((found_entity, _)) = rapier_context.cast_shape(
+            Vec2::new(player.3.translation.x, player.3.translation.y - 10.0),
+            0.0,
+            Vec2::new(0.0, -1.0),
+            &Collider::cuboid(8.0, 0.375),
+            ShapeCastOptions {
+                max_time_of_impact: 0.0,
+                target_distance: 0.0,
+                stop_at_penetration: true,
+                compute_impact_geometry_on_penetration: false
+            },
+            QueryFilter::default()
+        ) {
+            if found_entity.eq(&entity) {
+                player.3.translation += Vec3::new(direction_vec.x, direction_vec.y, 0.0) * speed * time.delta_secs();
+            }
+        }
 
         //impulse.impulse = direction_and_velocity;
         let distance = current_position.distance(curr_segment.unwrap().as_vec2());
@@ -230,6 +269,7 @@ pub fn move_platforms(
     }
 }
 
+/*
 pub fn adjust_player(
     mut player_q: Query<
         (
@@ -237,13 +277,16 @@ pub fn adjust_player(
             &mut KinematicCharacterController,
             &KinematicCharacterControllerOutput,
             &mut PlayerMovement,
-            &mut Transform
+            &mut Transform,
+            &GlobalTransform
         ),
         With<PlayerMarker>,
     >,
-    platform_q: Query<&mut MovingPlatform>,
+    player_joint_q: Query<(Entity, &ImpulseJoint), With<PlayerMarker>>,
+    platform_q: Query<(&mut MovingPlatform, &GlobalTransform)>,
     rapier_context: ReadDefaultRapierContext,
     time: Res<Time>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut commands: Commands
 ) {
     for mut player in player_q.iter_mut() {
@@ -254,22 +297,54 @@ pub fn adjust_player(
             true, 
             QueryFilter::default()
         ) {
-            if let Ok(platform) = platform_q.get(entity) {
-                //println!("Entity: {:?}, Intersection: {:?} ", entity, intersection);
-                //let joint = FixedJointBuilder::new()
-                    //.local_anchor1(Vec2::ZERO)
-                    //.local_anchor2(Vec2::new(0.0,-1.0));
-                //commands.entity(entity).insert(ImpulseJoint::new(player.0, joint));
-                if platform.curr_velocity.unwrap().y < 0.0 && player.2.grounded {
+            if let Ok((platform, transform)) = platform_q.get(entity) {
+                if player.2.grounded {
+                    if player_joint_q.is_empty() 
+                        && !keys.pressed(KeyCode::KeyA) // Should be changed to "Any movement key pressed", maybe using an event?
+                        && !keys.pressed(KeyCode::KeyD)
+                        && !keys.pressed(KeyCode::Space) {
+                        println!("Entity: {:?}, Intersection: {:?} ", entity, intersection);
+                        let relativePosition = transform.translation() - player.5.translation();
+                        let joint = FixedJointBuilder::new()
+                            .local_anchor1(Vec2::new(0.0,0.0))
+                            .local_anchor2(Vec2::new(relativePosition.x, relativePosition.y));
+                        commands.entity(player.0).insert(ImpulseJoint::new(entity, joint));
+                    } else {
+                        //println!("Player is fixed!");
+                        //player.4.translation.y += 0.5;
+                    }
+                }
+                
+                //if platform.curr_velocity.unwrap().y < 0.0 && player.2.grounded {
+
+                /*
+                if player.2.grounded
+                    && !keys.pressed(KeyCode::Space) // Should be changed to "Any movement key pressed", maybe using an event?
+                    && !keys.pressed(KeyCode::KeyW)
+                    && !keys.pressed(KeyCode::KeyA)
+                    && !keys.pressed(KeyCode::KeyS)
+                    && !keys.pressed(KeyCode::KeyD)
+                    && !keys.pressed(KeyCode::Space) {
+
+                    if platform.curr_velocity.unwrap().y >= -0.025 && platform.curr_velocity.unwrap().y <= 0.0{
+                        println!("Platform not moving down");
+                        player.1.translation = Some(Vec2::new(platform.curr_velocity.unwrap().x * time.delta_secs(), 0.0));
+                    } else {
+                        player.1.translation = Some(Vec2::new(platform.curr_velocity.unwrap().x * time.delta_secs(), platform.curr_velocity.unwrap().y * time.delta_secs()));
+                    }
+                    println!("Kept player on platform! Speed = {:?}", platform.curr_velocity.unwrap());
                     //player.3.velocity = player.3.velocity.lerp(platform.curr_velocity.unwrap(), 0.1)
                     //player.3.velocity.x = platform.curr_velocity.unwrap().x * 0.0725;
                     //platform.curr_velocity.unwrap();
                     //player.4.translation += Vec3::new(platform.curr_velocity.unwrap().x * time.delta_secs(), platform.curr_velocity.unwrap().y * time.delta_secs(), 0.0);
                 }
+                */
             }
         }
     }
 }
+
+    */
 
 pub fn reset_platforms(
     mut platform_q: Query<(&mut MovingPlatform, &mut Transform)>
