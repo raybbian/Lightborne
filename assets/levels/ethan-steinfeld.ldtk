@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 735,
+	"nextUid": 739,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -4503,46 +4503,6 @@
 					"tilesetUid": null
 				},
 				{
-					"identifier": "default_state",
-					"doc": "Controls the initial state of the platform. If true, platform moves by default",
-					"__type": "Bool",
-					"uid": 732,
-					"type": "F_Bool",
-					"isArray": false,
-					"canBeNull": false,
-					"arrayMinLength": null,
-					"arrayMaxLength": null,
-					"editorDisplayMode": "NameAndValue",
-					"editorDisplayScale": 1,
-					"editorDisplayPos": "Above",
-					"editorLinkStyle": "StraightArrow",
-					"editorDisplayColor": null,
-					"editorAlwaysShow": false,
-					"editorShowInWorld": true,
-					"editorCutLongValues": true,
-					"editorTextSuffix": null,
-					"editorTextPrefix": null,
-					"useForSmartColor": false,
-					"exportToToc": false,
-					"searchable": false,
-					"min": null,
-					"max": null,
-					"regex": null,
-					"acceptFileTypes": null,
-					"defaultOverride": {
-						"id": "V_Bool",
-						"params": [ false ]
-					},
-					"textLanguageMode": null,
-					"symmetricalRef": false,
-					"autoChainRef": true,
-					"allowOutOfLevelRef": true,
-					"allowedRefs": "OnlySame",
-					"allowedRefsEntityUid": null,
-					"allowedRefTags": [],
-					"tilesetUid": null
-				},
-				{
 					"identifier": "speed",
 					"doc": "Sets the speed of the platform's motion",
 					"__type": "Float",
@@ -4570,6 +4530,117 @@
 					"regex": null,
 					"acceptFileTypes": null,
 					"defaultOverride": { "id": "V_Float", "params": [5] },
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "InitialState",
+					"doc": null,
+					"__type": "LocalEnum.InitialState",
+					"uid": 736,
+					"type": "F_Enum(735)",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "does_reverse",
+					"doc": null,
+					"__type": "Bool",
+					"uid": 737,
+					"type": "F_Bool",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "default_state",
+					"doc": null,
+					"__type": "Bool",
+					"uid": 738,
+					"type": "F_Bool",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -4645,11 +4716,18 @@
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "00000000", "averageColors": "16581658eccdebabdaabcaba36a82654" }
 		}
-	], "enums": [{ "identifier": "Lightcolor", "uid": 159, "values": [
-		{ "id": "Red", "tileRect": { "tilesetUid": 111, "x": 0, "y": 32, "w": 8, "h": 8 }, "color": 16711748 },
-		{ "id": "Green", "tileRect": { "tilesetUid": 111, "x": 40, "y": 24, "w": 8, "h": 8 }, "color": 6539085 },
-		{ "id": "White", "tileRect": null, "color": 16777215 }
-	], "iconTilesetUid": 111, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [] },
+	], "enums": [
+		{ "identifier": "Lightcolor", "uid": 159, "values": [
+			{ "id": "Red", "tileRect": { "tilesetUid": 111, "x": 0, "y": 32, "w": 8, "h": 8 }, "color": 16711748 },
+			{ "id": "Green", "tileRect": { "tilesetUid": 111, "x": 40, "y": 24, "w": 8, "h": 8 }, "color": 6539085 },
+			{ "id": "White", "tileRect": null, "color": 16777215 }
+		], "iconTilesetUid": 111, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
+		{ "identifier": "InitialState", "uid": 735, "values": [
+			{ "id": "Play", "tileRect": null, "color": 6539085 },
+			{ "id": "Pause", "tileRect": null, "color": 16705377 },
+			{ "id": "Stop", "tileRect": null, "color": 16711748 }
+		], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
+	], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{
 			"identifier": "World_Level_0",
@@ -6655,116 +6733,85 @@
 							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
 							"__smartColor": "#BE4A2F",
 							"iid": "8a4a3c30-e920-11ef-8ea2-5145a41b5639",
-							"width": 16,
+							"width": 32,
 							"height": 8,
 							"defUid": 730,
 							"px": [144,152],
 							"fieldInstances": [
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [ { "cx": 22, "cy": 19 }, { "cx": 22, "cy": 15 }, { "cx": 18, "cy": 15 }, { "cx": 20, "cy": 17 } ], "__tile": null, "defUid": 731, "realEditorValues": [ {
+									"id": "V_String",
+									"params": ["22,19"]
+								}, {
+									"id": "V_String",
+									"params": ["22,15"]
+								}, {
+									"id": "V_String",
+									"params": ["18,15"]
+								}, {
+									"id": "V_String",
+									"params": ["20,17"]
+								} ] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
+								{ "__identifier": "InitialState", "__type": "LocalEnum.InitialState", "__value": "Play", "__tile": null, "defUid": 736, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Play"]
+								}] },
+								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 737, "realEditorValues": [] },
+								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 738, "realEditorValues": [] }
+							],
+							"__worldX": 144,
+							"__worldY": 152
+						},
+						{
+							"__identifier": "MovingPlatform",
+							"__grid": [11,19],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
+							"__smartColor": "#BE4A2F",
+							"iid": "346cc220-e920-11ef-831c-855c7297c9c0",
+							"width": 16,
+							"height": 8,
+							"defUid": 730,
+							"px": [88,152],
+							"fieldInstances": [
 								{ "__identifier": "path", "__type": "Array<Point>", "__value": [
-									{ "cx": 22, "cy": 19 },
-									{ "cx": 22, "cy": 15 },
-									{ "cx": 18, "cy": 15 },
-									{ "cx": 20, "cy": 17 },
-									{ "cx": 28, "cy": 9 },
-									{ "cx": 7, "cy": 5 },
-									{ "cx": 11, "cy": 5 },
-									{ "cx": 7, "cy": 5 },
-									{ "cx": 11, "cy": 5 },
-									{ "cx": 7, "cy": 5 },
-									{ "cx": 11, "cy": 5 },
-									{ "cx": 9, "cy": 14 },
-									{ "cx": 16, "cy": 7 },
-									{ "cx": 16, "cy": 13 },
-									{ "cx": 16, "cy": 7 },
-									{ "cx": 16, "cy": 13 },
-									{ "cx": 16, "cy": 7 },
-									{ "cx": 16, "cy": 13 },
-									{ "cx": 22, "cy": 19 }
+									{ "cx": 11, "cy": 6 },
+									{ "cx": 13, "cy": 12 },
+									{ "cx": 9, "cy": 13 },
+									{ "cx": 13, "cy": 14 },
+									{ "cx": 9, "cy": 15 }
 								], "__tile": null, "defUid": 731, "realEditorValues": [
 									{
 										"id": "V_String",
-										"params": ["22,19"]
+										"params": ["11,6"]
 									},
 									{
 										"id": "V_String",
-										"params": ["22,15"]
+										"params": ["13,12"]
 									},
 									{
 										"id": "V_String",
-										"params": ["18,15"]
+										"params": ["9,13"]
 									},
 									{
 										"id": "V_String",
-										"params": ["20,17"]
+										"params": ["13,14"]
 									},
 									{
 										"id": "V_String",
-										"params": ["28,9"]
-									},
-									{
-										"id": "V_String",
-										"params": ["7,5"]
-									},
-									{
-										"id": "V_String",
-										"params": ["11,5"]
-									},
-									{
-										"id": "V_String",
-										"params": ["7,5"]
-									},
-									{
-										"id": "V_String",
-										"params": ["11,5"]
-									},
-									{
-										"id": "V_String",
-										"params": ["7,5"]
-									},
-									{
-										"id": "V_String",
-										"params": ["11,5"]
-									},
-									{
-										"id": "V_String",
-										"params": ["9,14"]
-									},
-									{
-										"id": "V_String",
-										"params": ["16,7"]
-									},
-									{
-										"id": "V_String",
-										"params": ["16,13"]
-									},
-									{
-										"id": "V_String",
-										"params": ["16,7"]
-									},
-									{
-										"id": "V_String",
-										"params": ["16,13"]
-									},
-									{
-										"id": "V_String",
-										"params": ["16,7"]
-									},
-									{
-										"id": "V_String",
-										"params": ["16,13"]
-									},
-									{
-										"id": "V_String",
-										"params": ["22,19"]
+										"params": ["9,15"]
 									}
 								] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": true, "__tile": null, "defUid": 732, "realEditorValues": [{
-									"id": "V_Bool",
-									"params": [ true ]
+								{ "__identifier": "speed", "__type": "Float", "__value": 30, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [30] }] },
+								{ "__identifier": "InitialState", "__type": "LocalEnum.InitialState", "__value": "Play", "__tile": null, "defUid": 736, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Play"]
 								}] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 25, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [25] }] }
+								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 737, "realEditorValues": [] },
+								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 738, "realEditorValues": [] }
 							],
-							"__worldX": 144,
+							"__worldX": 88,
 							"__worldY": 152
 						}
 					]

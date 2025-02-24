@@ -50,21 +50,11 @@ pub fn move_player(
         ),
         With<PlayerMarker>,
     >,
-    constraint_q: Query<(Entity, &ImpulseJoint), With<PlayerMarker>>,
-    keys: Res<ButtonInput<KeyCode>>,
-    mut commands: Commands
+    keys: Res<ButtonInput<KeyCode>>
 ) {
     let Ok((mut controller, output, mut player)) = q_player.get_single_mut() else {
         return;
     };
-    
-    if keys.pressed(KeyCode::KeyA)
-        || keys.pressed(KeyCode::KeyD)
-        || keys.pressed(KeyCode::Space) {
-        for (entity, _) in constraint_q.iter() {
-            commands.entity(entity).remove::<ImpulseJoint>();
-        }
-    }
 
     if output.grounded {
         player.coyote_time_ticks_remaining = COYOTE_TIME_TICKS;
