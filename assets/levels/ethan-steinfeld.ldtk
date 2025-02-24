@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 739,
+	"nextUid": 740,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -4649,6 +4649,43 @@
 					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
+				},
+				{
+					"identifier": "event_id",
+					"doc": null,
+					"__type": "Int",
+					"uid": 739,
+					"type": "F_Int",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": { "id": "V_Int", "params": [-1] },
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
 				}
 			]
 		}
@@ -6757,7 +6794,8 @@
 									"params": ["Play"]
 								}] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 737, "realEditorValues": [] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 738, "realEditorValues": [] }
+								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 738, "realEditorValues": [] },
+								{ "__identifier": "event_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 739, "realEditorValues": [] }
 							],
 							"__worldX": 144,
 							"__worldY": 152
@@ -6809,7 +6847,8 @@
 									"params": ["Play"]
 								}] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 737, "realEditorValues": [] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 738, "realEditorValues": [] }
+								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 738, "realEditorValues": [] },
+								{ "__identifier": "event_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 739, "realEditorValues": [] }
 							],
 							"__worldX": 88,
 							"__worldY": 152

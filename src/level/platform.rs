@@ -13,11 +13,25 @@ impl Plugin for PlatformPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<PlatformToggleEvent>()
             //.add_systems(PreUpdate,(initialize_platforms,).in_set(LevelSystems::Processing).run_if(on_event::<ResetLevel>))
-            .add_systems(Update, on_platform_changed.in_set(LevelSystems::Simulation).run_if(on_event::<ResetLevel>))
+            .add_systems(Update, change_platform_state.in_set(LevelSystems::Simulation).run_if(on_event::<ResetLevel>))
+            .add_systems(Update, change_platform_state.in_set(LevelSystems::Simulation).run_if(on_event::<ChangePlatformState>))
+            .add_event::<ChangePlatformState>()
             .add_systems(FixedUpdate, move_platforms.in_set(LevelSystems::Simulation))
             .register_ldtk_entity::<MovingPlatformBundle>("MovingPlatform")
-            //.add_systems(FixedUpdate, adjust_player.in_set(LevelSystems::Processing))
             .add_systems(FixedUpdate, reset_platforms.run_if(on_event::<ResetLevel>));
+    }
+}
+
+#[derive(Event)]
+pub enum ChangePlatformState {
+    Play {
+        id: i32
+    },
+    Pause {
+        id: i32
+    },
+    Stop {
+        id: i32
     }
 }
 
@@ -70,7 +84,8 @@ pub struct MovingPlatform {
     pub curr_segment_index: i32,
     pub curr_state: PlatformState,
     pub curr_direction: PlatformDirection,
-    pub does_reverse: bool
+    pub does_reverse: bool,
+    pub id: i32
 }
 
 impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
@@ -93,6 +108,7 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
         let curr_state = initial_state;
         let curr_direction = PlatformDirection::Forward;
         let does_reverse = *entity_instance.get_bool_field("does_reverse").unwrap();
+        let id = *entity_instance.get_int_field("event_id").unwrap();
 
         MovingPlatform {
             path,
@@ -104,7 +120,8 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
             curr_segment_index,
             curr_state,
             curr_direction,
-            does_reverse
+            does_reverse,
+            id
         }
     }
 }
@@ -272,10 +289,66 @@ pub fn reset_platforms(
     }
 }
 
-pub fn on_platform_changed() {
-    println!("Not implemented yet!")
-}
+pub fn change_platform_state(
+    mut event_reader: EventReader<ChangePlatformState>,
+    mut platform_q: Query<&mut MovingPlatform>
+) {
+    for event in event_reader.read() {
+        match event {
+            ChangePlatformState::Play {id}=>  {
+                for mut platform in platform_q.iter_mut() {
+                    if platform.id == *id {
+                        platform.curr_state = match platform.curr_state {
+                            PlatformState::Play => {
+                                PlatformState::Play
+                            },
+                            PlatformState::Pause => {
+                                PlatformState::Play
+                            },
+                            PlatformState::Stop => {
+                                PlatformState::Play
+                            }
+                        };
+                    }
+                }
+            },
+            ChangePlatformState::Pause {id}=> {
+                for mut platform in platform_q.iter_mut() {
+                    if platform.id == *id {
+                        platform.curr_state = match platform.curr_state {
+                            PlatformState::Play => {
+                                PlatformState::Pause
+                            },
+                            PlatformState::Pause => {
+                                PlatformState::Pause
+                            },
+                            PlatformState::Stop => {
+                                PlatformState::Stop
+                            }
+                        };
+                    }
+                }
 
-//pub fn reset_platforms() {
-//
-//}
+            },
+            ChangePlatformState::Stop {id}=> {
+                for mut platform in platform_q.iter_mut() {
+                    if platform.id == *id {
+                        platform.curr_state = match platform.curr_state {
+                            PlatformState::Play => {
+                                PlatformState::Stop
+                            },
+                            PlatformState::Pause => {
+                                PlatformState::Stop
+                            },
+                            PlatformState::Stop => {
+                                PlatformState::Stop
+                            }
+                        };
+                    }
+                }
+                
+            },
+        }
+    println!("Platform signal received!");
+    }
+}
