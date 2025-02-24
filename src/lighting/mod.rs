@@ -20,6 +20,8 @@ const SHOW_DEBUG_FRAMES_SPRITE: bool = false;
 pub mod light;
 mod material;
 pub mod occluder;
+mod phase;
+mod pipeline;
 mod render;
 
 pub struct LightingPlugin;
