@@ -104,8 +104,7 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
             curr_segment_index,
             curr_state,
             curr_direction,
-            does_reverse,
-            ..Default::default()
+            does_reverse
         }
     }
 }
@@ -171,11 +170,9 @@ pub fn move_platforms(
     time: Res<Time>,
     mut ev_reset_level: EventWriter<ResetLevel>
 ) {
-    let player_single = player_q.get_single_mut();
-    if player_single.is_err() {
-        return;
-    }
-    let mut player = player_single.unwrap();
+    let Ok(mut player) = player_q.get_single_mut() else {
+        return
+    };
     let mut entity_below_player: Option<Entity>;
     entity_below_player = None;
     let mut entity_above_player: Option<Entity>;
