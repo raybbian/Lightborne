@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::*;
 use std::time::Duration;
 
 use crate::{
-    level::{crystal::{CrystalColor, CrystalToggleEvent}, platform::{self, ChangePlatformState, PlatformToggleEvent}},
+    level::{crystal::{CrystalColor, CrystalToggleEvent}, platform::ChangePlatformState},
     shared::GroupLabel,
 };
 
@@ -74,14 +74,10 @@ impl From<&EntityInstance> for LightSensorBundle {
                     id: *id,
                 };
 
-                //println!("id: {:?}, ", *id);
-
                 let platform_id = match entity_instance.get_int_field("platform_id") {
                     Ok(platform_id) => *platform_id,
                     Err(_) => -1
                 };
-
-                //println!("platform id: {:?} ", platform_id);
 
                 return Self {
                     collider: Collider::cuboid(4., 4.),
@@ -154,12 +150,10 @@ pub fn update_light_sensors(
                 platform_change.send(ChangePlatformState::Play {
                     id: sensor.platform_id
                 });
-                println!("Activated Platform!");
             } else {
                 platform_change.send(ChangePlatformState::Pause {
                     id: sensor.platform_id
                 });
-                println!("Deactivated Platform!");
             }
 
             commands.entity(entity).with_child((

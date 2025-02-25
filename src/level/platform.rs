@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::{core_pipeline::experimental::taa::TemporalAntiAliasBundle, math::ops::{cos, sin}, prelude::*};
+use bevy::{ math::ops::{cos, sin}, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -13,9 +13,7 @@ pub struct PlatformPlugin;
 
 impl Plugin for PlatformPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<PlatformToggleEvent>()
-            //.add_systems(PreUpdate,(initialize_platforms,).in_set(LevelSystems::Processing).run_if(on_event::<ResetLevel>))
-            .add_systems(Update, change_platform_state.in_set(LevelSystems::Simulation).run_if(on_event::<ResetLevel>))
+        app.add_systems(Update, change_platform_state.in_set(LevelSystems::Simulation).run_if(on_event::<ResetLevel>))
             .add_systems(Update, change_platform_state.in_set(LevelSystems::Simulation).run_if(on_event::<ChangePlatformState>))
             .add_event::<ChangePlatformState>()
             .add_systems(FixedUpdate, move_platforms.in_set(LevelSystems::Simulation))
@@ -103,7 +101,7 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
             _ => panic!("Unexpected data type!")
         };
         let mut path_curve_points = match &(*entity_instance.get_field_instance("path_curve_points").unwrap()).value {
-            FieldValue::Bools(val) => val.clone(), //val.clone().into_iter().flatten().collect::<Vec<bool>>(),
+            FieldValue::Bools(val) => val.clone(),
             _ => panic!("Unexpected data type!")
         };
         if path_curve_points.len() == 0 {
@@ -113,7 +111,7 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
         }
         path_curve_points.insert(0, false);
         let speed = *entity_instance.get_float_field("speed").unwrap();
-        let initial_state = PlatformState::from(entity_instance.get_enum_field("InitialState").unwrap());;
+        let initial_state = PlatformState::from(entity_instance.get_enum_field("InitialState").unwrap());
         let width = entity_instance.width;
         let height = entity_instance.height;
         let curr_segment = path[0].clone();
@@ -196,15 +194,8 @@ pub struct MovingPlatformBundle {
     pub physics: PlatformPhysicsBundle
 }
 
-
-/// Event that will toggle the movement of a platform
-#[derive(Event)]
-pub struct PlatformToggleEvent {
-    pub state: bool
-}
-
 pub fn move_platforms(
-    mut level_q: Query<(&mut MovingPlatform, &mut Transform, &mut RigidBody, &mut Velocity, Entity, &GlobalTransform), Without<PlayerMarker>>,
+    mut level_q: Query<(&mut MovingPlatform, &mut Transform, Entity, &GlobalTransform), Without<PlayerMarker>>,
     mut player_q: Query<
         (
             Entity,
@@ -257,7 +248,7 @@ pub fn move_platforms(
     ) {
         entity_above_player = Some(found_entity);
     }
-    for (mut platform, mut transform, mut rigid_body, mut velocity, entity, global_transform) in level_q.iter_mut() {
+    for (mut platform, mut transform, entity, global_transform) in level_q.iter_mut() {
         let curr_state = platform.curr_state;
         let path = platform.path.clone();
         let speed = platform.speed;
