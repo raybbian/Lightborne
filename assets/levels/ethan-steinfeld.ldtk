@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 740,
+	"nextUid": 744,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -4393,6 +4393,43 @@
 					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
+				},
+				{
+					"identifier": "platform_id",
+					"doc": null,
+					"__type": "Int",
+					"uid": 740,
+					"type": "F_Int",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "NameAndValue",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": true,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": { "id": "V_Int", "params": [-1] },
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
 				}
 			]
 		},
@@ -4566,7 +4603,10 @@
 					"max": null,
 					"regex": null,
 					"acceptFileTypes": null,
-					"defaultOverride": null,
+					"defaultOverride": {
+						"id": "V_String",
+						"params": ["Play"]
+					},
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -4614,10 +4654,87 @@
 					"tilesetUid": null
 				},
 				{
-					"identifier": "default_state",
+					"identifier": "event_id",
 					"doc": null,
+					"__type": "Int",
+					"uid": 739,
+					"type": "F_Int",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "NameAndValue",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": true,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": { "id": "V_Int", "params": [-2] },
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "does_repeat",
+					"doc": "Specifies whether the platform will continue to move after completing it's path",
 					"__type": "Bool",
-					"uid": 738,
+					"uid": 741,
+					"type": "F_Bool",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": {
+						"id": "V_Bool",
+						"params": [ true ]
+					},
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "can_reactivate",
+					"doc": "Specifies if platform can ever be re-activated if it transitions to a stop state",
+					"__type": "Bool",
+					"uid": 742,
 					"type": "F_Bool",
 					"isArray": false,
 					"canBeNull": false,
@@ -4651,12 +4768,12 @@
 					"tilesetUid": null
 				},
 				{
-					"identifier": "event_id",
-					"doc": null,
-					"__type": "Int",
-					"uid": 739,
-					"type": "F_Int",
-					"isArray": false,
+					"identifier": "path_curve_points",
+					"doc": "An array of booleans. Must make the same length as path. Setting a point to true indicates that the corresponding point in path will be ignored and the platform will instead follow a quarter-circle path between the previous and next points. Adjacent values cannot be set to true",
+					"__type": "Array<Bool>",
+					"uid": 743,
+					"type": "F_Bool",
+					"isArray": true,
 					"canBeNull": false,
 					"arrayMinLength": null,
 					"arrayMaxLength": null,
@@ -4677,7 +4794,10 @@
 					"max": null,
 					"regex": null,
 					"acceptFileTypes": null,
-					"defaultOverride": { "id": "V_Int", "params": [-1] },
+					"defaultOverride": {
+						"id": "V_Bool",
+						"params": [ true ]
+					},
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -4828,7 +4948,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 488,
 							"__worldY": 160
@@ -4866,7 +4987,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 448,
 							"__worldY": 8
@@ -5424,7 +5546,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 824,
 							"__worldY": 168
@@ -6061,7 +6184,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1048,
 							"__worldY": 40
@@ -6083,7 +6207,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 976,
 							"__worldY": 168
@@ -6719,7 +6844,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 256,
 							"__worldY": 168
@@ -6741,7 +6867,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 740, "realEditorValues": [{ "id": "V_Int", "params": [2] }] }
 							],
 							"__worldX": 128,
 							"__worldY": 8
@@ -6764,81 +6891,370 @@
 						},
 						{
 							"__identifier": "MovingPlatform",
-							"__grid": [18,19],
+							"__grid": [31,18],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
 							"__smartColor": "#BE4A2F",
-							"iid": "8a4a3c30-e920-11ef-8ea2-5145a41b5639",
-							"width": 32,
+							"iid": "377d7ac0-e920-11ef-9f2c-a30a83e04764",
+							"width": 8,
 							"height": 8,
 							"defUid": 730,
-							"px": [144,152],
-							"fieldInstances": [
-								{ "__identifier": "path", "__type": "Array<Point>", "__value": [ { "cx": 22, "cy": 19 }, { "cx": 22, "cy": 15 }, { "cx": 18, "cy": 15 }, { "cx": 20, "cy": 17 } ], "__tile": null, "defUid": 731, "realEditorValues": [ {
-									"id": "V_String",
-									"params": ["22,19"]
-								}, {
-									"id": "V_String",
-									"params": ["22,15"]
-								}, {
-									"id": "V_String",
-									"params": ["18,15"]
-								}, {
-									"id": "V_String",
-									"params": ["20,17"]
-								} ] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
-								{ "__identifier": "InitialState", "__type": "LocalEnum.InitialState", "__value": "Play", "__tile": null, "defUid": 736, "realEditorValues": [{
-									"id": "V_String",
-									"params": ["Play"]
-								}] },
-								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 737, "realEditorValues": [] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 738, "realEditorValues": [] },
-								{ "__identifier": "event_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 739, "realEditorValues": [] }
-							],
-							"__worldX": 144,
-							"__worldY": 152
-						},
-						{
-							"__identifier": "MovingPlatform",
-							"__grid": [11,19],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
-							"__smartColor": "#BE4A2F",
-							"iid": "346cc220-e920-11ef-831c-855c7297c9c0",
-							"width": 16,
-							"height": 8,
-							"defUid": 730,
-							"px": [88,152],
+							"px": [248,144],
 							"fieldInstances": [
 								{ "__identifier": "path", "__type": "Array<Point>", "__value": [
-									{ "cx": 11, "cy": 6 },
-									{ "cx": 13, "cy": 12 },
-									{ "cx": 9, "cy": 13 },
-									{ "cx": 13, "cy": 14 },
-									{ "cx": 9, "cy": 15 }
+									{ "cx": 35, "cy": 18 },
+									{ "cx": 35, "cy": 16 },
+									{ "cx": 33, "cy": 16 },
+									{ "cx": 33, "cy": 18 },
+									{ "cx": 35, "cy": 18 },
+									{ "cx": 35, "cy": 14 },
+									{ "cx": 31, "cy": 14 },
+									{ "cx": 33, "cy": 18 },
+									{ "cx": 35, "cy": 18 },
+									{ "cx": 35, "cy": 12 },
+									{ "cx": 29, "cy": 12 },
+									{ "cx": 33, "cy": 18 },
+									{ "cx": 35, "cy": 18 },
+									{ "cx": 35, "cy": 10 },
+									{ "cx": 27, "cy": 10 },
+									{ "cx": 33, "cy": 18 },
+									{ "cx": 35, "cy": 18 },
+									{ "cx": 35, "cy": 8 },
+									{ "cx": 25, "cy": 8 },
+									{ "cx": 33, "cy": 18 },
+									{ "cx": 35, "cy": 18 },
+									{ "cx": 35, "cy": 6 },
+									{ "cx": 23, "cy": 6 }
 								], "__tile": null, "defUid": 731, "realEditorValues": [
 									{
 										"id": "V_String",
-										"params": ["11,6"]
+										"params": ["35,18"]
 									},
 									{
 										"id": "V_String",
-										"params": ["13,12"]
+										"params": ["35,16"]
 									},
 									{
 										"id": "V_String",
-										"params": ["9,13"]
+										"params": ["33,16"]
 									},
 									{
 										"id": "V_String",
-										"params": ["13,14"]
+										"params": ["33,18"]
 									},
 									{
 										"id": "V_String",
-										"params": ["9,15"]
+										"params": ["35,18"]
+									},
+									{
+										"id": "V_String",
+										"params": ["35,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["31,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["33,18"]
+									},
+									{
+										"id": "V_String",
+										"params": ["35,18"]
+									},
+									{
+										"id": "V_String",
+										"params": ["35,12"]
+									},
+									{
+										"id": "V_String",
+										"params": ["29,12"]
+									},
+									{
+										"id": "V_String",
+										"params": ["33,18"]
+									},
+									{
+										"id": "V_String",
+										"params": ["35,18"]
+									},
+									{
+										"id": "V_String",
+										"params": ["35,10"]
+									},
+									{
+										"id": "V_String",
+										"params": ["27,10"]
+									},
+									{
+										"id": "V_String",
+										"params": ["33,18"]
+									},
+									{
+										"id": "V_String",
+										"params": ["35,18"]
+									},
+									{
+										"id": "V_String",
+										"params": ["35,8"]
+									},
+									{
+										"id": "V_String",
+										"params": ["25,8"]
+									},
+									{
+										"id": "V_String",
+										"params": ["33,18"]
+									},
+									{
+										"id": "V_String",
+										"params": ["35,18"]
+									},
+									{
+										"id": "V_String",
+										"params": ["35,6"]
+									},
+									{
+										"id": "V_String",
+										"params": ["23,6"]
+									}
+								] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 100, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [100] }] },
+								{ "__identifier": "InitialState", "__type": "LocalEnum.InitialState", "__value": "Stop", "__tile": null, "defUid": 736, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Stop"]
+								}] },
+								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 737, "realEditorValues": [{
+									"id": "V_Bool",
+									"params": [ false ]
+								}] },
+								{ "__identifier": "event_id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 739, "realEditorValues": [{ "id": "V_Int", "params": [2] }] },
+								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 741, "realEditorValues": [] },
+								{ "__identifier": "can_reactivate", "__type": "Bool", "__value": false, "__tile": null, "defUid": 742, "realEditorValues": [] },
+								{ "__identifier": "path_curve_points", "__type": "Array<Bool>", "__value": [
+									false,
+									true,
+									false,
+									false,
+									false,
+									true,
+									false,
+									false,
+									false,
+									true,
+									false,
+									false,
+									false,
+									true,
+									false,
+									false,
+									false,
+									true,
+									false,
+									false,
+									false,
+									true,
+									false,
+									false
+								], "__tile": null, "defUid": 743, "realEditorValues": [
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ true ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ true ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ true ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ true ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ true ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									}
+								] }
+							],
+							"__worldX": 248,
+							"__worldY": 144
+						},
+						{
+							"__identifier": "MovingPlatform",
+							"__grid": [14,10],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
+							"__smartColor": "#BE4A2F",
+							"iid": "3fde4270-e920-11ef-9f2c-f5b83a02beaf",
+							"width": 24,
+							"height": 8,
+							"defUid": 730,
+							"px": [112,80],
+							"fieldInstances": [
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [
+									{ "cx": 18, "cy": 10 },
+									{ "cx": 18, "cy": 6 },
+									{ "cx": 14, "cy": 6 },
+									{ "cx": 10, "cy": 6 },
+									{ "cx": 10, "cy": 10 },
+									{ "cx": 10, "cy": 14 },
+									{ "cx": 14, "cy": 14 },
+									{ "cx": 18, "cy": 14 },
+									{ "cx": 18, "cy": 10 },
+									{ "cx": 18, "cy": 14 },
+									{ "cx": 14, "cy": 14 },
+									{ "cx": 10, "cy": 14 },
+									{ "cx": 10, "cy": 10 },
+									{ "cx": 10, "cy": 6 },
+									{ "cx": 14, "cy": 6 },
+									{ "cx": 18, "cy": 6 },
+									{ "cx": 18, "cy": 10 }
+								], "__tile": null, "defUid": 731, "realEditorValues": [
+									{
+										"id": "V_String",
+										"params": ["18,10"]
+									},
+									{
+										"id": "V_String",
+										"params": ["18,6"]
+									},
+									{
+										"id": "V_String",
+										"params": ["14,6"]
+									},
+									{
+										"id": "V_String",
+										"params": ["10,6"]
+									},
+									{
+										"id": "V_String",
+										"params": ["10,10"]
+									},
+									{
+										"id": "V_String",
+										"params": ["10,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["14,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["18,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["18,10"]
+									},
+									{
+										"id": "V_String",
+										"params": ["18,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["14,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["10,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["10,10"]
+									},
+									{
+										"id": "V_String",
+										"params": ["10,6"]
+									},
+									{
+										"id": "V_String",
+										"params": ["14,6"]
+									},
+									{
+										"id": "V_String",
+										"params": ["18,6"]
+									},
+									{
+										"id": "V_String",
+										"params": ["18,10"]
 									}
 								] },
 								{ "__identifier": "speed", "__type": "Float", "__value": 30, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [30] }] },
@@ -6847,11 +7263,172 @@
 									"params": ["Play"]
 								}] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 737, "realEditorValues": [] },
-								{ "__identifier": "default_state", "__type": "Bool", "__value": false, "__tile": null, "defUid": 738, "realEditorValues": [] },
-								{ "__identifier": "event_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 739, "realEditorValues": [] }
+								{ "__identifier": "event_id", "__type": "Int", "__value": 3, "__tile": null, "defUid": 739, "realEditorValues": [{ "id": "V_Int", "params": [3] }] },
+								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 741, "realEditorValues": [] },
+								{ "__identifier": "can_reactivate", "__type": "Bool", "__value": true, "__tile": null, "defUid": 742, "realEditorValues": [{
+									"id": "V_Bool",
+									"params": [ true ]
+								}] },
+								{ "__identifier": "path_curve_points", "__type": "Array<Bool>", "__value": [
+									false,
+									true,
+									false,
+									true,
+									false,
+									true,
+									false,
+									true,
+									false,
+									true,
+									false,
+									true,
+									false,
+									true,
+									false,
+									true,
+									false
+								], "__tile": null, "defUid": 743, "realEditorValues": [
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									}
+								] }
 							],
-							"__worldX": 88,
-							"__worldY": 152
+							"__worldX": 112,
+							"__worldY": 80
+						},
+						{
+							"__identifier": "MovingPlatform",
+							"__grid": [5,14],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 105, "x": 272, "y": 32, "w": 16, "h": 16 },
+							"__smartColor": "#BE4A2F",
+							"iid": "90110390-e920-11ef-9f2c-377101b992dc",
+							"width": 8,
+							"height": 8,
+							"defUid": 730,
+							"px": [40,112],
+							"fieldInstances": [
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [
+									{ "cx": 6, "cy": 14 },
+									{ "cx": 6, "cy": 13 },
+									{ "cx": 6, "cy": 12 },
+									{ "cx": 5, "cy": 12 },
+									{ "cx": 4, "cy": 12 },
+									{ "cx": 4, "cy": 13 },
+									{ "cx": 4, "cy": 14 }
+								], "__tile": null, "defUid": 731, "realEditorValues": [
+									{
+										"id": "V_String",
+										"params": ["6,14"]
+									},
+									{
+										"id": "V_String",
+										"params": ["6,13"]
+									},
+									{
+										"id": "V_String",
+										"params": ["6,12"]
+									},
+									{
+										"id": "V_String",
+										"params": ["5,12"]
+									},
+									{
+										"id": "V_String",
+										"params": ["4,12"]
+									},
+									{
+										"id": "V_String",
+										"params": ["4,13"]
+									},
+									{
+										"id": "V_String",
+										"params": ["4,14"]
+									}
+								] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 40, "__tile": null, "defUid": 733, "realEditorValues": [{ "id": "V_Float", "params": [40] }] },
+								{ "__identifier": "InitialState", "__type": "LocalEnum.InitialState", "__value": "Play", "__tile": null, "defUid": 736, "realEditorValues": [{
+									"id": "V_String",
+									"params": ["Play"]
+								}] },
+								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 737, "realEditorValues": [] },
+								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 739, "realEditorValues": [{ "id": "V_Int", "params": [-2] }] },
+								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 741, "realEditorValues": [] },
+								{ "__identifier": "can_reactivate", "__type": "Bool", "__value": false, "__tile": null, "defUid": 742, "realEditorValues": [] },
+								{ "__identifier": "path_curve_points", "__type": "Array<Bool>", "__value": [
+									true,
+									false,
+									true,
+									false,
+									true,
+									false,
+									true
+								], "__tile": null, "defUid": 743, "realEditorValues": [
+									{
+										"id": "V_Bool",
+										"params": [ true ]
+									},
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null,
+									{
+										"id": "V_Bool",
+										"params": [ false ]
+									},
+									null
+								] }
+							],
+							"__worldX": 40,
+							"__worldY": 112
 						}
 					]
 				},
@@ -7279,7 +7856,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1408,
 							"__worldY": 8
@@ -7301,7 +7879,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1336,
 							"__worldY": 8
@@ -7835,7 +8414,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1880,
 							"__worldY": 144
@@ -7857,7 +8437,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1696,
 							"__worldY": 8
@@ -8430,7 +9011,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1912,
 							"__worldY": 224
@@ -8965,7 +9547,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1512,
 							"__worldY": 288
@@ -8987,7 +9570,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1528,
 							"__worldY": 288
@@ -9607,7 +10191,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1128,
 							"__worldY": 200
@@ -9629,7 +10214,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 1, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [1] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 1, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [1] }] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1032,
 							"__worldY": 192
@@ -9651,7 +10237,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [2] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [2] }] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1232,
 							"__worldY": 200
@@ -9673,7 +10260,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] }
+								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1144,
 							"__worldY": 344
@@ -9695,7 +10283,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 1, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [1] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 1, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [1] }] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1056,
 							"__worldY": 352
@@ -9717,7 +10306,8 @@
 									"id": "V_String",
 									"params": ["Green"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [2] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 2, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [2] }] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 1024,
 							"__worldY": 344
@@ -9739,7 +10329,8 @@
 									"id": "V_String",
 									"params": ["Red"]
 								}] },
-								{ "__identifier": "id", "__type": "Int", "__value": 3, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [3] }] }
+								{ "__identifier": "id", "__type": "Int", "__value": 3, "__tile": null, "defUid": 722, "realEditorValues": [{ "id": "V_Int", "params": [3] }] },
+								{ "__identifier": "platform_id", "__type": "Int", "__value": -1, "__tile": null, "defUid": 740, "realEditorValues": [] }
 							],
 							"__worldX": 968,
 							"__worldY": 272

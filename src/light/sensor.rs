@@ -4,7 +4,7 @@ use bevy_rapier2d::prelude::*;
 use std::time::Duration;
 
 use crate::{
-    level::crystal::{CrystalColor, CrystalToggleEvent},
+    level::{crystal::{CrystalColor, CrystalToggleEvent}, platform::{self, ChangePlatformState, PlatformToggleEvent}},
     shared::GroupLabel,
 };
 
@@ -28,10 +28,12 @@ pub struct LightSensor {
     pub was_hit: bool,
     /// The color of the crystals to toggle
     pub toggle_color: CrystalColor,
+    /// The id of the platform to toggle
+    pub platform_id: i32
 }
 
 impl LightSensor {
-    fn new(toggle_color: CrystalColor) -> Self {
+    fn new(toggle_color: CrystalColor, platform_id: i32) -> Self {
         let mut timer = Timer::new(Duration::from_millis(300), TimerMode::Once);
         timer.pause();
         LightSensor {
@@ -39,6 +41,7 @@ impl LightSensor {
             cumulative_exposure: Stopwatch::default(),
             was_hit: false,
             toggle_color,
+            platform_id
         }
     }
 }
@@ -71,6 +74,15 @@ impl From<&EntityInstance> for LightSensorBundle {
                     id: *id,
                 };
 
+                //println!("id: {:?}, ", *id);
+
+                let platform_id = match entity_instance.get_int_field("platform_id") {
+                    Ok(platform_id) => *platform_id,
+                    Err(_) => -1
+                };
+
+                //println!("platform id: {:?} ", platform_id);
+
                 return Self {
                     collider: Collider::cuboid(4., 4.),
                     sensor: Sensor,
@@ -78,7 +90,7 @@ impl From<&EntityInstance> for LightSensorBundle {
                         GroupLabel::LIGHT_SENSOR,
                         GroupLabel::LIGHT_RAY | GroupLabel::WHITE_RAY,
                     ),
-                    light_sensor: LightSensor::new(sensor_color),
+                    light_sensor: LightSensor::new(sensor_color, platform_id),
                 };
             }
             _ => unreachable!(),
@@ -107,6 +119,7 @@ pub fn update_light_sensors(
     mut q_sensors: Query<(Entity, &mut LightSensor)>,
     mut ev_hit_by_light: EventReader<HitByLightEvent>,
     mut ev_crystal_toggle: EventWriter<CrystalToggleEvent>,
+    mut platform_change: EventWriter<ChangePlatformState>,
     asset_server: Res<AssetServer>,
     time: Res<Time>,
 ) {
@@ -136,6 +149,18 @@ pub fn update_light_sensors(
             ev_crystal_toggle.send(CrystalToggleEvent {
                 color: sensor.toggle_color,
             });
+            
+            if was_hit {
+                platform_change.send(ChangePlatformState::Play {
+                    id: sensor.platform_id
+                });
+                println!("Activated Platform!");
+            } else {
+                platform_change.send(ChangePlatformState::Pause {
+                    id: sensor.platform_id
+                });
+                println!("Deactivated Platform!");
+            }
 
             commands.entity(entity).with_child((
                 AudioPlayer::new(asset_server.load("sfx/button.wav")),
