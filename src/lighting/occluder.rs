@@ -1,332 +1,344 @@
 use bevy::{
-    asset::RenderAssetUsages,
+    math::{vec3, Affine3},
     prelude::*,
-    render::{mesh::PrimitiveTopology, view::RenderLayers},
+    render::{
+        camera::ExtractedCamera,
+        extract_component::UniformComponentPlugin,
+        render_resource::{binding_types::uniform_buffer, *},
+        renderer::{RenderDevice, RenderQueue},
+        sync_world::{RenderEntity, SyncToRenderWorld},
+        texture::TextureCache,
+        view::{ViewDepthTexture, ViewTarget},
+        Extract, Render, RenderApp, RenderSet,
+    },
+    sprite::Mesh2dPipeline,
+    utils::HashMap,
 };
-use bevy_rapier2d::prelude::*;
-
-use crate::camera::MainCamera;
+use bytemuck::{Pod, Zeroable};
 
 use super::{
-    combine_lights,
-    light::{draw_lights, LineLighting, PointLighting},
-    material::FrameMaskMaterial,
-    CombinedLighting, LightingRenderData, FRAMES_LAYER,
+    pipeline::{point_light_bind_group_layout, PointLight2dBounds},
+    AmbientLight2d,
 };
 
-/// [`Component`] that automatically attaches [`Occluder`] components as children of an entity based on the shape of its [`Collider`].
-/// Also automatically removes and reattaches [`Occluder`]s when the [`Collider`] is removed/reattached (e.g. crystals).
-/// Currently only works on cuboid colliders.
-#[derive(Component)]
-pub struct ColliderBasedOccluder {
-    /// How many pixels to reduce the size of the collider by.
-    /// Used mainly to make crystal occluders a bit smaller to allow light to pass through in a cool way.
-    pub indent: f32,
-}
+pub struct OccluderPipelinePlugin;
 
-impl Default for ColliderBasedOccluder {
-    fn default() -> Self {
-        Self { indent: 0.0 }
-    }
-}
-
-/// [`Component`] that represents a line that prevents light from passing through.
-/// The two points that make up the line are calculated by adding `point_1_offset` and `point_2_offset`
-/// to the entity's [`Transform`].
-#[derive(Component)]
-#[require(Transform)]
-pub struct Occluder {
-    pub point_1_offset: Vec2,
-    pub point_2_offset: Vec2,
-}
-
-pub struct OccluderPlugin;
-impl Plugin for OccluderPlugin {
+impl Plugin for OccluderPipelinePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, spawn_collider_occluders)
-            .add_systems(Update, despawn_collider_occluders)
-            .add_systems(Update, spawn_occluder_renderers)
-            .add_observer(on_remove_occluder_despawn_occluder_renderers)
-            .add_systems(PostUpdate, draw_occluders.after(draw_lights));
+        app.add_plugins(UniformComponentPlugin::<RenderOccluder>::default());
+
+        let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
+            return;
+        };
+
+        render_app
+            .add_systems(ExtractSchedule, extract_occluders)
+            .add_systems(
+                Render,
+                prepare_occluder_count_textures.in_set(RenderSet::PrepareResources),
+            );
+    }
+
+    fn finish(&self, app: &mut App) {
+        let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
+            return;
+        };
+
+        render_app
+            .init_resource::<OccluderPipeline>()
+            .init_resource::<OccluderBuffers>();
     }
 }
 
-/// [`Component`] used to internally to render each occluder. Every time an [`Occluder`] component
-/// is spawned/inserted, 16 [`OccluderRendererBundle`]s are spawned, one to occlude each light source. They are despawned
-/// when the entity is despawned or the [`Occluder`] component is removed.
-///
-/// Note: You shouldn't use this component, use [`Occluder`] instead.
+#[derive(Component, Default)]
+#[require(Transform, SyncToRenderWorld)]
+pub struct Occluder {
+    pub half_size: Vec2,
+}
+
+impl Occluder {
+    pub fn new(half_x: f32, half_y: f32) -> Self {
+        Self {
+            half_size: Vec2::new(half_x, half_y),
+        }
+    }
+}
+
+/// Render world version of [`PointLight2d`].
+#[derive(Component, ShaderType, Clone, Copy, Debug)]
+pub struct RenderOccluder {
+    world_from_local: [Vec4; 3],
+    local_from_world_transpose_a: [Vec4; 2],
+    local_from_world_transpose_b: f32,
+    half_size: Vec2,
+}
+
+#[derive(Component, Clone, Copy)]
+pub struct OccluderBounds {
+    pub world_pos: Vec2,
+    pub half_size: Vec2,
+}
+
+impl OccluderBounds {
+    pub fn visible_from_point_light(&self, light: &PointLight2dBounds) -> bool {
+        let min_rect = self.world_pos - self.half_size;
+        let max_rect = self.world_pos + self.half_size;
+
+        let closest_point = light.world_pos.clamp(min_rect, max_rect);
+
+        light.world_pos.distance_squared(closest_point) <= light.radius * light.radius
+    }
+}
+
+pub fn extract_occluders(
+    mut commands: Commands,
+    mut previous_len: Local<usize>,
+    query: Extract<Query<(&RenderEntity, &GlobalTransform, &Occluder)>>,
+) {
+    let mut values = Vec::with_capacity(*previous_len);
+
+    for (render_entity, transform, occluder) in query.iter() {
+        let affine_a = transform.affine();
+        let affine = Affine3::from(&affine_a);
+        let (a, b) = affine.inverse_transpose_3x3();
+        values.push((
+            render_entity.id(),
+            (
+                RenderOccluder {
+                    world_from_local: affine.to_transpose(),
+                    local_from_world_transpose_a: a,
+                    local_from_world_transpose_b: b,
+                    half_size: occluder.half_size,
+                },
+                OccluderBounds {
+                    world_pos: affine_a.translation.xy(),
+                    half_size: occluder.half_size,
+                },
+            ),
+        ))
+    }
+
+    *previous_len = values.len();
+    commands.insert_or_spawn_batch(values);
+}
+
+#[derive(Clone, Copy, Pod, Zeroable)]
+#[repr(C)]
+pub struct OccluderVertex {
+    position: Vec3,
+    normal: Vec3,
+}
+
+impl OccluderVertex {
+    const fn new(position: Vec3, normal: Vec3) -> Self {
+        OccluderVertex { position, normal }
+    }
+}
+
+#[derive(Resource)]
+pub struct OccluderBuffers {
+    pub vertices: RawBufferVec<OccluderVertex>,
+    pub indices: RawBufferVec<u32>,
+}
+
+static VERTICES: [OccluderVertex; 8] = [
+    OccluderVertex::new(vec3(-1.0, -1.0, 0.0), vec3(-1.0, 0.0, 0.0)),
+    OccluderVertex::new(vec3(-1.0, -1.0, 0.0), vec3(0.0, -1.0, 0.0)),
+    OccluderVertex::new(vec3(1.0, -1.0, 0.0), vec3(0.0, -1.0, 0.0)),
+    OccluderVertex::new(vec3(1.0, -1.0, 0.0), vec3(1.0, 0.0, 0.0)),
+    OccluderVertex::new(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 0.0)),
+    OccluderVertex::new(vec3(1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0)),
+    OccluderVertex::new(vec3(-1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0)),
+    OccluderVertex::new(vec3(-1.0, 1.0, 0.0), vec3(-1.0, 0.0, 0.0)),
+];
+
+static INDICES: [u32; 18] = [0, 1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 0, 0, 2, 4, 4, 6, 0];
+
+impl FromWorld for OccluderBuffers {
+    fn from_world(world: &mut World) -> Self {
+        let render_device = world.resource::<RenderDevice>();
+        let render_queue = world.resource::<RenderQueue>();
+
+        let mut vbo = RawBufferVec::new(BufferUsages::VERTEX);
+        let mut ibo = RawBufferVec::new(BufferUsages::INDEX);
+
+        for vtx in &VERTICES {
+            vbo.push(*vtx);
+        }
+        for index in &INDICES {
+            ibo.push(*index);
+        }
+
+        vbo.write_buffer(render_device, render_queue);
+        ibo.write_buffer(render_device, render_queue);
+
+        OccluderBuffers {
+            vertices: vbo,
+            indices: ibo,
+        }
+    }
+}
+
 #[derive(Component)]
-struct OccluderRenderer {
-    pub frame_index: usize,
-    pub occluder: Entity,
-}
+pub struct OccluderCountTexture(pub ViewDepthTexture);
 
-#[derive(Bundle)]
-struct OccluderRendererBundle {
-    occluder_renderer: OccluderRenderer,
-    render_layers: RenderLayers,
-    material: MeshMaterial2d<FrameMaskMaterial>,
-    mesh: Mesh2d,
-    transform: Transform,
-    visibility: Visibility,
-}
-
-impl OccluderRendererBundle {
-    fn new(frame_index: usize, occluder: Entity, render: &Res<LightingRenderData>) -> Self {
-        OccluderRendererBundle {
-            occluder_renderer: OccluderRenderer {
-                frame_index,
-                occluder,
-            },
-            render_layers: FRAMES_LAYER,
-            material: MeshMaterial2d(render.frame_mask_materials[frame_index].clone()),
-            mesh: Mesh2d(render.default_occluder_mesh.clone()),
-            transform: Transform::default(),
-            visibility: Visibility::Visible,
-        }
-    }
-}
-
-fn spawn_collider_occluders(
+/// Prepare my own texture because theirs has funny sample count??
+pub fn prepare_occluder_count_textures(
     mut commands: Commands,
-    q_colliders: Query<(Entity, &Collider, &ColliderBasedOccluder), Added<Collider>>,
+    mut texture_cache: ResMut<TextureCache>,
+    render_device: Res<RenderDevice>,
+    views: Query<(Entity, &ExtractedCamera), (With<Camera2d>, With<AmbientLight2d>)>,
 ) {
-    for (entity, (point_1, point_2)) in q_colliders
-        .iter()
-        .map(
-            |(entity, collider, collider_based_occluder)| match collider.as_typed_shape() {
-                ColliderView::Cuboid(cub) => {
-                    let (half_x, half_y) = cub.half_extents().into();
-                    let half_x = half_x - collider_based_occluder.indent;
-                    let half_y = half_y - collider_based_occluder.indent;
-                    let four_corners = [(-1., -1.), (-1., 1.), (1., 1.), (1., -1.)]
-                        .map(|(x, y)| Vec2::new(half_x * x, half_y * y));
-                    (
-                        entity,
-                        [
-                            (four_corners[0], four_corners[1]),
-                            (four_corners[1], four_corners[2]),
-                            (four_corners[2], four_corners[3]),
-                            (four_corners[3], four_corners[0]),
-                        ],
-                    )
-                }
-                _ => panic!("Tried adding occluder based on non-cuboid collider"),
-            },
-        )
-        .flat_map(|(entity, sides)| sides.into_iter().map(move |side| (entity, side)))
-    {
-        let occluder = commands
-            .spawn((Occluder {
-                point_1_offset: point_1,
-                point_2_offset: point_2,
-            },))
-            .id();
-        commands.entity(entity).add_child(occluder);
-    }
-}
-
-fn despawn_collider_occluders(
-    mut commands: Commands,
-    mut removed: RemovedComponents<Collider>,
-    q_colliders: Query<(Entity, &Children), With<ColliderBasedOccluder>>,
-    q_occluders: Query<Entity, With<Occluder>>,
-) {
-    for removed_collider_entity in removed.read() {
-        let Ok((collider_entity, children)) = q_colliders.get(removed_collider_entity) else {
-            continue;
-        };
-        if collider_entity != removed_collider_entity {
-            continue;
-        }
-        for child in children.iter() {
-            let Ok(occluder_entity) = q_occluders.get(*child) else {
-                continue;
-            };
-            commands.entity(occluder_entity).despawn();
-        }
-    }
-}
-
-fn spawn_occluder_renderers(
-    mut commands: Commands,
-    q_occluders: Query<Entity, Added<Occluder>>,
-    render: Res<LightingRenderData>,
-) {
-    for entity in q_occluders.iter() {
-        for frame_index in 0..16 {
-            commands.spawn(OccluderRendererBundle::new(frame_index, entity, &render));
-        }
-    }
-}
-
-fn on_remove_occluder_despawn_occluder_renderers(
-    removed: Trigger<OnRemove, Occluder>,
-    mut commands: Commands,
-    q_occluder_renderers: Query<(Entity, &OccluderRenderer)>,
-) {
-    let removed_occluder = removed.entity();
-    for (entity, occluder_renderer) in q_occluder_renderers.iter() {
-        if occluder_renderer.occluder == removed_occluder {
-            commands.entity(entity).despawn();
-        }
-    }
-}
-
-fn vector_to_segment(p: Vec2, a: Vec2, b: Vec2) -> Vec2 {
-    // Vector from A to P
-    let ap = p - a;
-
-    // Vector from A to B
-    let ab = b - a;
-
-    // Squared length of AB
-    let ab_length_squared = ab.dot(ab);
-
-    // Handle degenerate case: A and B are the same point
-    if ab_length_squared == 0.0 {
-        return -ap; // The vector directly towards A (or B, since they're the same)
-    }
-
-    // Projection of P onto the infinite line defined by A and B
-    let t = f32::clamp(ap.dot(ab) / ab_length_squared, 0.0, 1.0); // Clamp t to [0, 1]
-
-    // Closest point on the segment
-    let closest_point = a + t * ab;
-
-    // Return vector towards the segment
-    closest_point - p
-}
-
-#[allow(clippy::type_complexity)]
-fn draw_occluders(
-    mut meshes: ResMut<Assets<Mesh>>,
-
-    mut q_occluder_renderers: Query<
-        (
-            &OccluderRenderer,
-            &mut Visibility,
-            &mut Transform,
-            &mut Mesh2d,
-        ),
-        (
-            Without<MainCamera>,
-            Without<LineLighting>,
-            Without<PointLighting>,
-        ),
-    >,
-
-    q_occluder: Query<(&Occluder, &GlobalTransform)>,
-    q_camera: Query<&Transform, With<MainCamera>>,
-
-    q_line_lights: Query<(&GlobalTransform, &Visibility, &LineLighting)>,
-    q_point_lights: Query<(&GlobalTransform, &Visibility, &PointLighting)>,
-) {
-    let Ok(camera_t) = q_camera.get_single() else {
-        return;
-    };
-    let camera_translation = camera_t.translation.truncate();
-
-    let lights = combine_lights(q_line_lights, q_point_lights, 16);
-
-    for (occluder_renderer, mut visibility, mut transform, mut mesh) in
-        q_occluder_renderers.iter_mut()
-    {
-        let Ok((occluder, occluder_transform)) = q_occluder.get(occluder_renderer.occluder) else {
-            continue;
-        };
-        let Some(CombinedLighting {
-            pos_1: light_pos_1,
-            pos_2: light_pos_2,
-            radius,
-            ..
-        }) = lights.get(occluder_renderer.frame_index)
-        else {
-            *visibility = Visibility::Hidden;
+    let mut textures = HashMap::default();
+    for (view, camera) in &views {
+        let Some(physical_target_size) = camera.physical_target_size else {
             continue;
         };
 
-        let point_1 = occluder.point_1_offset + occluder_transform.translation().truncate();
-        let point_2 = occluder.point_2_offset + occluder_transform.translation().truncate();
+        let cached_texture = textures
+            .entry(camera.target.clone())
+            .or_insert_with(|| {
+                // The size of the depth texture
+                let size = Extent3d {
+                    depth_or_array_layers: 1,
+                    width: physical_target_size.x,
+                    height: physical_target_size.y,
+                };
 
-        let frame_i = occluder_renderer.frame_index % 4;
-        let frame_j = occluder_renderer.frame_index / 4;
+                let descriptor = TextureDescriptor {
+                    label: Some("occluder_count_texture"),
+                    size,
+                    mip_level_count: 1,
+                    sample_count: 1,
+                    dimension: TextureDimension::D2,
+                    format: TextureFormat::Stencil8,
+                    usage: TextureUsages::RENDER_ATTACHMENT,
+                    view_formats: &[],
+                };
 
-        let point_1_to_segment = vector_to_segment(point_1, *light_pos_1, *light_pos_2);
-        let point_2_to_segment = vector_to_segment(point_2, *light_pos_1, *light_pos_2);
+                texture_cache.get(&render_device, descriptor)
+            })
+            .clone();
 
-        let camera_point = |p: Vec2| p - camera_translation + Vec2::new(320.0 * 0.5, -180. * 0.5);
-
-        let out_of_bounds = |p: Vec2| {
-            let x = p.x;
-            let y = p.y;
-            let buffer = 4.0;
-            !(x > -buffer && x < 320. + buffer && y < buffer && y > -180.0 - buffer)
-        };
-
-        let frame_point = |p: Vec2| {
-            camera_point(p)
-                + Vec2::new(320.0 * -2., 180. * 2.)
-                + Vec2::new(320. * frame_i as f32, -180. * frame_j as f32)
-        };
-
-        let point_1_frame = frame_point(point_1);
-
-        let pos = point_1_frame;
-
-        let is_out_of_bounds =
-            out_of_bounds(camera_point(point_1)) || out_of_bounds(camera_point(point_2));
-
-        let is_out_of_lights = point_1_to_segment.length() > *radius
-            && point_2_to_segment.length() > *radius
-            && (point_1 - point_2).length() < *radius * 2.0;
-
-        if is_out_of_bounds || is_out_of_lights {
-            *visibility = Visibility::Hidden;
-            continue;
-        }
-
-        let occluder_polygon =
-            create_occluder_polygon(point_1, point_2, point_1_to_segment, point_2_to_segment);
-
-        let shape = meshes.add(polygon_mesh(&occluder_polygon.map(|x| x - point_1)));
-        *transform = Transform::default().with_translation(pos.extend(1.0));
-        *mesh = Mesh2d(shape);
-        *visibility = Visibility::Visible;
+        commands
+            .entity(view)
+            .insert(OccluderCountTexture(ViewDepthTexture::new(
+                cached_texture,
+                Some(0.0),
+            )));
     }
 }
 
-fn create_occluder_polygon(
-    point_1: Vec2,
-    point_2: Vec2,
-    point_1_to_segment: Vec2,
-    point_2_to_segment: Vec2,
-) -> [Vec2; 4] {
-    [
-        point_1,
-        point_2,
-        point_2 - point_2_to_segment.normalize() * 1000.0,
-        point_1 - point_1_to_segment.normalize() * 1000.0,
-    ]
+#[derive(Resource)]
+pub struct OccluderPipeline {
+    pub layout: BindGroupLayout,
+    pub pipeline_id: CachedRenderPipelineId,
 }
-fn polygon_mesh(vertices: &[Vec2]) -> Mesh {
-    let mut triangles = Vec::new();
-    for i in 0..(vertices.len() - 1) {
-        triangles.extend(
-            [
-                vertices[0].extend(0.),
-                vertices[i].extend(0.),
-                vertices[i + 1].extend(0.),
-            ]
-            .map(|v| [v.x, v.y, v.z]),
+
+impl FromWorld for OccluderPipeline {
+    fn from_world(world: &mut World) -> Self {
+        let render_device = world.resource::<RenderDevice>();
+
+        let occluder_layout = render_device.create_bind_group_layout(
+            "point_light_bind_group_layout",
+            &BindGroupLayoutEntries::sequential(
+                ShaderStages::VERTEX,
+                (
+                    // occluder settings
+                    uniform_buffer::<RenderOccluder>(true),
+                ),
+            ),
         );
+        let point_light_layout = point_light_bind_group_layout(render_device);
+
+        let shader = world.load_asset("shaders/lighting/occluder.wgsl");
+
+        let pos_buffer_layout = VertexBufferLayout {
+            array_stride: std::mem::size_of::<OccluderVertex>() as u64,
+            step_mode: VertexStepMode::Vertex,
+            attributes: vec![
+                // Position
+                VertexAttribute {
+                    format: VertexFormat::Float32x3,
+                    offset: std::mem::offset_of!(OccluderVertex, position) as u64,
+                    shader_location: 0,
+                },
+                // Normals
+                VertexAttribute {
+                    format: VertexFormat::Float32x3,
+                    offset: std::mem::offset_of!(OccluderVertex, normal) as u64,
+                    shader_location: 1,
+                },
+            ],
+        };
+
+        let mesh2d_pipeline = Mesh2dPipeline::from_world(world);
+
+        let pipeline_id =
+            world
+                .resource_mut::<PipelineCache>()
+                .queue_render_pipeline(RenderPipelineDescriptor {
+                    label: Some("occluder_pipeline".into()),
+                    layout: vec![
+                        mesh2d_pipeline.view_layout,
+                        point_light_layout,
+                        occluder_layout.clone(),
+                    ],
+                    vertex: VertexState {
+                        shader: shader.clone(),
+                        shader_defs: vec![],
+                        entry_point: "vertex".into(),
+                        buffers: vec![pos_buffer_layout],
+                    },
+                    fragment: Some(FragmentState {
+                        shader,
+                        shader_defs: vec![],
+                        entry_point: "fragment".into(),
+                        targets: vec![Some(ColorTargetState {
+                            format: ViewTarget::TEXTURE_FORMAT_HDR,
+                            // blend: Some(BlendState {
+                            //     color: BlendComponent {
+                            //         src_factor: BlendFactor::One,
+                            //         dst_factor: BlendFactor::Zero,
+                            //         operation: BlendOperation::Add,
+                            //     },
+                            //     alpha: BlendComponent {
+                            //         src_factor: BlendFactor::One,
+                            //         dst_factor: BlendFactor::Zero,
+                            //         operation: BlendOperation::Add,
+                            //     },
+                            // }),
+                            blend: Some(BlendState::ALPHA_BLENDING),
+                            write_mask: ColorWrites::ALL,
+                        })],
+                    }),
+                    // below needs changing?
+                    primitive: PrimitiveState::default(),
+                    depth_stencil: Some(DepthStencilState {
+                        format: TextureFormat::Stencil8,
+                        depth_write_enabled: false,
+                        depth_compare: CompareFunction::Always,
+                        stencil: StencilState {
+                            front: StencilFaceState {
+                                compare: CompareFunction::Always,
+                                fail_op: StencilOperation::Keep,
+                                depth_fail_op: StencilOperation::Keep,
+                                pass_op: StencilOperation::IncrementClamp,
+                            },
+                            back: StencilFaceState::default(),
+                            read_mask: 0xFF,
+                            write_mask: 0xFF,
+                        },
+                        bias: DepthBiasState::default(),
+                    }),
+                    multisample: MultisampleState::default(),
+                    push_constant_ranges: vec![],
+                    zero_initialize_workgroup_memory: false,
+                });
+
+        OccluderPipeline {
+            layout: occluder_layout,
+            pipeline_id,
+        }
     }
-    Mesh::new(
-        PrimitiveTopology::TriangleList,
-        RenderAssetUsages::default(),
-    )
-    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0., 1., 0.]; triangles.len()])
-    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]; triangles.len()])
-    .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, triangles)
 }

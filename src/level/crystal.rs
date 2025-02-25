@@ -7,7 +7,6 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{
     light::LightColor,
-    lighting::occluder::ColliderBasedOccluder,
     shared::{GroupLabel, ResetLevel},
 };
 
@@ -210,14 +209,14 @@ pub struct CrystalBundle {
     crystal: Crystal,
     #[from_int_grid_cell]
     cell: IntGridCell,
-    collider_based_occluder: ColliderBasedOccluder,
+    // collider_based_occluder: ColliderBasedOccluder,
     hurt_marker: HurtMarker,
 }
 
 impl Default for CrystalBundle {
     fn default() -> Self {
         Self {
-            collider_based_occluder: ColliderBasedOccluder { indent: 2.0 },
+            // collider_based_occluder: ColliderBasedOccluder { indent: 2.0 },
             crystal: Crystal::default(),
             cell: IntGridCell::default(),
             hurt_marker: HurtMarker,

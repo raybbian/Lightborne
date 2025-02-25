@@ -47,6 +47,7 @@ fn main() {
                     ..default()
                 }),
         )
+        .add_plugins(bevy_mod_debugdump::CommandLineArgs)
         .add_plugins(ConfigPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(8.0).in_fixed_schedule())

@@ -4,12 +4,16 @@ use bevy::{
     core_pipeline::tonemapping::Tonemapping,
     ecs::system::SystemId,
     prelude::*,
-    render::{camera::ScalingMode, view::RenderLayers},
+    render::{
+        camera::ScalingMode,
+        view::{RenderLayers, ViewDepthTexture},
+    },
 };
 use bevy_rapier2d::plugin::PhysicsSet;
 
 use crate::{
     level::{CurrentLevel, LevelSystems},
+    lighting::AmbientLight2d,
     player::PlayerMarker,
 };
 
@@ -64,6 +68,9 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn((
         Camera2d,
         MainCamera,
+        AmbientLight2d {
+            color: Vec4::new(1.0, 1.0, 1.0, 0.1),
+        },
         Camera {
             hdr: true,
             order: 1,

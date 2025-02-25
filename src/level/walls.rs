@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{lighting::occluder::ColliderBasedOccluder, shared::GroupLabel};
+use crate::{lighting::Occluder, shared::GroupLabel};
 
 /// Marker [`Component`] representing a wall.
 #[derive(Default, Component)]
@@ -164,17 +164,19 @@ pub fn spawn_wall_collision(
                             // 1. Adjusts the transforms to be relative to the level for free
                             // 2. the colliders will be despawned automatically when levels unload
                             for wall_rect in wall_rects {
+                                let collider_dims = (
+                                    (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
+                                        * grid_size as f32
+                                        / 2.,
+                                    (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
+                                        * grid_size as f32
+                                        / 2.,
+                                );
                                 colliders
                                     .spawn_empty()
                                     .insert(Name::new("Wall Collider"))
-                                    .insert(Collider::cuboid(
-                                        (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
-                                            * grid_size as f32
-                                            / 2.,
-                                        (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
-                                            * grid_size as f32
-                                            / 2.,
-                                    ))
+                                    .insert(Collider::cuboid(collider_dims.0, collider_dims.1))
+                                    .insert(Occluder::new(collider_dims.0, collider_dims.1))
                                     .insert(CollisionGroups::new(
                                         GroupLabel::TERRAIN,
                                         GroupLabel::PLAYER_COLLIDER
@@ -194,7 +196,7 @@ pub fn spawn_wall_collision(
                                             / 2.,
                                         0.,
                                     ))
-                                    .insert(ColliderBasedOccluder::default())
+                                    // .insert(ColliderBasedOccluder::default())
                                     .insert(GlobalTransform::default());
                             }
                         });

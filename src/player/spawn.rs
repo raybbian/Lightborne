@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{lighting::light::PointLighting, shared::GroupLabel};
+use crate::{lighting::PointLight2d, shared::GroupLabel};
 
 use super::{
     light::PlayerLightInventory,
@@ -44,9 +44,10 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
             combine_rule: CoefficientCombineRule::Min,
         },
         light_inventory: PlayerLightInventory::default(),
-        point_lighting: PointLighting {
-            color: Vec3::new(0.8, 0.8, 0.8),
+        point_lighting: PointLight2d {
+            color: Vec4::new(0.8, 0.8, 0.8, 1.0),
             radius: 40.0,
+            volumetric_intensity: 0.05,
         },
     }
 }

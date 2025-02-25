@@ -6,7 +6,7 @@ use super::{
     render::{LightMaterial, LightRenderData},
     LightBeamSource, LightColor, LIGHT_SPEED,
 };
-use crate::{level::sensor::LightSensor, lighting::light::LineLighting, shared::GroupLabel};
+use crate::{level::sensor::LightSensor, shared::GroupLabel};
 
 /// Marker [`Component`] used to query for light segments.
 #[derive(Default, Component, Clone, Debug)]
@@ -22,7 +22,7 @@ pub struct LightSegmentBundle {
     pub material: MeshMaterial2d<LightMaterial>,
     pub visibility: Visibility,
     pub transform: Transform,
-    pub line_light: LineLighting,
+    // pub line_light: LineLighting,
 }
 
 /// [`Resource`] used to store [`Entity`] handles to the light segments so they aren't added and
@@ -48,10 +48,10 @@ impl FromWorld for LightSegmentCache {
                 material: render_data.material_map[color].clone(),
                 visibility: Visibility::Hidden,
                 transform: Transform::default(),
-                line_light: LineLighting {
-                    radius: 20.0,
-                    color: color.lighting_color(),
-                },
+                // line_light: LineLighting {
+                //     radius: 20.0,
+                //     color: color.lighting_color(),
+                // },
             }
         }
 
