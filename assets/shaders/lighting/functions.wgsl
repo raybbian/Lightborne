@@ -23,14 +23,3 @@ fn normal_local_to_world(
         local_from_world_transpose_b,
     ) * vertex_normal;
 }
-
-fn tangent_local_to_world(world_from_local: mat4x4<f32>, vertex_tangent: vec4<f32>) -> vec4<f32> {
-    return vec4<f32>(
-        mat3x3<f32>(
-            world_from_local[0].xyz,
-            world_from_local[1].xyz,
-            world_from_local[2].xyz
-        ) * vertex_tangent.xyz,
-        vertex_tangent.w
-    );
-}

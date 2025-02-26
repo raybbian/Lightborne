@@ -2,7 +2,10 @@ use bevy::{prelude::*, time::Stopwatch};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::level::crystal::{CrystalColor, CrystalToggleEvent};
+use crate::{
+    level::crystal::{CrystalColor, CrystalToggleEvent},
+    lighting::PointLight2d,
+};
 
 use super::{entity::FixedEntityBundle, LightColor};
 
@@ -88,6 +91,21 @@ pub struct LightSensorBundle {
     sensor: Sensor,
     #[from_entity_instance]
     light_sensor: LightSensor,
+    #[with(sensor_point_light)]
+    lighting: PointLight2d,
+}
+
+pub fn sensor_point_light(entity_instance: &EntityInstance) -> PointLight2d {
+    let light_color: LightColor = entity_instance
+        .get_enum_field("light_color")
+        .expect("light_color needs to be an enum field on all buttons")
+        .into();
+
+    PointLight2d {
+        color: light_color.lighting_color().extend(0.5),
+        radius: 30.0,
+        volumetric_intensity: 0.0,
+    }
 }
 
 /// [`System`] that resets the [`LightSensor`]s when a [`LevelSwitchEvent`] is received.

@@ -19,9 +19,8 @@ use bevy::{
             *,
         },
         renderer::{RenderContext, RenderDevice, RenderQueue},
-        sync_world::{RenderEntity, SyncToRenderWorld},
         view::{ViewTarget, ViewUniformOffset},
-        Extract, RenderApp,
+        RenderApp,
     },
     sprite::{Mesh2dPipeline, Mesh2dViewBindGroup},
 };
@@ -39,6 +38,7 @@ impl Plugin for DeferredLightingPipelinePlugin {
         app.add_plugins(OccluderPipelinePlugin)
             .add_plugins(ExtractComponentPlugin::<AmbientLight2d>::default())
             .add_plugins(UniformComponentPlugin::<AmbientLight2d>::default())
+            .add_plugins(ExtractComponentPlugin::<PointLight2d>::default())
             .add_plugins(UniformComponentPlugin::<RenderPointLight2d>::default());
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
@@ -58,8 +58,6 @@ impl Plugin for DeferredLightingPipelinePlugin {
                     Node2d::EndMainPass,
                 ),
             );
-
-        render_app.add_systems(ExtractSchedule, extract_point_light_2d);
     }
 
     fn finish(&self, app: &mut App) {
@@ -81,11 +79,40 @@ pub struct AmbientLight2d {
 }
 
 #[derive(Component, Default)]
-#[require(Transform, SyncToRenderWorld)]
+#[require(Transform)]
 pub struct PointLight2d {
     pub color: Vec4,
     pub radius: f32,
     pub volumetric_intensity: f32,
+}
+
+impl ExtractComponent for PointLight2d {
+    type Out = (RenderPointLight2d, PointLight2dBounds);
+    type QueryData = (&'static GlobalTransform, &'static PointLight2d);
+    type QueryFilter = ();
+
+    fn extract_component(
+        (transform, point_light): QueryItem<'_, Self::QueryData>,
+    ) -> Option<Self::Out> {
+        let affine_a = transform.affine();
+        let affine = Affine3::from(&affine_a);
+        let (a, b) = affine.inverse_transpose_3x3();
+
+        Some((
+            RenderPointLight2d {
+                world_from_local: affine.to_transpose(),
+                local_from_world_transpose_a: a,
+                local_from_world_transpose_b: b,
+                color: point_light.color,
+                radius: point_light.radius,
+                volumetric_intensity: point_light.volumetric_intensity,
+            },
+            PointLight2dBounds {
+                world_pos: affine_a.translation.xy(),
+                radius: point_light.radius,
+            },
+        ))
+    }
 }
 
 /// Render world version of [`PointLight2d`].  
@@ -103,40 +130,6 @@ pub struct RenderPointLight2d {
 pub struct PointLight2dBounds {
     pub world_pos: Vec2,
     pub radius: f32,
-}
-
-pub fn extract_point_light_2d(
-    mut commands: Commands,
-    mut previous_len: Local<usize>,
-    query: Extract<Query<(&RenderEntity, &GlobalTransform, &PointLight2d)>>,
-) {
-    let mut values = Vec::with_capacity(*previous_len);
-
-    for (render_entity, transform, point_light) in query.iter() {
-        let affine_a = transform.affine();
-        let affine = Affine3::from(&affine_a);
-        let (a, b) = affine.inverse_transpose_3x3();
-        values.push((
-            render_entity.id(),
-            (
-                RenderPointLight2d {
-                    world_from_local: affine.to_transpose(),
-                    local_from_world_transpose_a: a,
-                    local_from_world_transpose_b: b,
-                    color: point_light.color,
-                    radius: point_light.radius,
-                    volumetric_intensity: point_light.volumetric_intensity,
-                },
-                PointLight2dBounds {
-                    world_pos: affine_a.translation.xy(),
-                    radius: point_light.radius,
-                },
-            ),
-        ))
-    }
-
-    *previous_len = values.len();
-    commands.insert_or_spawn_batch(values);
 }
 
 #[derive(Clone, Copy, Pod, Zeroable)]
@@ -455,11 +448,20 @@ impl ViewNode for DeferredLightingNode {
         let occluder_pipeline_res = world.resource::<OccluderPipeline>();
         let pipeline_cache = world.resource::<PipelineCache>();
 
-        let (Some(point_light_pipeline), Some(ambient_light_pipeline), Some(occluder_pipeline)) = (
+        let (
+            Some(point_light_pipeline),
+            Some(ambient_light_pipeline),
+            Some(occluder_shadow_pipeline),
+            Some(occluder_cutout_pipeline),
+            Some(occluder_reset_pipeline),
+        ) = (
             pipeline_cache.get_render_pipeline(point_light_pipeline_res.pipeline_id),
             pipeline_cache.get_render_pipeline(ambient_light_pipeline_res.pipeline_id),
-            pipeline_cache.get_render_pipeline(occluder_pipeline_res.pipeline_id),
-        ) else {
+            pipeline_cache.get_render_pipeline(occluder_pipeline_res.shadow_pipeline_id),
+            pipeline_cache.get_render_pipeline(occluder_pipeline_res.cutout_pipeline_id),
+            pipeline_cache.get_render_pipeline(occluder_pipeline_res.reset_pipeline_id),
+        )
+        else {
             return Ok(());
         };
 
@@ -558,11 +560,7 @@ impl ViewNode for DeferredLightingNode {
 
         for (light_index, light_bounds) in self.point_lights.iter() {
             // render occluders
-            render_pass.set_render_pipeline(occluder_pipeline);
-
-            // set bind group 1 here because occluder shader uses it too
             render_pass.set_bind_group(1, &point_light_bind_group, &[*light_index]);
-
             render_pass.set_vertex_buffer(0, occluder_buffers.vertices.buffer().unwrap().slice(..));
             render_pass.set_index_buffer(
                 occluder_buffers.indices.buffer().unwrap().slice(..),
@@ -571,15 +569,21 @@ impl ViewNode for DeferredLightingNode {
             );
 
             // TODO: instanced rendering
-            // TODO: cull occluders that are not part of the light
 
             // render occluders for this light
             for (occluder_index, occluder_bounds) in self.occluders.iter() {
                 if !occluder_bounds.visible_from_point_light(light_bounds) {
                     continue;
                 }
-                render_pass.set_bind_group(2, &occluder_bind_group, &[*occluder_index]);
 
+                render_pass.set_render_pipeline(occluder_shadow_pipeline);
+                render_pass.set_bind_group(2, &occluder_bind_group, &[*occluder_index]);
+                render_pass.draw_indexed(0..18, 0, 0..1);
+
+                // FIXME: stencil buffers are iffy when cutouts are applied
+
+                // decrement the stencil buffer where the occluders are
+                render_pass.set_render_pipeline(occluder_cutout_pipeline);
                 render_pass.draw_indexed(0..18, 0, 0..1);
             }
 
@@ -589,6 +593,7 @@ impl ViewNode for DeferredLightingNode {
             render_pass.set_bind_group(2, &point_light_frag_group, &[]);
 
             render_pass.set_stencil_reference(0); // only render if no occluders here
+
             render_pass
                 .set_vertex_buffer(0, point_light_buffers.vertices.buffer().unwrap().slice(..));
             render_pass.set_index_buffer(
@@ -597,6 +602,10 @@ impl ViewNode for DeferredLightingNode {
                 IndexFormat::Uint32,
             );
             render_pass.draw_indexed(0..6, 0, 0..1);
+
+            // reset the stencil buffer for the next light
+            render_pass.set_render_pipeline(occluder_reset_pipeline);
+            render_pass.draw(0..3, 0..1);
         }
 
         Ok(())

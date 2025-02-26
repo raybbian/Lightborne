@@ -46,8 +46,8 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
         light_inventory: PlayerLightInventory::default(),
         point_lighting: PointLight2d {
             color: Vec4::new(0.8, 0.8, 0.8, 1.0),
-            radius: 40.0,
-            volumetric_intensity: 0.05,
+            radius: 60.0,
+            volumetric_intensity: 0.0,
         },
     }
 }
@@ -72,10 +72,6 @@ pub fn add_player_sensors(mut commands: Commands, q_player: Query<Entity, Added<
             .insert(CollisionGroups::new(
                 GroupLabel::PLAYER_SENSOR,
                 GroupLabel::HURT_BOX | GroupLabel::TERRAIN,
-            ))
-            .insert(PointLight {
-                intensity: 100_000.0,
-                ..default()
-            });
+            ));
     });
 }

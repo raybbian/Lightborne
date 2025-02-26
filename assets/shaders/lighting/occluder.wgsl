@@ -32,6 +32,9 @@ fn vertex(vertex: Vertex) -> VertexOutput {
         light_world_from_local,
         vec4<f32>(0.0, 0.0, 0.0, 1.0),
     );
+    let light_radius = vec4<f32>(light.radius, light.radius, 0.0, 0.0);
+    let light_max_world_pos = light_center_world_pos + light_radius;
+    let light_min_world_pos = light_center_world_pos - light_radius;
 
     let world_from_local = light_functions::get_world_from_local(occluder.world_from_local);
     let new_position = vertex.position * vec3<f32>(occluder.half_size, 1.0);
@@ -40,11 +43,14 @@ fn vertex(vertex: Vertex) -> VertexOutput {
         vec4<f32>(new_position, 1.0)
     );
 
+#ifndef OCCLUDER_CUTOUT
     let point_to_light = normalize(light_center_world_pos.xy - world_position.xy);
     let dot_product = dot(point_to_light, vertex.normal.xy);
+
     if dot_product < 0.0 {
         world_position += vec4<f32>(-400.0 * point_to_light, 0.0, 0.0);
     }
+#endif
 
     var output: VertexOutput;
     output.position = light_functions::position_world_to_clip(world_position, view);
@@ -53,6 +59,10 @@ fn vertex(vertex: Vertex) -> VertexOutput {
 
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
-    // return vec4<f32>(1.0, 0.0, 0.0, 0.1);
+
+#ifdef DEBUG_OCCLUDERS
+    return vec4<f32>(1.0, 0.0, 0.0, 0.05);
+#else
     return vec4<f32>(0.0);
+#endif
 }

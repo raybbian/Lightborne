@@ -1,15 +1,16 @@
 use bevy::{
+    core_pipeline::fullscreen_vertex_shader::fullscreen_shader_vertex_state,
+    ecs::query::QueryItem,
     math::{vec3, Affine3},
     prelude::*,
     render::{
         camera::ExtractedCamera,
-        extract_component::UniformComponentPlugin,
+        extract_component::{ExtractComponent, ExtractComponentPlugin, UniformComponentPlugin},
         render_resource::{binding_types::uniform_buffer, *},
         renderer::{RenderDevice, RenderQueue},
-        sync_world::{RenderEntity, SyncToRenderWorld},
         texture::TextureCache,
         view::{ViewDepthTexture, ViewTarget},
-        Extract, Render, RenderApp, RenderSet,
+        Render, RenderApp, RenderSet,
     },
     sprite::Mesh2dPipeline,
     utils::HashMap,
@@ -21,22 +22,23 @@ use super::{
     AmbientLight2d,
 };
 
+pub const DEBUG_OCCLUDERS: bool = false;
+
 pub struct OccluderPipelinePlugin;
 
 impl Plugin for OccluderPipelinePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(UniformComponentPlugin::<RenderOccluder>::default());
+        app.add_plugins(UniformComponentPlugin::<RenderOccluder>::default())
+            .add_plugins(ExtractComponentPlugin::<Occluder>::default());
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
 
-        render_app
-            .add_systems(ExtractSchedule, extract_occluders)
-            .add_systems(
-                Render,
-                prepare_occluder_count_textures.in_set(RenderSet::PrepareResources),
-            );
+        render_app.add_systems(
+            Render,
+            prepare_occluder_count_textures.in_set(RenderSet::PrepareResources),
+        );
     }
 
     fn finish(&self, app: &mut App) {
@@ -50,8 +52,8 @@ impl Plugin for OccluderPipelinePlugin {
     }
 }
 
-#[derive(Component, Default)]
-#[require(Transform, SyncToRenderWorld)]
+#[derive(Component)]
+#[require(Transform)]
 pub struct Occluder {
     pub half_size: Vec2,
 }
@@ -61,6 +63,33 @@ impl Occluder {
         Self {
             half_size: Vec2::new(half_x, half_y),
         }
+    }
+}
+
+impl ExtractComponent for Occluder {
+    type Out = (RenderOccluder, OccluderBounds);
+    type QueryData = (&'static GlobalTransform, &'static Occluder);
+    type QueryFilter = ();
+
+    fn extract_component(
+        (transform, occluder): QueryItem<'_, Self::QueryData>,
+    ) -> Option<Self::Out> {
+        let affine_a = transform.affine();
+        let affine = Affine3::from(&affine_a);
+        let (a, b) = affine.inverse_transpose_3x3();
+
+        Some((
+            RenderOccluder {
+                world_from_local: affine.to_transpose(),
+                local_from_world_transpose_a: a,
+                local_from_world_transpose_b: b,
+                half_size: occluder.half_size,
+            },
+            OccluderBounds {
+                world_pos: affine_a.translation.xy(),
+                half_size: occluder.half_size,
+            },
+        ))
     }
 }
 
@@ -88,38 +117,6 @@ impl OccluderBounds {
 
         light.world_pos.distance_squared(closest_point) <= light.radius * light.radius
     }
-}
-
-pub fn extract_occluders(
-    mut commands: Commands,
-    mut previous_len: Local<usize>,
-    query: Extract<Query<(&RenderEntity, &GlobalTransform, &Occluder)>>,
-) {
-    let mut values = Vec::with_capacity(*previous_len);
-
-    for (render_entity, transform, occluder) in query.iter() {
-        let affine_a = transform.affine();
-        let affine = Affine3::from(&affine_a);
-        let (a, b) = affine.inverse_transpose_3x3();
-        values.push((
-            render_entity.id(),
-            (
-                RenderOccluder {
-                    world_from_local: affine.to_transpose(),
-                    local_from_world_transpose_a: a,
-                    local_from_world_transpose_b: b,
-                    half_size: occluder.half_size,
-                },
-                OccluderBounds {
-                    world_pos: affine_a.translation.xy(),
-                    half_size: occluder.half_size,
-                },
-            ),
-        ))
-    }
-
-    *previous_len = values.len();
-    commands.insert_or_spawn_batch(values);
 }
 
 #[derive(Clone, Copy, Pod, Zeroable)]
@@ -232,7 +229,106 @@ pub fn prepare_occluder_count_textures(
 #[derive(Resource)]
 pub struct OccluderPipeline {
     pub layout: BindGroupLayout,
-    pub pipeline_id: CachedRenderPipelineId,
+    pub shadow_pipeline_id: CachedRenderPipelineId,
+    pub cutout_pipeline_id: CachedRenderPipelineId,
+    pub reset_pipeline_id: CachedRenderPipelineId,
+}
+
+pub fn build_occluder_pipeline_descriptor(
+    world: &mut World,
+    cutout: bool,
+    occluder_layout: &BindGroupLayout,
+) -> RenderPipelineDescriptor {
+    let render_device = world.resource::<RenderDevice>();
+
+    let point_light_layout = point_light_bind_group_layout(render_device);
+
+    let shader = world.load_asset("shaders/lighting/occluder.wgsl");
+
+    let mesh2d_pipeline = Mesh2dPipeline::from_world(world);
+
+    let pos_buffer_layout = VertexBufferLayout {
+        array_stride: std::mem::size_of::<OccluderVertex>() as u64,
+        step_mode: VertexStepMode::Vertex,
+        attributes: vec![
+            // Position
+            VertexAttribute {
+                format: VertexFormat::Float32x3,
+                offset: std::mem::offset_of!(OccluderVertex, position) as u64,
+                shader_location: 0,
+            },
+            // Normals
+            VertexAttribute {
+                format: VertexFormat::Float32x3,
+                offset: std::mem::offset_of!(OccluderVertex, normal) as u64,
+                shader_location: 1,
+            },
+        ],
+    };
+
+    let mut shader_defs: Vec<ShaderDefVal> = vec![];
+    if DEBUG_OCCLUDERS {
+        shader_defs.push("DEBUG_OCCLUDERS".into());
+    }
+    if cutout {
+        shader_defs.push("OCCLUDER_CUTOUT".into());
+    }
+
+    let label = if cutout {
+        Some("occluder_cutout_pipeline".into())
+    } else {
+        Some("occluder_pipeline".into())
+    };
+
+    RenderPipelineDescriptor {
+        label,
+        layout: vec![
+            mesh2d_pipeline.view_layout,
+            point_light_layout,
+            occluder_layout.clone(),
+        ],
+        vertex: VertexState {
+            shader: shader.clone(),
+            shader_defs: shader_defs.clone(),
+            entry_point: "vertex".into(),
+            buffers: vec![pos_buffer_layout],
+        },
+        fragment: Some(FragmentState {
+            shader,
+            shader_defs,
+            entry_point: "fragment".into(),
+            targets: vec![Some(ColorTargetState {
+                format: ViewTarget::TEXTURE_FORMAT_HDR,
+                blend: Some(BlendState::ALPHA_BLENDING),
+                write_mask: ColorWrites::ALL,
+            })],
+        }),
+        primitive: PrimitiveState::default(),
+        depth_stencil: Some(DepthStencilState {
+            format: TextureFormat::Stencil8,
+            depth_write_enabled: false,
+            depth_compare: CompareFunction::Always,
+            stencil: StencilState {
+                front: StencilFaceState {
+                    compare: CompareFunction::Always,
+                    fail_op: StencilOperation::Keep,
+                    depth_fail_op: StencilOperation::Keep,
+                    pass_op: if cutout {
+                        StencilOperation::DecrementClamp
+                    } else {
+                        StencilOperation::IncrementClamp
+                    },
+                },
+                back: StencilFaceState::default(),
+                read_mask: 0xFF,
+                write_mask: 0xFF,
+            },
+            bias: DepthBiasState::default(),
+        }),
+        multisample: MultisampleState::default(),
+        push_constant_ranges: vec![],
+        zero_initialize_workgroup_memory: false,
+    }
 }
 
 impl FromWorld for OccluderPipeline {
@@ -242,103 +338,67 @@ impl FromWorld for OccluderPipeline {
         let occluder_layout = render_device.create_bind_group_layout(
             "point_light_bind_group_layout",
             &BindGroupLayoutEntries::sequential(
-                ShaderStages::VERTEX,
+                ShaderStages::VERTEX_FRAGMENT,
                 (
                     // occluder settings
                     uniform_buffer::<RenderOccluder>(true),
                 ),
             ),
         );
-        let point_light_layout = point_light_bind_group_layout(render_device);
 
-        let shader = world.load_asset("shaders/lighting/occluder.wgsl");
+        let reset_shader = world.load_asset("shaders/lighting/occluder_reset.wgsl");
 
-        let pos_buffer_layout = VertexBufferLayout {
-            array_stride: std::mem::size_of::<OccluderVertex>() as u64,
-            step_mode: VertexStepMode::Vertex,
-            attributes: vec![
-                // Position
-                VertexAttribute {
-                    format: VertexFormat::Float32x3,
-                    offset: std::mem::offset_of!(OccluderVertex, position) as u64,
-                    shader_location: 0,
-                },
-                // Normals
-                VertexAttribute {
-                    format: VertexFormat::Float32x3,
-                    offset: std::mem::offset_of!(OccluderVertex, normal) as u64,
-                    shader_location: 1,
-                },
-            ],
-        };
+        let shadow_pipeline_descriptor =
+            build_occluder_pipeline_descriptor(world, false, &occluder_layout);
+        let cutout_pipeline_descriptor =
+            build_occluder_pipeline_descriptor(world, true, &occluder_layout);
 
-        let mesh2d_pipeline = Mesh2dPipeline::from_world(world);
+        let pipeline_cache = world.resource_mut::<PipelineCache>();
+        let shadow_pipeline_id = pipeline_cache.queue_render_pipeline(shadow_pipeline_descriptor);
+        let cutout_pipeline_id = pipeline_cache.queue_render_pipeline(cutout_pipeline_descriptor);
 
-        let pipeline_id =
-            world
-                .resource_mut::<PipelineCache>()
-                .queue_render_pipeline(RenderPipelineDescriptor {
-                    label: Some("occluder_pipeline".into()),
-                    layout: vec![
-                        mesh2d_pipeline.view_layout,
-                        point_light_layout,
-                        occluder_layout.clone(),
-                    ],
-                    vertex: VertexState {
-                        shader: shader.clone(),
-                        shader_defs: vec![],
-                        entry_point: "vertex".into(),
-                        buffers: vec![pos_buffer_layout],
+        let reset_pipeline_id = pipeline_cache.queue_render_pipeline(RenderPipelineDescriptor {
+            label: Some("occluder_reset_pipeline".into()),
+            layout: vec![],
+            vertex: fullscreen_shader_vertex_state(),
+            fragment: Some(FragmentState {
+                shader: reset_shader,
+                shader_defs: vec![],
+                entry_point: "fragment".into(),
+                targets: vec![Some(ColorTargetState {
+                    format: ViewTarget::TEXTURE_FORMAT_HDR,
+                    blend: Some(BlendState::ALPHA_BLENDING),
+                    write_mask: ColorWrites::ALL,
+                })],
+            }),
+            primitive: PrimitiveState::default(),
+            depth_stencil: Some(DepthStencilState {
+                format: TextureFormat::Stencil8,
+                depth_write_enabled: false,
+                depth_compare: CompareFunction::Always,
+                stencil: StencilState {
+                    front: StencilFaceState {
+                        compare: CompareFunction::Always,
+                        fail_op: StencilOperation::Zero,
+                        depth_fail_op: StencilOperation::Zero,
+                        pass_op: StencilOperation::Zero,
                     },
-                    fragment: Some(FragmentState {
-                        shader,
-                        shader_defs: vec![],
-                        entry_point: "fragment".into(),
-                        targets: vec![Some(ColorTargetState {
-                            format: ViewTarget::TEXTURE_FORMAT_HDR,
-                            // blend: Some(BlendState {
-                            //     color: BlendComponent {
-                            //         src_factor: BlendFactor::One,
-                            //         dst_factor: BlendFactor::Zero,
-                            //         operation: BlendOperation::Add,
-                            //     },
-                            //     alpha: BlendComponent {
-                            //         src_factor: BlendFactor::One,
-                            //         dst_factor: BlendFactor::Zero,
-                            //         operation: BlendOperation::Add,
-                            //     },
-                            // }),
-                            blend: Some(BlendState::ALPHA_BLENDING),
-                            write_mask: ColorWrites::ALL,
-                        })],
-                    }),
-                    // below needs changing?
-                    primitive: PrimitiveState::default(),
-                    depth_stencil: Some(DepthStencilState {
-                        format: TextureFormat::Stencil8,
-                        depth_write_enabled: false,
-                        depth_compare: CompareFunction::Always,
-                        stencil: StencilState {
-                            front: StencilFaceState {
-                                compare: CompareFunction::Always,
-                                fail_op: StencilOperation::Keep,
-                                depth_fail_op: StencilOperation::Keep,
-                                pass_op: StencilOperation::IncrementClamp,
-                            },
-                            back: StencilFaceState::default(),
-                            read_mask: 0xFF,
-                            write_mask: 0xFF,
-                        },
-                        bias: DepthBiasState::default(),
-                    }),
-                    multisample: MultisampleState::default(),
-                    push_constant_ranges: vec![],
-                    zero_initialize_workgroup_memory: false,
-                });
+                    back: StencilFaceState::default(),
+                    read_mask: 0xFF,
+                    write_mask: 0xFF,
+                },
+                bias: DepthBiasState::default(),
+            }),
+            multisample: MultisampleState::default(),
+            push_constant_ranges: vec![],
+            zero_initialize_workgroup_memory: false,
+        });
 
         OccluderPipeline {
             layout: occluder_layout,
-            pipeline_id,
+            shadow_pipeline_id,
+            cutout_pipeline_id,
+            reset_pipeline_id,
         }
     }
 }
