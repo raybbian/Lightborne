@@ -8,7 +8,7 @@ use crate::{player::PlayerMarker, shared::ResetLevel};
 
 use super::LevelSystems;
 
-/// Plugin for handling platforms
+/// [Plugin] for handling moving platforms
 pub struct PlatformPlugin;
 
 impl Plugin for PlatformPlugin {
@@ -22,6 +22,7 @@ impl Plugin for PlatformPlugin {
     }
 }
 
+/// Event for transitioning the state of all platforms with a specified id
 #[derive(Event)]
 pub enum ChangePlatformState {
     Play {
@@ -35,6 +36,7 @@ pub enum ChangePlatformState {
     }
 }
 
+/// Enum for the state of a platform
 #[derive(Clone, PartialEq, Eq, Copy, Debug)]
 pub enum PlatformState {
     Play,
@@ -48,6 +50,7 @@ impl Default for PlatformState {
     }
 }
 
+// Convert Strings from LDtk Enums into true Enums
 impl From<&String> for PlatformState {
     fn from(string: &String) -> Self {
         match string.as_str() {
@@ -59,7 +62,7 @@ impl From<&String> for PlatformState {
     }
 }
 
-
+/// Enum for the direction of a platform's motion along the path
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum PlatformDirection {
     Forward,
@@ -72,28 +75,29 @@ impl Default for PlatformDirection {
     }
 }
 
-/// Component for moving platforms
+/// Component to represent a moving platforms
 #[derive(Default, Component)]
 pub struct MovingPlatform {
-    pub path: Vec<IVec2>,
-    pub path_curve_points: Vec<bool>,
-    pub initial_state: PlatformState,
-    pub speed: f32,
-    pub width: i32,
-    pub height: i32,
-    pub curr_segment: IVec2,
-    pub previous_segment: IVec2,
-    pub curr_segment_index: i32,
-    pub curr_state: PlatformState,
-    pub curr_direction: PlatformDirection,
-    pub does_reverse: bool,
-    pub does_repeat: bool,
-    pub can_reactivate: bool,
-    pub has_activated: bool,
-    pub id: i32,
-    pub arc_time: f32
+    pub path: Vec<IVec2>, // Array of points that the platform will traverse
+    pub path_curve_points: Vec<bool>, // Array of booleans determining circular motion of platform
+    pub initial_state: PlatformState, // Initial state the platform spawns with
+    pub speed: f32, // Speed of the platform
+    pub width: i32, // Width of the platform in pixels
+    pub height: i32, // Height of the platform in pixels
+    pub curr_segment: IVec2, // Current platform goal position
+    pub previous_segment: IVec2, // Previous platform goal position (Used for circular motion)
+    pub curr_segment_index: i32, // Index in "path" of the current platform goal
+    pub curr_state: PlatformState, // The current state of the platform's motion
+    pub curr_direction: PlatformDirection, // The current direction along the path the platform is moving in (If platform does reverse)
+    pub does_reverse: bool, // Indicates if platform moves backwards along path after reaching end
+    pub does_repeat: bool, // Indicates if platform continues motion after reaching end of path
+    pub can_reactivate: bool, // Indicates if platform can transition out of a Stop state if it has previously transitioned to a Stop state
+    pub has_activated: bool, // Indicates if the platform has transitioned out of a Stop state (used by can_reactivate logic)
+    pub id: i32, // ID of the platform (used for event triggers)
+    pub arc_time: f32 // Used to store current state of platform's motion during circular motion
 }
 
+// Setting initial platform values and obtaining LDtk fields
 impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
     fn from(entity_instance: &bevy_ecs_ldtk::EntityInstance) -> Self {
         let mut path = match &(*entity_instance.get_field_instance("path").unwrap()).value {
@@ -194,6 +198,7 @@ pub struct MovingPlatformBundle {
     pub physics: PlatformPhysicsBundle
 }
 
+/// [System] that moves platforms during each [Update] step
 pub fn move_platforms(
     mut level_q: Query<(&mut MovingPlatform, &mut Transform, Entity, &GlobalTransform), Without<PlayerMarker>>,
     mut player_q: Query<
@@ -259,9 +264,9 @@ pub fn move_platforms(
         let curr_direction = platform.curr_direction;
         let does_reverse = platform.does_reverse;
         let does_repeat = platform.does_repeat;
-        
         let path_len = path.len() as i32;
 
+        // Calculate direction vector for platform motion (Depends on linear or circular motion)
         let direction_vec = match platform.path_curve_points[curr_segment_index as usize] {
             false => Vec2::new(curr_segment.x as f32 - current_position.x, -(curr_segment.y as f32 - current_position.y)).normalize(),
             true => {
@@ -304,12 +309,15 @@ pub fn move_platforms(
             }
         };
 
+        // Multiply direction vector by speed to obtain platform velocity
         let direction_and_velocity = direction_vec * speed;
 
+        // Only move platform if it is in the Play state
         if curr_state == PlatformState::Play {
             transform.translation += Vec3::new(direction_vec.x, direction_vec.y, 0.0) * platform.speed * time.delta_secs();
         }
 
+        // Push player away from platform horizontally if platform is in Play state
         let relative_horizontal = global_transform.translation().x - player.4.translation();
         let horizontal_distance = relative_horizontal.x.abs() - 8.0; // player width is 8.0
         let relative_height = (player.4.translation().y - 9.5) - (global_transform.translation().y + (platform.height as f32 / 2.0)); // player height is 19
@@ -323,6 +331,7 @@ pub fn move_platforms(
             }
         }
         
+        // Crush player if platform is above player, moving down, and player is grounded
         if !entity_above_player.is_none() {
             if entity_above_player.unwrap().eq(&entity) {
                 if player.2.grounded && direction_and_velocity.y < 0.0 {
@@ -331,7 +340,7 @@ pub fn move_platforms(
             }
         }
         
-
+        // Move player with platform if player is standing on platform
         if !entity_below_player.is_none() {
             if entity_below_player.unwrap().eq(&entity) {
                 if curr_state == PlatformState::Play {
@@ -342,7 +351,7 @@ pub fn move_platforms(
             }
         }
 
-        // Logic for handling transition of platform goal when each segment is reached
+        // Calculate distance to platform goal (Depends on linear or circular motion)
         let distance = match platform.path_curve_points[curr_segment_index as usize] {
             false => current_position.distance(curr_segment.as_vec2()),
             true => {
@@ -353,6 +362,8 @@ pub fn move_platforms(
                 current_position.distance(next_segment.as_vec2())
             }
         };
+
+        // Handles the transition of the platform's goal once it reaches it's current one (Skips a goal if circular motion)
         if distance <= 0.005 * platform.speed {
             platform.previous_segment = curr_segment;
             if platform.path_curve_points[curr_segment_index as usize] == true {
@@ -412,6 +423,7 @@ pub fn move_platforms(
     }
 }
 
+/// [System] that resets the state of all platforms
 pub fn reset_platforms(
     mut platform_q: Query<(&mut MovingPlatform, &mut Transform)>
 ) {
@@ -428,6 +440,7 @@ pub fn reset_platforms(
     }
 }
 
+/// [System] that checks for [ChangePlatformState] [Event] during each [Update] step and updates the platform's state accordingly
 pub fn change_platform_state(
     mut event_reader: EventReader<ChangePlatformState>,
     mut platform_q: Query<&mut MovingPlatform>
