@@ -237,8 +237,10 @@ pub fn simulate_light_sources(
             let prev_x = prev_playback.intersections[i];
             let new_x = playback.intersections[i];
 
-            let is_same_intersection =
-                prev_x.is_some_and(|prev_x| prev_x.point.abs_diff_eq(new_x.point, 1.0));
+            // let is_same_intersection =
+            //     prev_x.is_some_and(|prev_x| prev_x.point.abs_diff_eq(new_x.point, 1.0));
+
+            let is_same_intersection = prev_x.is_some_and(|prev_x| prev_x.entity == new_x.entity);
 
             // diff intersection
             if !is_same_intersection {
