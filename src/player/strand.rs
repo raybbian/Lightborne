@@ -186,6 +186,7 @@ pub fn add_player_hair_and_cloth(
 /// Each created [`Strand`] component has a `dist` of `strand_dist`, and a `gravity` of at `strand_gravity.start` near the player that slowly turns into
 /// `strand_gravity.end`. The function layers the sprites in each list of `layer_groups`
 /// based on their order, and creates an entity for each index in `layer_group_order`.
+#[allow(clippy::too_many_arguments)]
 pub fn add_player_strand(
     strand_dist: f32,
     strand_gravity: Range<f32>,
@@ -230,7 +231,7 @@ pub fn add_player_strand(
                 },
             ))
             .with_children(|parent| {
-                for (layer_i, &layer) in strand_layer_group.assets.into_iter().enumerate() {
+                for (layer_i, &layer) in strand_layer_group.assets.iter().enumerate() {
                     let layer_transform = Transform::from_translation(
                         Vec3::new(0., 0., (layer_i as f32) * 0.01) + sprite_translate.extend(0.0),
                     );

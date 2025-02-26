@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::shared::GroupLabel;
+use crate::{lighting::occluder::ColliderBasedOccluder, shared::GroupLabel};
 
 /// Marker [`Component`] representing a wall.
 #[derive(Default, Component)]
@@ -180,7 +180,8 @@ pub fn spawn_wall_collision(
                                         GroupLabel::PLAYER_COLLIDER
                                             | GroupLabel::LIGHT_RAY
                                             | GroupLabel::WHITE_RAY
-                                            | GroupLabel::STRAND,
+                                            | GroupLabel::STRAND
+                                            | GroupLabel::BLUE_RAY,
                                     ))
                                     .insert(RigidBody::Fixed)
                                     .insert(Friction::new(1.0))
@@ -193,6 +194,7 @@ pub fn spawn_wall_collision(
                                             / 2.,
                                         0.,
                                     ))
+                                    .insert(ColliderBasedOccluder::default())
                                     .insert(GlobalTransform::default());
                             }
                         });
