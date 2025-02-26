@@ -306,12 +306,6 @@ pub fn simulate_light_sources(
                 }
                 break;
             } else {
-                // same intersection,
-                //
-                // if no intersections are new, then after the loop terminates the time traveled on
-                // the source will be the playback time.
-                source.time_traveled = playback.elapsed_time;
-
                 // keep on updating the previous intersection buffer because this could be a moving
                 // platform
                 prev_playback.intersections[i] = Some(new_x);
