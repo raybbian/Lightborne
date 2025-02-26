@@ -1,6 +1,6 @@
-use bevy::diagnostic::LogDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
+use bevy::{asset::AssetMetaCheck, diagnostic::LogDiagnosticsPlugin};
 use bevy_rapier2d::prelude::*;
 
 use camera::CameraPlugin;
@@ -9,6 +9,7 @@ use debug::DebugPlugin;
 use input::{init_cursor_world_coords, update_cursor_world_coords};
 use level::LevelManagementPlugin;
 use light::LightManagementPlugin;
+use lighting::LightingPlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
 use shared::{GameState, ResetLevel};
@@ -19,6 +20,7 @@ mod debug;
 mod input;
 mod level;
 mod light;
+mod lighting;
 mod pause;
 mod player;
 mod shared;
@@ -38,6 +40,11 @@ fn main() {
                         ..default()
                     }),
                     ..default()
+                })
+                .set(AssetPlugin {
+                    //https://github.com/bevyengine/bevy_github_ci_template/issues/48
+                    meta_check: AssetMetaCheck::Never,
+                    ..default()
                 }),
         )
         .add_plugins(ConfigPlugin)
@@ -48,6 +55,7 @@ fn main() {
         .add_plugins(LightManagementPlugin)
         .add_plugins(PausePlugin)
         .add_plugins(CameraPlugin)
+        .add_plugins(LightingPlugin)
         .add_plugins(DebugPlugin::default())
         .insert_state(GameState::Playing)
         .add_event::<ResetLevel>()

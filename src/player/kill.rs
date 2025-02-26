@@ -3,16 +3,14 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    level::{
-        entity::{HurtMarker, Spike},
-        misc::StartFlag,
-        CurrentLevel,
-    },
+    level::{entity::HurtMarker, start_flag::StartFlag, CurrentLevel},
     shared::{GameState, ResetLevel},
 };
 
 use super::{
-    light::PlayerLightInventory, movement::PlayerMovement, PlayerHurtMarker, PlayerMarker,
+    light::PlayerLightInventory,
+    movement::{PlayerMovement, PlayerState},
+    PlayerHurtMarker, PlayerMarker,
 };
 
 /// [`System`] that runs on [`GameState::Respawning`]. Will turn the state back into playing
@@ -50,21 +48,35 @@ pub fn reset_player_position(
 
 /// Resets the player inventory and movement information on a [`LevelSwitchEvent`]
 pub fn reset_player_on_level_switch(
-    mut q_player: Query<(&mut PlayerMovement, &mut PlayerLightInventory), With<PlayerMarker>>,
+    mut q_player: Query<
+        (
+            &mut PlayerMovement,
+            &mut PlayerLightInventory,
+            &mut PlayerState,
+            &mut Transform,
+        ),
+        With<PlayerMarker>,
+    >,
+    current_level: Res<CurrentLevel>,
 ) {
-    let Ok((mut movement, mut inventory)) = q_player.get_single_mut() else {
+    let Ok((mut movement, mut inventory, mut state, mut transform)) = q_player.get_single_mut()
+    else {
         return;
     };
 
+    // FIXME: workaround for crouch transform
+    *transform = transform.with_scale(Vec3::ONE);
+
+    *state = PlayerState::Idle;
     *movement = PlayerMovement::default();
-    *inventory = PlayerLightInventory::default();
+    *inventory = PlayerLightInventory::colors(&current_level.allowed_colors);
 }
 
 /// Kills player upon touching a HURT_BOX
-pub fn kill_player_on_spike(
+pub fn kill_player_on_hurt_intersection(
     rapier_context: Query<&RapierContext>,
     q_player: Query<Entity, With<PlayerHurtMarker>>,
-    mut q_hurt: Query<(&mut Spike, Entity), With<HurtMarker>>,
+    q_hurt: Query<Entity, With<HurtMarker>>,
     mut ev_reset_level: EventWriter<ResetLevel>,
 ) {
     let Ok(rapier) = rapier_context.get_single() else {
@@ -74,9 +86,8 @@ pub fn kill_player_on_spike(
         return;
     };
 
-    for (mut spike, hurt) in q_hurt.iter_mut() {
+    for hurt in q_hurt.iter() {
         if rapier.intersection_pair(player, hurt) == Some(true) {
-            spike.add_death();
             ev_reset_level.send(ResetLevel::Respawn);
             return;
         }

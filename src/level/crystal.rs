@@ -5,9 +5,13 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rapier2d::prelude::*;
 
-use crate::{light::LightColor, shared::ResetLevel};
+use crate::{
+    light::LightColor,
+    lighting::occluder::ColliderBasedOccluder,
+    shared::{GroupLabel, ResetLevel},
+};
 
-use super::{CurrentLevel, LevelSystems};
+use super::{entity::HurtMarker, CurrentLevel, LevelSystems};
 
 /// [`Plugin`] for managing all things related to [`Crystal`]s. This plugin responds to the
 /// addition and removal of [`Activated`] [`Component`]s and updates the sprite and collider of
@@ -27,10 +31,16 @@ impl Plugin for CrystalPlugin {
                 )
                     .in_set(LevelSystems::Processing),
             )
-            .add_systems(Update, on_crystal_changed.in_set(LevelSystems::Simulation))
-            .add_systems(FixedUpdate, reset_crystals.run_if(on_event::<ResetLevel>));
+            // Has event reader, so must be on update
+            .add_systems(
+                Update,
+                (
+                    on_crystal_changed.in_set(LevelSystems::Simulation),
+                    reset_crystals.run_if(on_event::<ResetLevel>),
+                ),
+            );
 
-        for i in 3..=8 {
+        for i in 3..=10 {
             app.register_ldtk_int_cell_for_layer::<CrystalBundle>("Terrain", i);
         }
 
@@ -94,6 +104,7 @@ fn update_crystal_cache(
 
 /// System that will initialize all the crystals, storing their entities in the appropriate level
 /// -> crystal color location in the crystal cache.
+#[allow(clippy::type_complexity)]
 fn init_crystal_cache_and_ids(
     mut commands: Commands,
     q_crystal_id: Query<(&GridCoords, &Parent, &CrystalId), (Added<CrystalId>, Without<Crystal>)>,
@@ -117,7 +128,7 @@ fn init_crystal_cache_and_ids(
         };
         coords_map
             .entry(level_iid.clone())
-            .or_insert(HashMap::new())
+            .or_default()
             .insert(*coords, crystal_id.0);
 
         commands.entity(**parent).insert(Visibility::Hidden);
@@ -136,7 +147,7 @@ fn init_crystal_cache_and_ids(
         let actual_color = CrystalColor {
             color: crystal.color.color,
             id: coords_map
-                .get(&level_iid)
+                .get(level_iid)
                 .and_then(|mp| mp.get(coord))
                 .copied()
                 .unwrap_or(0),
@@ -145,9 +156,9 @@ fn init_crystal_cache_and_ids(
         crystal_cache
             .levels
             .entry(level_iid.clone())
-            .or_insert(HashMap::new())
+            .or_default()
             .entry(actual_color)
-            .or_insert(Vec::new())
+            .or_default()
             .push(entity);
 
         crystal.color = actual_color;
@@ -159,8 +170,8 @@ fn init_crystal_cache_and_ids(
 /// in the future.
 fn is_crystal_active(cell_value: IntGridCell) -> bool {
     match cell_value.value {
-        3 | 5 | 7 => true,
-        4 | 6 | 8 => false,
+        3 | 5 | 7 | 9 => true,
+        4 | 6 | 8 | 10 => false,
         _ => panic!("Cell value does not correspond to crystal!"),
     }
 }
@@ -171,6 +182,7 @@ fn crystal_color(cell_value: IntGridCell) -> LightColor {
         3 | 4 => LightColor::Red,
         5 | 6 => LightColor::Green,
         7 | 8 => LightColor::White,
+        9 | 10 => LightColor::Blue,
         _ => panic!("Cell value does not correspond to crystal!"),
     }
 }
@@ -192,12 +204,25 @@ impl From<IntGridCell> for Crystal {
 
 /// [`Bundle`] registered with [`LdktEntityAppExt::register_ldtk_entity`](LdtkEntityAppExt) to spawn
 /// crystals directly from Ldtk.
-#[derive(Default, Bundle, LdtkIntCell)]
+#[derive(Bundle, LdtkIntCell)]
 pub struct CrystalBundle {
     #[from_int_grid_cell]
     crystal: Crystal,
     #[from_int_grid_cell]
     cell: IntGridCell,
+    collider_based_occluder: ColliderBasedOccluder,
+    hurt_marker: HurtMarker,
+}
+
+impl Default for CrystalBundle {
+    fn default() -> Self {
+        Self {
+            collider_based_occluder: ColliderBasedOccluder { indent: 2.0 },
+            crystal: Crystal::default(),
+            cell: IntGridCell::default(),
+            hurt_marker: HurtMarker,
+        }
+    }
 }
 
 fn add_crystal_colliders(
@@ -205,8 +230,16 @@ fn add_crystal_colliders(
     q_crystals: Query<(Entity, &IntGridCell), Added<Crystal>>,
 ) {
     for (entity, cell) in q_crystals.iter() {
+        if crystal_color(*cell) == LightColor::Blue {
+            let mut collider = commands.entity(entity);
+            collider.insert(CollisionGroups::new(
+                GroupLabel::TERRAIN,
+                GroupLabel::ALL & !GroupLabel::BLUE_RAY,
+            ));
+        }
         if is_crystal_active(*cell) {
-            commands.entity(entity).insert(Collider::cuboid(4.0, 4.0));
+            let mut collider = commands.entity(entity);
+            collider.insert(Collider::cuboid(4.0, 4.0));
         }
     }
 }
