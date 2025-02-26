@@ -162,20 +162,21 @@ pub struct PlatformPhysicsBundle {
     pub rigid_body: RigidBody,
     pub collider: Collider,
     pub velocity: Velocity,
-    pub friction: Friction
+    pub friction: Friction,
+    pub transform: Transform
 }
 
 impl Default for PlatformPhysicsBundle {
     fn default() -> Self {
         Self {
-            //rigid_body: RigidBody::KinematicVelocityBased,
             rigid_body: RigidBody::KinematicVelocityBased,
-            collider: Collider::cuboid(8.0, 8.0), // shape of platform
+            collider: Collider::cuboid(4.0, 4.0), // shape of platform
             velocity: Velocity::zero(),
             friction: Friction {
                 coefficient: 0.0,
                 combine_rule: CoefficientCombineRule::Min
-            }
+            },
+            transform: Default::default()
         }
     }
 }
@@ -185,7 +186,6 @@ impl Default for PlatformPhysicsBundle {
 pub struct MovingPlatformBundle {
     #[from_entity_instance]
     pub platform: MovingPlatform,
-    pub transform: Transform,
     #[grid_coords]
     pub grid_coords: GridCoords,
     pub global_transform: GlobalTransform,
