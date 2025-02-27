@@ -75,11 +75,11 @@ pub fn move_player(
         (
             &mut KinematicCharacterController,
             &KinematicCharacterControllerOutput,
-            &mut PlayerMovement,
+            &mut PlayerMovement
         ),
         With<PlayerMarker>,
     >,
-    keys: Res<ButtonInput<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>
 ) {
     let Ok((mut controller, output, mut player)) = q_player.get_single_mut() else {
         return;

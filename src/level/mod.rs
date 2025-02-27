@@ -11,6 +11,7 @@ use crate::{
     shared::{GameState, ResetLevel},
 };
 use crystal::CrystalPlugin;
+use platform::PlatformPlugin;
 use entity::{SemiSolidPlatformBundle, SpikeBundle};
 use setup::LevelSetupPlugin;
 use start_flag::{init_start_marker, StartFlagBundle};
@@ -18,6 +19,7 @@ use walls::{spawn_wall_collision, WallBundle};
 
 pub mod crystal;
 pub mod entity;
+pub mod platform;
 pub mod sensor;
 mod setup;
 pub mod start_flag;
@@ -31,6 +33,7 @@ impl Plugin for LevelManagementPlugin {
         app.add_plugins(LdtkPlugin)
             .add_plugins(LevelSetupPlugin)
             .add_plugins(CrystalPlugin)
+            .add_plugins(PlatformPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
             .register_ldtk_entity::<LightSensorBundle>("Sensor")
