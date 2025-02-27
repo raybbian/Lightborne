@@ -2,11 +2,10 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{lighting::light::PointLighting, shared::GroupLabel};
+use crate::{animation::AnimationConfig, lighting::light::PointLighting, shared::GroupLabel};
 
 use super::{
-    light::PlayerLightInventory,
-    movement::{PlayerMovement, PlayerState},
+    animation::PlayerAnimationType, light::PlayerLightInventory, movement::PlayerMovement,
     PlayerBundle, PlayerMarker,
 };
 
@@ -34,7 +33,6 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
         )]),
         collision_groups: CollisionGroups::new(GroupLabel::PLAYER_COLLIDER, GroupLabel::TERRAIN),
         player_movement: PlayerMovement::default(),
-        player_state: PlayerState::Idle,
         friction: Friction {
             coefficient: 0.,
             combine_rule: CoefficientCombineRule::Min,
@@ -48,14 +46,39 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
             color: Vec3::new(0.8, 0.8, 0.8),
             radius: 40.0,
         },
+        animation_type: PlayerAnimationType::Idle,
+        animation_config: AnimationConfig::from(PlayerAnimationType::Idle),
     }
 }
 
 /// [`System`] that spawns the player's hurtbox [`Collider`] as a child entity.
-pub fn add_player_sensors(mut commands: Commands, q_player: Query<Entity, Added<PlayerMarker>>) {
+pub fn add_player_sensors(
+    mut commands: Commands,
+    q_player: Query<Entity, Added<PlayerMarker>>,
+    asset_server: Res<AssetServer>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
     let Ok(player) = q_player.get_single() else {
         return;
     };
+
+    let texture_atlas_layout = texture_atlas_layouts.add(TextureAtlasLayout::from_grid(
+        UVec2::new(15, 20),
+        21,
+        1,
+        None,
+        None,
+    ));
+
+    // insert sprite here because it depends on texture atlas which needs a resource
+    commands.entity(player).insert(Sprite {
+        image: asset_server.load("lyra_sheet.png"),
+        texture_atlas: Some(TextureAtlas {
+            layout: texture_atlas_layout,
+            index: 0,
+        }),
+        ..default()
+    });
 
     commands.entity(player).with_children(|parent| {
         parent

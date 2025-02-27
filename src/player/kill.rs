@@ -8,9 +8,7 @@ use crate::{
 };
 
 use super::{
-    light::PlayerLightInventory,
-    movement::{PlayerMovement, PlayerState},
-    PlayerHurtMarker, PlayerMarker,
+    light::PlayerLightInventory, movement::PlayerMovement, PlayerHurtMarker, PlayerMarker,
 };
 
 /// [`System`] that runs on [`GameState::Respawning`]. Will turn the state back into playing
@@ -52,22 +50,19 @@ pub fn reset_player_on_level_switch(
         (
             &mut PlayerMovement,
             &mut PlayerLightInventory,
-            &mut PlayerState,
             &mut Transform,
         ),
         With<PlayerMarker>,
     >,
     current_level: Res<CurrentLevel>,
 ) {
-    let Ok((mut movement, mut inventory, mut state, mut transform)) = q_player.get_single_mut()
-    else {
+    let Ok((mut movement, mut inventory, mut transform)) = q_player.get_single_mut() else {
         return;
     };
 
     // FIXME: workaround for crouch transform
     *transform = transform.with_scale(Vec3::ONE);
 
-    *state = PlayerState::Idle;
     *movement = PlayerMovement::default();
     *inventory = PlayerLightInventory::colors(&current_level.allowed_colors);
 }

@@ -3,9 +3,11 @@ use std::ops::Range;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{player::match_player::MatchPlayerPixel, shared::GroupLabel};
+use crate::{
+    animation::AnimationConfig, player::match_player::MatchPlayerPixel, shared::GroupLabel,
+};
 
-use super::{match_player::MatchPlayerZ, PlayerMarker};
+use super::{animation::PlayerAnimationType, match_player::MatchPlayerZ, PlayerMarker};
 
 #[derive(Component)]
 /// [`Component`] representing one node in a chain of strands, used to simulate hair and clothes.
@@ -267,15 +269,17 @@ pub enum PlayerRootStrandType {
 pub fn update_player_strand_offsets(
     mut strands: Query<(&mut Strand, &PlayerRootStrandType)>,
     // currently queries for nothing, could be changed to query for a e.g. a Direction component.
-    player: Query<(), With<PlayerMarker>>,
+    player: Query<(&PlayerAnimationType, &AnimationConfig), With<PlayerMarker>>,
 ) {
-    let Ok(()) = player.get_single() else { return }; // update this to read player state, e.g. player direction.
+    let Ok((anim_type, anim_config)) = player.get_single() else {
+        return;
+    }; // update this to read player state, e.g. player direction.
     for (mut strand, ty) in strands.iter_mut() {
         strand.offset = match ty {
             // update these to dynamically reflect player state, e.g. setting the Hair strand's offset to (2.0, 3.0) when facing left.
-            PlayerRootStrandType::Hair => Vec2::new(-2.0, 3.0),
-            PlayerRootStrandType::LeftCloth => Vec2::new(-3.0, -5.0),
-            PlayerRootStrandType::RightCloth => Vec2::new(5.0, -5.0),
+            PlayerRootStrandType::Hair => anim_type.hair_offset(anim_config.cur_index),
+            PlayerRootStrandType::LeftCloth => anim_type.left_cloth_offset(anim_config.cur_index),
+            PlayerRootStrandType::RightCloth => anim_type.right_cloth_offset(anim_config.cur_index),
         };
     }
 }

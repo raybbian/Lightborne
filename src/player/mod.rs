@@ -1,3 +1,4 @@
+use animation::{set_animation, PlayerAnimationType};
 use bevy::{
     input::common_conditions::{input_just_pressed, input_just_released, input_pressed},
     prelude::*,
@@ -10,6 +11,7 @@ use match_player::{
 use strand::{add_player_hair_and_cloth, update_player_strand_offsets, update_strand};
 
 use crate::{
+    animation::AnimationConfig,
     input::update_cursor_world_coords,
     level::{
         entity::{adjust_semisolid_colliders, set_semisolid},
@@ -24,11 +26,10 @@ use light::{
     despawn_angle_indicator, handle_color_switch, preview_light_path, shoot_light,
     spawn_angle_indicator, PlayerLightInventory,
 };
-use movement::{
-    crouch_player, move_player, queue_jump, update_player_state, PlayerMovement, PlayerState,
-};
+use movement::{crouch_player, move_player, queue_jump, PlayerMovement};
 use spawn::{add_player_sensors, init_player_bundle, PlayerHurtMarker};
 
+mod animation;
 mod kill;
 pub mod light;
 pub mod match_player;
@@ -90,10 +91,7 @@ impl Plugin for PlayerManagementPlugin {
         )
         .add_systems(
             FixedUpdate,
-            (
-                kill_player_on_hurt_intersection.in_set(LevelSystems::Simulation),
-                set_semisolid.in_set(LevelSystems::Simulation),
-            ),
+            (kill_player_on_hurt_intersection, set_semisolid).in_set(LevelSystems::Simulation),
         )
         .add_systems(
             PreUpdate,
@@ -109,11 +107,9 @@ impl Plugin for PlayerManagementPlugin {
         )
         .add_systems(
             FixedUpdate,
-            update_player_state.after(PhysicsSet::Writeback),
-        )
-        .add_systems(
-            FixedUpdate,
-            update_player_strand_offsets.in_set(LevelSystems::Simulation),
+            (set_animation, update_player_strand_offsets)
+                .chain()
+                .in_set(LevelSystems::Simulation),
         );
     }
 }
@@ -124,7 +120,7 @@ pub struct PlayerMarker;
 
 /// [`Bundle`] that will be initialized with [`init_player_bundle`] and inserted to the player
 /// [`Entity`] by Ldtk.
-#[derive(Default, Bundle)]
+#[derive(Bundle)]
 pub struct PlayerBundle {
     body: RigidBody,
     controller: KinematicCharacterController,
@@ -134,19 +130,19 @@ pub struct PlayerBundle {
     friction: Friction,
     restitution: Restitution,
     player_movement: PlayerMovement,
-    player_state: PlayerState,
     light_inventory: PlayerLightInventory,
     point_lighting: PointLighting,
+    animation_config: AnimationConfig,
+    animation_type: PlayerAnimationType,
 }
 
 /// [`Bundle`] registered with Ldtk that will be spawned in with the level.
-#[derive(Default, Bundle, LdtkEntity)]
+#[derive(Bundle, LdtkEntity)]
 pub struct LdtkPlayerBundle {
+    #[default]
     player_marker: PlayerMarker,
     #[with(init_player_bundle)]
     player: PlayerBundle,
-    #[sprite("lyra_bald.png")]
-    sprite: Sprite,
     #[worldly]
     worldly: Worldly,
     #[from_entity_instance]
