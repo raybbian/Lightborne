@@ -20,12 +20,16 @@ impl GroupLabel {
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameState {
     Playing,
-    Switching,
+    SwitchAnimation,
+    KillAnimation,
     Paused,
 }
 
 #[derive(Event, PartialEq, Eq)]
 pub enum ResetLevel {
+    /// Sent to run systems that reset the player state on respawn. If you are trying to kill the
+    /// player, use `KillPlayerEvent` instead
     Respawn,
+    /// Sent to run systems that reset the level state on level switch
     Switching,
 }

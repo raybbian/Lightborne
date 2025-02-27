@@ -10,7 +10,7 @@ use segments::{
     PrevLightBeamPlayback,
 };
 
-use crate::{level::LevelSystems, shared::ResetLevel};
+use crate::level::LevelSystems;
 
 mod render;
 pub mod segments;
@@ -33,7 +33,7 @@ impl Plugin for LightManagementPlugin {
                 FixedUpdate,
                 (simulate_light_sources, tick_light_sources).in_set(LevelSystems::Simulation),
             )
-            .add_systems(Update, cleanup_light_sources.run_if(on_event::<ResetLevel>));
+            .add_systems(Update, cleanup_light_sources.in_set(LevelSystems::Reset));
     }
 }
 

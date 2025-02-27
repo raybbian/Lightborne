@@ -1,3 +1,4 @@
+use animation::SpriteAnimationPlugin;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy::{asset::AssetMetaCheck, diagnostic::LogDiagnosticsPlugin};
@@ -15,6 +16,7 @@ use pause::PausePlugin;
 use player::PlayerManagementPlugin;
 use shared::{GameState, ResetLevel};
 
+mod animation;
 mod camera;
 mod config;
 mod debug;
@@ -52,6 +54,7 @@ fn main() {
         .add_plugins(ConfigPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(8.0).in_fixed_schedule())
+        .add_plugins(SpriteAnimationPlugin)
         .add_plugins(PlayerManagementPlugin)
         .add_plugins(LevelManagementPlugin)
         .add_plugins(LightManagementPlugin)

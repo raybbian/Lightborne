@@ -5,11 +5,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rapier2d::prelude::*;
 
-use crate::{
-    light::LightColor,
-    lighting::occluder::ColliderBasedOccluder,
-    shared::{GroupLabel, ResetLevel},
-};
+use crate::{light::LightColor, lighting::occluder::ColliderBasedOccluder, shared::GroupLabel};
 
 use super::{entity::HurtMarker, CurrentLevel, LevelSystems};
 
@@ -36,7 +32,7 @@ impl Plugin for CrystalPlugin {
                 Update,
                 (
                     on_crystal_changed.in_set(LevelSystems::Simulation),
-                    reset_crystals.run_if(on_event::<ResetLevel>),
+                    reset_crystals.in_set(LevelSystems::Reset),
                 ),
             );
 
