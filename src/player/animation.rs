@@ -55,10 +55,10 @@ impl PlayerAnimationType {
 impl From<PlayerAnimationType> for AnimationConfig {
     fn from(anim_type: PlayerAnimationType) -> Self {
         match anim_type {
-            PlayerAnimationType::Walk => AnimationConfig::new(3, 10, 16, true),
+            PlayerAnimationType::Walk => AnimationConfig::new(3, 10, 12, true),
             PlayerAnimationType::Idle => AnimationConfig::new(0, 2, 6, true),
             PlayerAnimationType::Crouch => AnimationConfig::new(11, 14, 48, false),
-            PlayerAnimationType::Jump => AnimationConfig::new(15, 18, 12, false),
+            PlayerAnimationType::Jump => AnimationConfig::new(15, 18, 8, false),
         }
     }
 }

@@ -269,9 +269,9 @@ pub enum PlayerRootStrandType {
 pub fn update_player_strand_offsets(
     mut strands: Query<(&mut Strand, &PlayerRootStrandType)>,
     // currently queries for nothing, could be changed to query for a e.g. a Direction component.
-    player: Query<(&PlayerAnimationType, &AnimationConfig), With<PlayerMarker>>,
+    player: Query<(&PlayerAnimationType, &Sprite, &AnimationConfig), With<PlayerMarker>>,
 ) {
-    let Ok((anim_type, anim_config)) = player.get_single() else {
+    let Ok((anim_type, sprite, anim_config)) = player.get_single() else {
         return;
     }; // update this to read player state, e.g. player direction.
     for (mut strand, ty) in strands.iter_mut() {
@@ -281,5 +281,8 @@ pub fn update_player_strand_offsets(
             PlayerRootStrandType::LeftCloth => anim_type.left_cloth_offset(anim_config.cur_index),
             PlayerRootStrandType::RightCloth => anim_type.right_cloth_offset(anim_config.cur_index),
         };
+        if sprite.flip_x {
+            strand.offset.x *= -1.0;
+        }
     }
 }

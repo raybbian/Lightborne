@@ -1,6 +1,6 @@
 use animation::{set_animation, PlayerAnimationType};
 use bevy::{
-    input::common_conditions::{input_just_pressed, input_just_released, input_pressed},
+    input::common_conditions::{input_just_pressed, input_just_released},
     prelude::*,
 };
 use bevy_ecs_ldtk::prelude::*;
