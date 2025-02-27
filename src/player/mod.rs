@@ -12,6 +12,7 @@ use strand::{add_player_hair_and_cloth, update_player_strand_offsets, update_str
 
 use crate::{
     animation::AnimationConfig,
+    camera::move_camera,
     input::update_cursor_world_coords,
     level::{
         entity::{adjust_semisolid_colliders, set_semisolid},
@@ -91,7 +92,7 @@ impl Plugin for PlayerManagementPlugin {
             .add_systems(
                 Update,
                 (
-                    reset_player_position,
+                    reset_player_position.before(move_camera),
                     // LMAO yeah so to reset the hair to a natural state i just simulate it 3 times
                     update_strand,
                     update_strand,
