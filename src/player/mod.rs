@@ -18,10 +18,13 @@ use crate::{
         LevelSystems,
     },
     lighting::light::PointLighting,
-    shared::{GameState, ResetLevel},
+    shared::GameState,
 };
 
-use kill::{kill_player_on_hurt_intersection, reset_player_on_level_switch, reset_player_position};
+use kill::{
+    kill_player_on_hurt_intersection, reset_player_on_level_switch, reset_player_position,
+    start_kill_animation, KillAnimationCallbacks, KillPlayerEvent,
+};
 use light::{
     despawn_angle_indicator, handle_color_switch, preview_light_path, shoot_light,
     should_shoot_light, spawn_angle_indicator, PlayerLightInventory,
@@ -42,80 +45,96 @@ pub struct PlayerManagementPlugin;
 
 impl Plugin for PlayerManagementPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            PreUpdate,
-            add_player_sensors.in_set(LevelSystems::Processing),
-        )
-        .add_systems(
-            FixedUpdate,
-            move_player
-                .before(PhysicsSet::SyncBackend)
-                .in_set(LevelSystems::Simulation),
-        )
-        .add_systems(
-            Update,
-            queue_jump
-                .run_if(input_just_pressed(KeyCode::Space))
-                .before(move_player)
-                .in_set(LevelSystems::Simulation),
-        )
-        .add_systems(
-            Update,
-            crouch_player
-                .before(move_player)
-                .in_set(LevelSystems::Simulation),
-        )
-        .add_systems(
-            Update,
-            (
-                handle_color_switch,
-                should_shoot_light::<true>.run_if(input_just_pressed(MouseButton::Left)),
-                should_shoot_light::<false>.run_if(input_just_pressed(MouseButton::Right)),
-                preview_light_path,
-                spawn_angle_indicator.run_if(input_just_pressed(MouseButton::Left)),
-                despawn_angle_indicator.run_if(
-                    input_just_released(MouseButton::Left)
-                        .or(input_just_pressed(MouseButton::Right)),
-                ),
-                shoot_light.run_if(input_just_released(MouseButton::Left)),
+        app.init_resource::<KillAnimationCallbacks>()
+            .add_event::<KillPlayerEvent>()
+            .add_systems(
+                PreUpdate,
+                add_player_sensors.in_set(LevelSystems::Processing),
             )
-                .chain()
-                .in_set(LevelSystems::Simulation)
-                .after(update_cursor_world_coords),
-        )
-        // Has an event reader, so should be place in update
-        .add_systems(Update, reset_player_position)
-        .add_systems(
-            Update,
-            (
-                quick_reset
-                    .run_if(input_just_pressed(KeyCode::KeyR))
-                    .run_if(in_state(GameState::Playing)),
-                reset_player_on_level_switch.run_if(on_event::<ResetLevel>),
-            ),
-        )
-        .add_systems(
-            FixedUpdate,
-            (kill_player_on_hurt_intersection, set_semisolid).in_set(LevelSystems::Simulation),
-        )
-        .add_systems(
-            PreUpdate,
-            adjust_semisolid_colliders.in_set(LevelSystems::Processing),
-        )
-        .add_systems(FixedUpdate, update_strand.in_set(LevelSystems::Simulation))
-        .add_systems(FixedPreUpdate, pre_update_match_player_pixel)
-        .add_systems(FixedPostUpdate, post_update_match_player_pixel)
-        .add_systems(FixedUpdate, update_match_player_z)
-        .add_systems(
-            PreUpdate,
-            add_player_hair_and_cloth.in_set(LevelSystems::Processing),
-        )
-        .add_systems(
-            FixedUpdate,
-            (set_animation, update_player_strand_offsets)
-                .chain()
-                .in_set(LevelSystems::Simulation),
-        );
+            .add_systems(
+                FixedUpdate,
+                move_player
+                    .before(PhysicsSet::SyncBackend)
+                    .in_set(LevelSystems::Simulation),
+            )
+            .add_systems(
+                Update,
+                queue_jump
+                    .run_if(input_just_pressed(KeyCode::Space))
+                    .before(move_player)
+                    .in_set(LevelSystems::Simulation),
+            )
+            .add_systems(
+                Update,
+                crouch_player
+                    .before(move_player)
+                    .in_set(LevelSystems::Simulation),
+            )
+            .add_systems(
+                Update,
+                (
+                    handle_color_switch,
+                    should_shoot_light::<true>.run_if(input_just_pressed(MouseButton::Left)),
+                    should_shoot_light::<false>.run_if(input_just_pressed(MouseButton::Right)),
+                    preview_light_path,
+                    spawn_angle_indicator.run_if(input_just_pressed(MouseButton::Left)),
+                    despawn_angle_indicator.run_if(
+                        input_just_released(MouseButton::Left)
+                            .or(input_just_pressed(MouseButton::Right)),
+                    ),
+                    shoot_light.run_if(input_just_released(MouseButton::Left)),
+                )
+                    .chain()
+                    .in_set(LevelSystems::Simulation)
+                    .after(update_cursor_world_coords),
+            )
+            .add_systems(
+                Update,
+                (
+                    reset_player_position,
+                    // LMAO yeah so to reset the hair to a natural state i just simulate it 3 times
+                    update_strand,
+                    update_strand,
+                    update_strand,
+                )
+                    .chain()
+                    .in_set(LevelSystems::Reset),
+            )
+            .add_systems(
+                Update,
+                (
+                    quick_reset
+                        .run_if(input_just_pressed(KeyCode::KeyR))
+                        .run_if(in_state(GameState::Playing)),
+                    reset_player_on_level_switch.in_set(LevelSystems::Reset),
+                ),
+            )
+            .add_systems(
+                FixedUpdate,
+                (kill_player_on_hurt_intersection, set_semisolid).in_set(LevelSystems::Simulation),
+            )
+            .add_systems(
+                Update,
+                start_kill_animation.run_if(on_event::<KillPlayerEvent>),
+            )
+            .add_systems(
+                PreUpdate,
+                adjust_semisolid_colliders.in_set(LevelSystems::Processing),
+            )
+            .add_systems(FixedUpdate, update_strand.in_set(LevelSystems::Simulation))
+            .add_systems(PreUpdate, pre_update_match_player_pixel)
+            .add_systems(PostUpdate, post_update_match_player_pixel)
+            .add_systems(Update, update_match_player_z)
+            .add_systems(
+                PreUpdate,
+                add_player_hair_and_cloth.in_set(LevelSystems::Processing),
+            )
+            .add_systems(
+                FixedUpdate,
+                (set_animation, update_player_strand_offsets)
+                    .chain()
+                    .in_set(LevelSystems::Simulation),
+            );
     }
 }
 
@@ -154,7 +173,7 @@ pub struct LdtkPlayerBundle {
     instance: EntityInstance,
 }
 
-/// [`System`] that will cause a state switch to [`GameState::Respawning`] when the "R" key is pressed.
-fn quick_reset(mut ev_reset_level: EventWriter<ResetLevel>) {
-    ev_reset_level.send(ResetLevel::Respawn);
+/// [`System`] that will kill the player on press of the R key
+fn quick_reset(mut ev_kill_player: EventWriter<KillPlayerEvent>) {
+    ev_kill_player.send(KillPlayerEvent);
 }

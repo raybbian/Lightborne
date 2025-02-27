@@ -5,7 +5,7 @@ use bevy_ecs_ldtk::{prelude::*, systems::process_ldtk_levels};
 use sensor::{color_sensors, reset_light_sensors, update_light_sensors, LightSensorBundle};
 
 use crate::{
-    camera::{MoveCameraEvent, CAMERA_ANIMATION_SECS, CAMERA_HEIGHT, CAMERA_WIDTH},
+    camera::{CameraMoveEvent, CAMERA_ANIMATION_SECS, CAMERA_HEIGHT, CAMERA_WIDTH},
     light::{segments::simulate_light_sources, LightColor},
     player::{LdtkPlayerBundle, PlayerMarker},
     shared::{GameState, ResetLevel},
@@ -43,7 +43,7 @@ impl Plugin for LevelManagementPlugin {
                 (spawn_wall_collision, init_start_marker, color_sensors)
                     .in_set(LevelSystems::Processing),
             )
-            .add_systems(Update, reset_light_sensors.run_if(on_event::<ResetLevel>))
+            .add_systems(Update, reset_light_sensors.in_set(LevelSystems::Reset))
             .add_systems(
                 FixedUpdate,
                 (
@@ -54,6 +54,11 @@ impl Plugin for LevelManagementPlugin {
             .configure_sets(
                 PreUpdate,
                 LevelSystems::Processing.after(process_ldtk_levels),
+            )
+            .configure_sets(Update, LevelSystems::Reset.run_if(on_event::<ResetLevel>))
+            .configure_sets(
+                FixedUpdate,
+                LevelSystems::Reset.run_if(on_event::<ResetLevel>),
             )
             .configure_sets(
                 Update,
@@ -82,6 +87,8 @@ pub enum LevelSystems {
     Simulation,
     /// Systems used to process Ldtk Entities after they spawn in [`PreUpdate`]
     Processing,
+    /// Systems used to clean up the level when the room switches or the player respawns
+    Reset,
 }
 
 /// [`System`] that will run on [`Update`] to check if the Player has moved to another level. If
@@ -98,7 +105,7 @@ fn switch_level(
     mut next_game_state: ResMut<NextState<GameState>>,
     mut current_level: ResMut<CurrentLevel>,
     on_level_switch_finish_cb: Local<OnFinishLevelSwitchCallback>,
-    mut ev_move_camera: EventWriter<MoveCameraEvent>,
+    mut ev_move_camera: EventWriter<CameraMoveEvent>,
     mut ev_level_switch: EventWriter<ResetLevel>,
 ) {
     let Ok(transform) = q_player.get_single() else {
@@ -124,7 +131,7 @@ fn switch_level(
             if current_level.level_iid != *level_iid {
                 // relies on camera to reset the state back to switching??
                 if !current_level.level_iid.to_string().is_empty() {
-                    next_game_state.set(GameState::Switching);
+                    next_game_state.set(GameState::SwitchAnimation);
 
                     let (x_min, x_max) = (
                         world_box.min.x + CAMERA_WIDTH * 0.5,
@@ -140,11 +147,11 @@ fn switch_level(
                         transform.translation.y.max(y_min).min(y_max),
                     );
 
-                    ev_move_camera.send(MoveCameraEvent::Animated {
+                    ev_move_camera.send(CameraMoveEvent::Animated {
                         to: new_pos,
                         duration: Duration::from_secs_f32(CAMERA_ANIMATION_SECS),
                         callback: Some(on_level_switch_finish_cb.0),
-                        curve: EasingCurve::new(0.0, 1.0, EaseFunction::SineInOut),
+                        ease_fn: EaseFunction::SineInOut,
                     });
                 } else {
                     ev_level_switch.send(ResetLevel::Switching);
