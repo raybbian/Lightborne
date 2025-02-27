@@ -17,6 +17,8 @@ use super::PlayerMarker;
 /// that color remaining.
 #[derive(Component, Default, Debug)]
 pub struct PlayerLightInventory {
+    /// set to true when LMB is clicked, set to false when RMB is clicked/LMB is released
+    should_shoot: bool,
     current_color: LightColor,
     /// Is true if the color is available
     sources: EnumMap<LightColor, bool>,
@@ -25,6 +27,7 @@ pub struct PlayerLightInventory {
 impl PlayerLightInventory {
     pub fn colors(colors: &[LightColor]) -> Self {
         PlayerLightInventory {
+            should_shoot: false,
             current_color: colors[0],
             sources: enum_map! {
                 LightColor::Green => colors.contains(&LightColor::Green),
@@ -88,6 +91,15 @@ pub fn handle_color_switch(
     }
 }
 
+pub fn should_shoot_light<const V: bool>(
+    mut q_player: Query<&mut PlayerLightInventory, With<PlayerMarker>>,
+) {
+    let Ok(mut inventory) = q_player.get_single_mut() else {
+        return;
+    };
+    inventory.should_shoot = V;
+}
+
 pub fn shoot_light(
     mut commands: Commands,
     mut q_player: Query<(&Transform, &mut PlayerLightInventory), With<PlayerMarker>>,
@@ -100,6 +112,9 @@ pub fn shoot_light(
     let Ok(cursor_pos) = q_cursor.get_single() else {
         return;
     };
+    if !player_inventory.should_shoot {
+        return;
+    }
     if !player_inventory.sources[player_inventory.current_color] {
         return;
     }
@@ -139,6 +154,7 @@ pub fn shoot_light(
     // need to "reborrow" it to turn it into &mut. See https://bevy-cheatbook.github.io/pitfalls/split-borrows.html
     let player_inventory = &mut *player_inventory;
     player_inventory.sources[player_inventory.current_color] = false;
+    player_inventory.should_shoot = false;
 }
 
 /// [`System`] that uses [`Gizmos`] to preview the light path while the left mouse button is held
@@ -160,6 +176,9 @@ pub fn preview_light_path(
     let Ok(cursor_pos) = q_cursor.get_single() else {
         return;
     };
+    if !inventory.should_shoot {
+        return;
+    }
     if !inventory.sources[inventory.current_color] {
         return;
     }
