@@ -568,22 +568,26 @@ impl ViewNode for DeferredLightingNode {
                 IndexFormat::Uint32,
             );
 
-            // TODO: instanced rendering
+            // TODO: instaced/batched rendering
 
-            // render occluders for this light
+            // render_pass.set_render_pipeline(occluder_shadow_pipeline);
+
+            // render occluders for this light into the stencil buffer
+            render_pass.set_render_pipeline(occluder_shadow_pipeline);
             for (occluder_index, occluder_bounds) in self.occluders.iter() {
                 if !occluder_bounds.visible_from_point_light(light_bounds) {
                     continue;
                 }
-
-                render_pass.set_render_pipeline(occluder_shadow_pipeline);
                 render_pass.set_bind_group(2, &occluder_bind_group, &[*occluder_index]);
                 render_pass.draw_indexed(0..18, 0, 0..1);
-
-                // FIXME: stencil buffers are iffy when cutouts are applied
-
-                // decrement the stencil buffer where the occluders are
-                render_pass.set_render_pipeline(occluder_cutout_pipeline);
+            }
+            // cut out all occluders for this light
+            render_pass.set_render_pipeline(occluder_cutout_pipeline);
+            for (occluder_index, occluder_bounds) in self.occluders.iter() {
+                if !occluder_bounds.visible_from_point_light(light_bounds) {
+                    continue;
+                }
+                render_pass.set_bind_group(2, &occluder_bind_group, &[*occluder_index]);
                 render_pass.draw_indexed(0..18, 0, 0..1);
             }
 

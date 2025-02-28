@@ -299,8 +299,11 @@ pub fn build_occluder_pipeline_descriptor(
             entry_point: "fragment".into(),
             targets: vec![Some(ColorTargetState {
                 format: ViewTarget::TEXTURE_FORMAT_HDR,
-                blend: Some(BlendState::ALPHA_BLENDING),
-                write_mask: ColorWrites::ALL,
+                blend: Some(BlendState {
+                    color: BlendComponent::REPLACE,
+                    alpha: BlendComponent::REPLACE,
+                }),
+                write_mask: ColorWrites::ALPHA,
             })],
         }),
         primitive: PrimitiveState::default(),
@@ -314,7 +317,7 @@ pub fn build_occluder_pipeline_descriptor(
                     fail_op: StencilOperation::Keep,
                     depth_fail_op: StencilOperation::Keep,
                     pass_op: if cutout {
-                        StencilOperation::DecrementClamp
+                        StencilOperation::Zero
                     } else {
                         StencilOperation::IncrementClamp
                     },
@@ -367,8 +370,11 @@ impl FromWorld for OccluderPipeline {
                 entry_point: "fragment".into(),
                 targets: vec![Some(ColorTargetState {
                     format: ViewTarget::TEXTURE_FORMAT_HDR,
-                    blend: Some(BlendState::ALPHA_BLENDING),
-                    write_mask: ColorWrites::ALL,
+                    blend: Some(BlendState {
+                        color: BlendComponent::REPLACE,
+                        alpha: BlendComponent::REPLACE,
+                    }),
+                    write_mask: ColorWrites::ALPHA,
                 })],
             }),
             primitive: PrimitiveState::default(),

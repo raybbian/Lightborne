@@ -49,8 +49,9 @@ fn vertex(vertex: Vertex) -> VertexOutput {
 
 fn point_light_color(uv: vec2<f32>, screen_uv: vec2<f32>) -> vec4<f32> {
     let one_tex_uv = uv * 2.0 - vec2<f32>(1.0); // -1 to 1
+    let base_color = textureSample(unlit_image, unlit_sampler, screen_uv);
 
-    let distance = min(length(one_tex_uv), 1.0);
+    let distance = min(length(one_tex_uv) * base_color.a, 1.0);
     let angle = abs(atan2(one_tex_uv.y, one_tex_uv.x));
 
     let radial_fall_off = pow(1.0 - distance, 2.0);
@@ -60,8 +61,7 @@ fn point_light_color(uv: vec2<f32>, screen_uv: vec2<f32>) -> vec4<f32> {
 
     let final_intensity = intensity * radial_fall_off * angular_fall_off * normal_fall_off;
     let light_color = final_intensity * light.color.rgb;
-    let base_color = textureSample(unlit_image, unlit_sampler, screen_uv).rgb;
-    let shaded_color = base_color * light_color + light_color * light.volumetric_intensity;
+    let shaded_color = base_color.rgb * light_color + light_color * light.volumetric_intensity;
 
     return vec4<f32>(shaded_color, 1.0);
 }

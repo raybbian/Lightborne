@@ -4,10 +4,7 @@ use bevy::{
     core_pipeline::tonemapping::Tonemapping,
     ecs::system::SystemId,
     prelude::*,
-    render::{
-        camera::ScalingMode,
-        view::{RenderLayers, ViewDepthTexture},
-    },
+    render::{camera::ScalingMode, view::RenderLayers},
 };
 use bevy_rapier2d::plugin::PhysicsSet;
 
