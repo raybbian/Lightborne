@@ -6,13 +6,14 @@ use bevy::{
         query::{QueryItem, ROQueryItem},
         system::SystemParamItem,
     },
+    math::FloatOrd,
     prelude::*,
     render::{
         render_graph::{NodeRunError, RenderGraphContext, RenderLabel, ViewNode},
         render_phase::{
-            BinnedPhaseItem, BinnedRenderPhaseType, CachedRenderPipelinePhaseItem, DrawFunctionId,
-            DrawFunctions, PhaseItem, PhaseItemExtraIndex, RenderCommand, RenderCommandResult,
-            SetItemPipeline, TrackedRenderPass, ViewBinnedRenderPhases,
+            CachedRenderPipelinePhaseItem, DrawFunctionId, DrawFunctions, PhaseItem,
+            PhaseItemExtraIndex, RenderCommand, RenderCommandResult, SetItemPipeline,
+            SortedPhaseItem, TrackedRenderPass, ViewSortedRenderPhases,
         },
         render_resource::{
             binding_types::{sampler, texture_2d},
@@ -39,13 +40,17 @@ use super::{
     AmbientLight2d,
 };
 
-/// Deferred Lighting [`BinnedPhaseItem`]s.
+/// Deferred Lighting [`SortedPhaseItem`]s.
 pub struct DeferredLighting2d {
     /// The key, which determines which can be batched.
-    pub key: DeferredLightingBinKey,
+    pub sort_key: FloatOrd,
     /// An entity from which data will be fetched, including the mesh if
     /// applicable.
-    pub representative_entity: (Entity, MainEntity),
+    pub entity: (Entity, MainEntity),
+    /// The identifier of the render pipeline.
+    pub pipeline: CachedRenderPipelineId,
+    /// The function used to draw.
+    pub draw_function: DrawFunctionId,
     /// The ranges of instances.
     pub batch_range: Range<u32>,
     /// An extra index, which is either a dynamic offset or an index in the
@@ -53,26 +58,17 @@ pub struct DeferredLighting2d {
     pub extra_index: PhaseItemExtraIndex,
 }
 
-/// Data that must be identical in order to batch phase items together.
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct DeferredLightingBinKey {
-    /// The identifier of the render pipeline.
-    pub pipeline: CachedRenderPipelineId,
-    /// The function used to draw.
-    pub draw_function: DrawFunctionId,
-}
-
 impl PhaseItem for DeferredLighting2d {
     #[inline]
     fn entity(&self) -> Entity {
-        self.representative_entity.0
+        self.entity.0
     }
     fn main_entity(&self) -> MainEntity {
-        self.representative_entity.1
+        self.entity.1
     }
     #[inline]
     fn draw_function(&self) -> DrawFunctionId {
-        self.key.draw_function
+        self.draw_function
     }
     #[inline]
     fn batch_range(&self) -> &Range<u32> {
@@ -90,28 +86,18 @@ impl PhaseItem for DeferredLighting2d {
     }
 }
 
-impl BinnedPhaseItem for DeferredLighting2d {
-    type BinKey = DeferredLightingBinKey;
+impl SortedPhaseItem for DeferredLighting2d {
+    type SortKey = FloatOrd;
 
-    fn new(
-        key: Self::BinKey,
-        representative_entity: (Entity, MainEntity),
-        batch_range: Range<u32>,
-        extra_index: PhaseItemExtraIndex,
-    ) -> Self {
-        DeferredLighting2d {
-            key,
-            representative_entity,
-            batch_range,
-            extra_index,
-        }
+    fn sort_key(&self) -> Self::SortKey {
+        self.sort_key
     }
 }
 
 impl CachedRenderPipelinePhaseItem for DeferredLighting2d {
     #[inline]
     fn cached_pipeline(&self) -> CachedRenderPipelineId {
-        self.key.pipeline
+        self.pipeline
     }
 }
 
@@ -140,7 +126,7 @@ impl FromWorld for PostProcessRes {
 }
 
 pub fn extract_deferred_lighting_2d_camera_phases(
-    mut phases: ResMut<ViewBinnedRenderPhases<DeferredLighting2d>>,
+    mut phases: ResMut<ViewSortedRenderPhases<DeferredLighting2d>>,
     cameras_2d: Extract<Query<(RenderEntity, &Camera), With<Camera2d>>>,
     mut live_entities: Local<EntityHashSet>,
 ) {
@@ -163,7 +149,7 @@ pub fn queue_deferred_lighting(
     ambient_light_pipeline: Res<AmbientLight2dPipeline>,
     q_point_lights: Query<(Entity, &MainEntity, &PointLight2dBounds), With<ExtractPointLight2d>>,
     q_occluder: Query<(Entity, &MainEntity, &Occluder2dBounds), With<ExtractOccluder2d>>,
-    mut deferred_lighting_phases: ResMut<ViewBinnedRenderPhases<DeferredLighting2d>>,
+    mut deferred_lighting_phases: ResMut<ViewSortedRenderPhases<DeferredLighting2d>>,
     views: Query<(Entity, &MainEntity), With<AmbientLight2d>>,
 ) {
     for (view_e, view_me) in views.iter() {
@@ -190,37 +176,44 @@ pub fn queue_deferred_lighting(
             .read()
             .id::<ResetOccluderStencil>();
 
+        let mut sort_key = 0.0;
+
+        let mut add_phase_item = |pipeline: CachedRenderPipelineId,
+                                  draw_function: DrawFunctionId,
+                                  entity: (Entity, MainEntity)| {
+            phase.add(DeferredLighting2d {
+                pipeline,
+                draw_function,
+                entity,
+                batch_range: 0..1,
+                sort_key: FloatOrd(sort_key),
+                extra_index: PhaseItemExtraIndex::NONE,
+            });
+            sort_key += 1.0;
+        };
+
         // Set bind group 0 - post process uniform
         // Set bind group 1 - view uniform
-        phase.add(
-            DeferredLightingBinKey {
-                pipeline: ambient_light_pipeline.pipeline_id,
-                draw_function: prepare_deferred_lighting,
-            },
+        add_phase_item(
+            ambient_light_pipeline.pipeline_id,
+            prepare_deferred_lighting,
             (view_e, *view_me),
-            BinnedRenderPhaseType::NonMesh,
         );
 
-        // Render ambient light into the scene
-        phase.add(
-            DeferredLightingBinKey {
-                pipeline: ambient_light_pipeline.pipeline_id,
-                draw_function: render_ambient_light,
-            },
+        // Draw ambient light
+        add_phase_item(
+            ambient_light_pipeline.pipeline_id,
+            render_ambient_light,
             (view_e, *view_me),
-            BinnedRenderPhaseType::NonMesh,
         );
 
         // Start rendering lights
         for (pl_e, pl_me, light_bounds) in q_point_lights.iter() {
             // Set bind group 2 - point light uniform
-            phase.add(
-                DeferredLightingBinKey {
-                    pipeline: point_light_pipeline.pipeline_id,
-                    draw_function: prepare_point_light,
-                },
+            add_phase_item(
+                point_light_pipeline.pipeline_id,
+                prepare_point_light,
                 (pl_e, *pl_me),
-                BinnedRenderPhaseType::NonMesh,
             );
 
             // Render occluder shadows
@@ -228,13 +221,10 @@ pub fn queue_deferred_lighting(
                 if !occluder_bounds.visible_from_point_light(light_bounds) {
                     continue;
                 }
-                phase.add(
-                    DeferredLightingBinKey {
-                        pipeline: occluder_pipeline.shadow_pipeline_id,
-                        draw_function: render_occluder,
-                    },
+                add_phase_item(
+                    occluder_pipeline.shadow_pipeline_id,
+                    render_occluder,
                     (ocl_e, *ocl_me),
-                    BinnedRenderPhaseType::NonMesh,
                 );
             }
 
@@ -243,34 +233,25 @@ pub fn queue_deferred_lighting(
                 if !occluder_bounds.visible_from_point_light(light_bounds) {
                     continue;
                 }
-                phase.add(
-                    DeferredLightingBinKey {
-                        pipeline: occluder_pipeline.cutout_pipeline_id,
-                        draw_function: render_occluder,
-                    },
+                add_phase_item(
+                    occluder_pipeline.cutout_pipeline_id,
+                    render_occluder,
                     (ocl_e, *ocl_me),
-                    BinnedRenderPhaseType::NonMesh,
                 );
             }
 
             // Render the actual light now
-            phase.add(
-                DeferredLightingBinKey {
-                    pipeline: point_light_pipeline.pipeline_id,
-                    draw_function: render_point_light,
-                },
+            add_phase_item(
+                point_light_pipeline.pipeline_id,
+                render_point_light,
                 (pl_e, *pl_me),
-                BinnedRenderPhaseType::NonMesh,
             );
 
             // Reset the occluder
-            phase.add(
-                DeferredLightingBinKey {
-                    pipeline: occluder_pipeline.reset_pipeline_id,
-                    draw_function: reset_stencil_buffer,
-                },
+            add_phase_item(
+                occluder_pipeline.reset_pipeline_id,
+                reset_stencil_buffer,
                 (pl_e, *pl_me),
-                BinnedRenderPhaseType::NonMesh,
             );
         }
     }
@@ -339,7 +320,7 @@ impl ViewNode for DeferredLightingNode {
         (view_target, occluder_count_texture, _ambient_lighting): QueryItem<'w, Self::ViewQuery>,
         world: &'w World,
     ) -> Result<(), NodeRunError> {
-        let lighting_phases = world.resource::<ViewBinnedRenderPhases<DeferredLighting2d>>();
+        let lighting_phases = world.resource::<ViewSortedRenderPhases<DeferredLighting2d>>();
         let view_entity = graph.view_entity();
         let Some(lighting_phase) = lighting_phases.get(&view_entity) else {
             return Ok(());
@@ -374,71 +355,11 @@ impl ViewNode for DeferredLightingNode {
 
         render_pass.set_bind_group(0, &post_process_group, &[]);
 
-        if !lighting_phase.is_empty() {
+        if !lighting_phase.items.is_empty() {
             if let Err(err) = lighting_phase.render(&mut render_pass, world, view_entity) {
                 error!("Error encountered while rendering the 2d deferred lighting phase {err:?}")
             }
         }
-
-        // render_pass.set_bind_group(
-        //     0,
-        //     &mesh2d_view_bind_group.value,
-        //     &[view_uniform_offset.offset],
-        // );
-        //
-        // for (light_index, light_bounds) in self.point_lights.iter() {
-        //     // render occluders
-        //     render_pass.set_bind_group(1, &point_light_bind_group, &[*light_index]);
-        //     render_pass.set_vertex_buffer(0, occluder_buffers.vertices.buffer().unwrap().slice(..));
-        //     render_pass.set_index_buffer(
-        //         occluder_buffers.indices.buffer().unwrap().slice(..),
-        //         0,
-        //         IndexFormat::Uint32,
-        //     );
-        //
-        //     // TODO: instaced/batched rendering
-        //
-        //     // render_pass.set_render_pipeline(occluder_shadow_pipeline);
-        //
-        //     // render occluders for this light into the stencil buffer
-        //     render_pass.set_render_pipeline(occluder_shadow_pipeline);
-        //     for (occluder_index, occluder_bounds) in self.occluders.iter() {
-        //         if !occluder_bounds.visible_from_point_light(light_bounds) {
-        //             continue;
-        //         }
-        //         render_pass.set_bind_group(2, &occluder_bind_group, &[*occluder_index]);
-        //         render_pass.draw_indexed(0..18, 0, 0..1);
-        //     }
-        //     // cut out all occluders for this light
-        //     render_pass.set_render_pipeline(occluder_cutout_pipeline);
-        //     for (occluder_index, occluder_bounds) in self.occluders.iter() {
-        //         if !occluder_bounds.visible_from_point_light(light_bounds) {
-        //             continue;
-        //         }
-        //         render_pass.set_bind_group(2, &occluder_bind_group, &[*occluder_index]);
-        //         render_pass.draw_indexed(0..18, 0, 0..1);
-        //     }
-        //
-        //     // render the light itself
-        //     render_pass.set_render_pipeline(point_light_pipeline);
-        //
-        //     render_pass.set_bind_group(2, &point_light_frag_group, &[]);
-        //
-        //     render_pass.set_stencil_reference(0); // only render if no occluders here
-        //
-        //     render_pass
-        //         .set_vertex_buffer(0, point_light_buffers.vertices.buffer().unwrap().slice(..));
-        //     render_pass.set_index_buffer(
-        //         point_light_buffers.indices.buffer().unwrap().slice(..),
-        //         0,
-        //         IndexFormat::Uint32,
-        //     );
-        //     render_pass.draw_indexed(0..6, 0, 0..1);
-        //
-        //     // reset the stencil buffer for the next light
-        //     render_pass.set_render_pipeline(occluder_reset_pipeline);
-        //     render_pass.draw(0..3, 0..1);
-        // }
 
         Ok(())
     }

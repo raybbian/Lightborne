@@ -2,12 +2,11 @@ use bevy::{
     core_pipeline::core_2d::graph::{Core2d, Node2d},
     prelude::*,
     render::{
-        // batching::no_gpu_preprocessing::batch_and_prepare_binned_render_phase,
         render_graph::{RenderGraphApp, ViewNodeRunner},
-        render_phase::{AddRenderCommand, DrawFunctions, ViewBinnedRenderPhases},
-        Render,
-        RenderApp,
-        RenderSet,
+        render_phase::{
+            sort_phase_system, AddRenderCommand, DrawFunctions, ViewSortedRenderPhases,
+        },
+        Render, RenderApp, RenderSet,
     },
 };
 
@@ -44,7 +43,7 @@ impl Plugin for DeferredLightingPlugin {
 
         render_app
             .init_resource::<DrawFunctions<DeferredLighting2d>>()
-            .init_resource::<ViewBinnedRenderPhases<DeferredLighting2d>>()
+            .init_resource::<ViewSortedRenderPhases<DeferredLighting2d>>()
             .add_render_command::<DeferredLighting2d, PrepareDeferredLighting>()
             .add_render_command::<DeferredLighting2d, RenderAmbientLight2d>()
             .add_render_command::<DeferredLighting2d, PreparePointLight2d>()
@@ -71,7 +70,10 @@ impl Plugin for DeferredLightingPlugin {
             // )
             .add_systems(
                 Render,
-                queue_deferred_lighting.in_set(RenderSet::QueueMeshes),
+                (
+                    sort_phase_system::<DeferredLighting2d>.in_set(RenderSet::PhaseSort),
+                    queue_deferred_lighting.in_set(RenderSet::QueueMeshes),
+                ),
             );
     }
 
