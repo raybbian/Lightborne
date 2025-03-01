@@ -16089,6 +16089,22 @@
 							"fieldInstances": [],
 							"__worldX": 32,
 							"__worldY": 152
+						},
+						{
+							"__identifier": "Lyra",
+							"__grid": [4,18],
+							"__pivot": [0.5,1],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FF0044",
+							"iid": "c99d0020-e920-11ef-ad55-bbb5f6b76040",
+							"width": 16,
+							"height": 19,
+							"defUid": 106,
+							"px": [36,152],
+							"fieldInstances": [],
+							"__worldX": 36,
+							"__worldY": 152
 						}
 					]
 				},
@@ -17163,22 +17179,6 @@
 							"fieldInstances": [],
 							"__worldX": 1928,
 							"__worldY": 224
-						},
-						{
-							"__identifier": "Lyra",
-							"__grid": [1,5],
-							"__pivot": [0.5,1],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FF0044",
-							"iid": "c99d0020-e920-11ef-ad55-bbb5f6b76040",
-							"width": 16,
-							"height": 19,
-							"defUid": 106,
-							"px": [12,48],
-							"fieldInstances": [],
-							"__worldX": 1932,
-							"__worldY": 232
 						},
 						{
 							"__identifier": "Sensor",
