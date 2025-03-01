@@ -4,7 +4,7 @@ use bevy::{asset, prelude::*};
 use noise::{NoiseFn, Simplex};
 use rand::Rng;
 
-use crate::camera::MainCamera;
+use crate::{camera::MainCamera, level::crystal::Crystal};
 pub struct ParticlePlugin;
 impl Plugin for ParticlePlugin {
     fn build(&self, app: &mut App) {
@@ -15,6 +15,7 @@ impl Plugin for ParticlePlugin {
             .add_systems(Update, spawn_particles)
             .add_systems(Update, update_particles)
             .add_systems(Update, update_particle_emitters)
+            .add_systems(Update, add_crystal_sparkles)
             .add_systems(Update, delete_particles)
         // end
         ;
@@ -47,24 +48,24 @@ impl Wind {
 
 #[derive(Default, Clone)]
 pub struct ParticleAnimationOptions {
-    frame_time: Duration,
-    frame_count: usize,
-    frame_size: Vec2,
-    repeat: bool,
+    pub frame_time: Duration,
+    pub frame_count: usize,
+    pub frame_size: Vec2,
+    pub repeat: bool,
 }
 
 #[derive(Default, Clone)]
 pub struct ParticlePhysicsOptions {
-    wind_mult: f32,
-    gravity_mult: f32,
+    pub wind_mult: f32,
+    pub gravity_mult: f32,
 }
 
 #[derive(Default, Clone)]
 pub struct ParticleOptions {
-    life_time: Duration,
-    physics: Option<ParticlePhysicsOptions>,
-    animation: Option<ParticleAnimationOptions>,
-    image: Handle<Image>,
+    pub life_time: Duration,
+    pub physics: Option<ParticlePhysicsOptions>,
+    pub animation: Option<ParticleAnimationOptions>,
+    pub image: Handle<Image>,
 }
 
 #[derive(Component, Default, Clone)]
@@ -149,6 +150,18 @@ pub struct ParticleEmitter {
     pub timer: Timer,
 }
 
+impl ParticleEmitter {
+    pub fn new(options: ParticleEmitterOptions) -> Self {
+        Self {
+            timer: Timer::new(
+                rand::random_range(options.delay_range.clone()),
+                TimerMode::Once,
+            ),
+            options,
+        }
+    }
+}
+
 #[derive(Resource)]
 pub struct DustSpawnTimer(Timer);
 
@@ -171,6 +184,7 @@ fn spawn_particles(
         return;
     };
     dust_timer.0.tick(time.delta());
+    return;
     if dust_timer.0.finished() {
         let mut rng = rand::rng();
 
@@ -275,6 +289,41 @@ fn update_particles(
                     animation.frame_size.y,
                 ))
             }
+        }
+    }
+}
+
+fn add_crystal_sparkles(
+    mut commands: Commands,
+    crystal: Query<(Entity, &Crystal), Changed<Crystal>>,
+    asset_server: Res<AssetServer>,
+) {
+    const FRAME_TIME: f32 = 0.05;
+    const FRAME_COUNT: usize = 9;
+    for (entity, crystal) in crystal.iter() {
+        if crystal.active {
+            commands
+                .entity(entity)
+                .insert(ParticleEmitter::new(ParticleEmitterOptions {
+                    area: ParticleEmitterArea::Cuboid {
+                        half_x: 4.0,
+                        half_y: 4.0,
+                    },
+                    delay_range: Duration::from_secs_f32(0.0)..Duration::from_secs_f32(30.0),
+                    particle: ParticleOptions {
+                        life_time: Duration::from_secs_f32(FRAME_TIME * FRAME_COUNT as f32),
+                        physics: None,
+                        animation: Some(ParticleAnimationOptions {
+                            frame_count: FRAME_COUNT,
+                            frame_size: Vec2::new(5.0, 5.0),
+                            frame_time: Duration::from_secs_f32(FRAME_TIME),
+                            repeat: false,
+                        }),
+                        image: asset_server.load("particle/shine.png"),
+                    },
+                }));
+        } else {
+            commands.entity(entity).remove::<ParticleEmitter>();
         }
     }
 }
