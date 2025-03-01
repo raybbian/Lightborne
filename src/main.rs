@@ -9,7 +9,7 @@ use debug::DebugPlugin;
 use input::{init_cursor_world_coords, update_cursor_world_coords};
 use level::LevelManagementPlugin;
 use light::LightManagementPlugin;
-use lighting::LightingPlugin;
+use lighting::DeferredLightingPlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
 use shared::{GameState, ResetLevel};
@@ -56,7 +56,7 @@ fn main() {
         .add_plugins(LightManagementPlugin)
         .add_plugins(PausePlugin)
         .add_plugins(CameraPlugin)
-        .add_plugins(LightingPlugin)
+        .add_plugins(DeferredLightingPlugin)
         .add_plugins(DebugPlugin::default())
         .insert_state(GameState::Playing)
         .add_event::<ResetLevel>()

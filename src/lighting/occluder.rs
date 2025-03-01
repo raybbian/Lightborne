@@ -18,7 +18,7 @@ use bevy::{
 use bytemuck::{Pod, Zeroable};
 
 use super::{
-    pipeline::{point_light_bind_group_layout, PointLight2dBounds},
+    point_light::{point_light_bind_group_layout, PointLight2dBounds},
     AmbientLight2d,
 };
 
@@ -45,7 +45,6 @@ impl Plugin for OccluderPipelinePlugin {
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
-
         render_app
             .init_resource::<OccluderPipeline>()
             .init_resource::<OccluderBuffers>();
