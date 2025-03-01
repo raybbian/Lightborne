@@ -7,7 +7,7 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{
     light::LightColor,
-    lighting::Occluder,
+    lighting::Occluder2d,
     shared::{GroupLabel, ResetLevel},
 };
 
@@ -240,7 +240,7 @@ fn add_crystal_colliders(
         if is_crystal_active(*cell) {
             let mut collider = commands.entity(entity);
             collider.insert(Collider::cuboid(4.0, 4.0));
-            collider.insert(Occluder::new(4.0, 4.0));
+            collider.insert(Occluder2d::new(4.0, 4.0));
         }
     }
 }
@@ -258,7 +258,7 @@ fn activate_crystal(
     commands
         .entity(crystal_entity)
         .insert(Collider::cuboid(4.0, 4.0))
-        .insert(Occluder::new(4.0, 4.0));
+        .insert(Occluder2d::new(4.0, 4.0));
     crystal_index.0 -= CRYSTAL_INDEX_OFFSET;
 }
 
@@ -271,7 +271,7 @@ fn deactivate_crystal(
 ) {
     commands
         .entity(crystal_entity)
-        .remove::<(Collider, Occluder)>();
+        .remove::<(Collider, Occluder2d)>();
     crystal_index.0 += CRYSTAL_INDEX_OFFSET;
 }
 

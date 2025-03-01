@@ -22,13 +22,12 @@ struct PointLight2d {
     volumetric_intensity: f32,
 }
 
-@group(0) @binding(0) var<uniform> view: View;
-@group(0) @binding(1) var<uniform> globals: Globals;
 
-@group(1) @binding(0) var<uniform> light: PointLight2d;
-
-@group(2) @binding(0) var unlit_image: texture_2d<f32>;
-@group(2) @binding(1) var unlit_sampler: sampler;
+@group(0) @binding(0) var unlit_image: texture_2d<f32>;
+@group(0) @binding(1) var unlit_sampler: sampler;
+@group(1) @binding(0) var<uniform> view: View;
+@group(1) @binding(1) var<uniform> globals: Globals;
+@group(2) @binding(0) var<uniform> light: PointLight2d;
 
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {

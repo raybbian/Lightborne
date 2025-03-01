@@ -19,11 +19,10 @@ struct Occluder2d {
     half_size: vec2<f32>,
 }
 
-@group(0) @binding(0) var<uniform> view: View;
-@group(0) @binding(1) var<uniform> globals: Globals;
-
-@group(1) @binding(0) var<uniform> light: PointLight2d;
-@group(2) @binding(0) var<uniform> occluder: Occluder2d;
+@group(1) @binding(0) var<uniform> view: View;
+@group(1) @binding(1) var<uniform> globals: Globals;
+@group(2) @binding(0) var<uniform> light: PointLight2d;
+@group(3) @binding(0) var<uniform> occluder: Occluder2d;
 
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {

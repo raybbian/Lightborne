@@ -1,28 +1,45 @@
 use bevy::{
-    ecs::query::QueryItem,
+    ecs::{
+        query::{QueryItem, ROQueryItem},
+        system::{
+            lifetimeless::{Read, SRes},
+            SystemParamItem,
+        },
+    },
     math::{vec2, vec3, Affine3},
     prelude::*,
     render::{
-        extract_component::{ExtractComponent, ExtractComponentPlugin, UniformComponentPlugin},
-        mesh::VertexBufferLayout,
-        render_resource::{
-            binding_types::{sampler, texture_2d, uniform_buffer},
-            *,
+        extract_component::{
+            ComponentUniforms, DynamicUniformIndex, ExtractComponent, ExtractComponentPlugin,
+            UniformComponentPlugin,
         },
+        mesh::VertexBufferLayout,
+        render_phase::{PhaseItem, RenderCommand, RenderCommandResult, TrackedRenderPass},
+        render_resource::{binding_types::uniform_buffer, *},
         renderer::{RenderDevice, RenderQueue},
         view::ViewTarget,
-        RenderApp,
+        Render, RenderApp, RenderSet,
     },
     sprite::Mesh2dPipeline,
 };
 use bytemuck::{Pod, Zeroable};
+
+use super::render::PostProcessRes;
 
 pub struct PointLight2dPlugin;
 
 impl Plugin for PointLight2dPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(ExtractComponentPlugin::<PointLight2d>::default())
-            .add_plugins(UniformComponentPlugin::<RenderPointLight2d>::default());
+            .add_plugins(UniformComponentPlugin::<ExtractPointLight2d>::default());
+
+        let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
+            return;
+        };
+        render_app.add_systems(
+            Render,
+            prepare_point_light_2d_bind_group.in_set(RenderSet::PrepareBindGroups),
+        );
     }
     fn finish(&self, app: &mut App) {
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
@@ -43,7 +60,7 @@ pub struct PointLight2d {
 }
 
 impl ExtractComponent for PointLight2d {
-    type Out = (RenderPointLight2d, PointLight2dBounds);
+    type Out = (ExtractPointLight2d, PointLight2dBounds);
     type QueryData = (&'static GlobalTransform, &'static PointLight2d);
     type QueryFilter = ();
 
@@ -55,7 +72,7 @@ impl ExtractComponent for PointLight2d {
         let (a, b) = affine.inverse_transpose_3x3();
 
         Some((
-            RenderPointLight2d {
+            ExtractPointLight2d {
                 world_from_local: affine.to_transpose(),
                 local_from_world_transpose_a: a,
                 local_from_world_transpose_b: b,
@@ -73,7 +90,7 @@ impl ExtractComponent for PointLight2d {
 
 /// Render world version of [`PointLight2d`].  
 #[derive(Component, ShaderType, Clone, Copy, Debug)]
-pub struct RenderPointLight2d {
+pub struct ExtractPointLight2d {
     world_from_local: [Vec4; 3],
     local_from_world_transpose_a: [Vec4; 2],
     local_from_world_transpose_b: f32,
@@ -140,45 +157,102 @@ impl FromWorld for PointLight2dBuffers {
         }
     }
 }
+
 pub fn point_light_bind_group_layout(render_device: &RenderDevice) -> BindGroupLayout {
     render_device.create_bind_group_layout(
         "point_light_bind_group_layout",
-        &BindGroupLayoutEntries::sequential(
+        &BindGroupLayoutEntries::single(
             ShaderStages::VERTEX_FRAGMENT,
-            (
-                //light settings
-                uniform_buffer::<RenderPointLight2d>(true),
-            ),
+            uniform_buffer::<ExtractPointLight2d>(true),
         ),
     )
 }
 
 #[derive(Resource)]
+pub struct PointLight2dBindGroup {
+    value: BindGroup,
+}
+
+pub fn prepare_point_light_2d_bind_group(
+    mut commands: Commands,
+    uniforms: Res<ComponentUniforms<ExtractPointLight2d>>,
+    pipeline: Res<PointLight2dPipeline>,
+    render_device: Res<RenderDevice>,
+) {
+    if let Some(binding) = uniforms.uniforms().binding() {
+        commands.insert_resource(PointLight2dBindGroup {
+            value: render_device.create_bind_group(
+                "point_light_2d_bind_group",
+                &pipeline.layout,
+                &BindGroupEntries::single(binding),
+            ),
+        })
+    }
+}
+
+pub struct SetPointLight2dBindGroup<const I: usize>;
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetPointLight2dBindGroup<I> {
+    type Param = SRes<PointLight2dBindGroup>;
+    type ViewQuery = ();
+    type ItemQuery = Read<DynamicUniformIndex<ExtractPointLight2d>>;
+
+    fn render<'w>(
+        _item: &P,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        param: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let Some(index) = entity else {
+            return RenderCommandResult::Skip;
+        };
+        pass.set_bind_group(I, &param.into_inner().value, &[index.index()]);
+        RenderCommandResult::Success
+    }
+}
+
+pub struct DrawPointLight2d;
+impl<P: PhaseItem> RenderCommand<P> for DrawPointLight2d {
+    type Param = SRes<PointLight2dBuffers>;
+    type ViewQuery = ();
+    type ItemQuery = ();
+
+    fn render<'w>(
+        _item: &P,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        _entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        param: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let buffers = param.into_inner();
+
+        pass.set_stencil_reference(0); // only render if no occluders here
+
+        pass.set_vertex_buffer(0, buffers.vertices.buffer().unwrap().slice(..));
+        pass.set_index_buffer(
+            buffers.indices.buffer().unwrap().slice(..),
+            0,
+            IndexFormat::Uint32,
+        );
+        pass.draw_indexed(0..6, 0, 0..1);
+
+        RenderCommandResult::Success
+    }
+}
+
+#[derive(Resource)]
 pub struct PointLight2dPipeline {
-    pub bind_layout: BindGroupLayout,
-    pub frag_layout: BindGroupLayout,
-    pub scene_sampler: Sampler,
+    pub layout: BindGroupLayout,
     pub pipeline_id: CachedRenderPipelineId,
 }
 
 impl FromWorld for PointLight2dPipeline {
     fn from_world(world: &mut World) -> Self {
         let render_device = world.resource::<RenderDevice>();
+        let post_process_res = world.resource::<PostProcessRes>();
+        let post_process_layout = post_process_res.layout.clone();
 
-        let bind_layout = point_light_bind_group_layout(render_device);
-        let frag_layout = render_device.create_bind_group_layout(
-            "point_light_frag_layout",
-            &BindGroupLayoutEntries::sequential(
-                ShaderStages::FRAGMENT,
-                (
-                    // unlit scene
-                    texture_2d(TextureSampleType::Float { filterable: true }),
-                    sampler(SamplerBindingType::NonFiltering),
-                ),
-            ),
-        );
-
-        let scene_sampler = render_device.create_sampler(&SamplerDescriptor::default());
+        let layout = point_light_bind_group_layout(render_device);
 
         let shader = world.load_asset("shaders/lighting/point_light.wgsl");
 
@@ -209,9 +283,9 @@ impl FromWorld for PointLight2dPipeline {
                 .queue_render_pipeline(RenderPipelineDescriptor {
                     label: Some("point_light_pipeline".into()),
                     layout: vec![
+                        post_process_layout,
                         mesh2d_pipeline.view_layout,
-                        bind_layout.clone(),
-                        frag_layout.clone(),
+                        layout.clone(),
                     ],
                     vertex: VertexState {
                         shader: shader.clone(),
@@ -261,9 +335,7 @@ impl FromWorld for PointLight2dPipeline {
                 });
 
         PointLight2dPipeline {
-            bind_layout,
-            frag_layout,
-            scene_sampler,
+            layout,
             pipeline_id,
         }
     }

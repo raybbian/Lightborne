@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{lighting::Occluder, shared::GroupLabel};
+use crate::{lighting::Occluder2d, shared::GroupLabel};
 
 /// Marker [`Component`] representing a wall.
 #[derive(Default, Component)]
@@ -176,7 +176,7 @@ pub fn spawn_wall_collision(
                                     .spawn_empty()
                                     .insert(Name::new("Wall Collider"))
                                     .insert(Collider::cuboid(collider_dims.0, collider_dims.1))
-                                    .insert(Occluder::new(collider_dims.0, collider_dims.1))
+                                    .insert(Occluder2d::new(collider_dims.0, collider_dims.1))
                                     .insert(CollisionGroups::new(
                                         GroupLabel::TERRAIN,
                                         GroupLabel::PLAYER_COLLIDER

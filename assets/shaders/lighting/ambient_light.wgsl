@@ -6,7 +6,7 @@ struct AmbientLight2d {
 
 @group(0) @binding(0) var unlit_texture: texture_2d<f32>;
 @group(0) @binding(1) var unlit_sampler: sampler;
-@group(0) @binding(2) var<uniform> ambient_light: AmbientLight2d;
+@group(2) @binding(0) var<uniform> ambient_light: AmbientLight2d;
 
 @fragment
 fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {

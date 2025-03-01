@@ -1,11 +1,21 @@
 use bevy::{
     core_pipeline::fullscreen_vertex_shader::fullscreen_shader_vertex_state,
-    ecs::query::QueryItem,
+    ecs::{
+        query::{QueryItem, ROQueryItem},
+        system::{
+            lifetimeless::{Read, SRes},
+            SystemParamItem,
+        },
+    },
     math::{vec3, Affine3},
     prelude::*,
     render::{
         camera::ExtractedCamera,
-        extract_component::{ExtractComponent, ExtractComponentPlugin, UniformComponentPlugin},
+        extract_component::{
+            ComponentUniforms, DynamicUniformIndex, ExtractComponent, ExtractComponentPlugin,
+            UniformComponentPlugin,
+        },
+        render_phase::{PhaseItem, RenderCommand, RenderCommandResult, TrackedRenderPass},
         render_resource::{binding_types::uniform_buffer, *},
         renderer::{RenderDevice, RenderQueue},
         texture::TextureCache,
@@ -19,26 +29,32 @@ use bytemuck::{Pod, Zeroable};
 
 use super::{
     point_light::{point_light_bind_group_layout, PointLight2dBounds},
+    render::PostProcessRes,
     AmbientLight2d,
 };
 
 pub const DEBUG_OCCLUDERS: bool = false;
 
-pub struct OccluderPipelinePlugin;
+pub struct Occluder2dPipelinePlugin;
 
-impl Plugin for OccluderPipelinePlugin {
+impl Plugin for Occluder2dPipelinePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(UniformComponentPlugin::<RenderOccluder>::default())
-            .add_plugins(ExtractComponentPlugin::<Occluder>::default());
+        app.add_plugins(UniformComponentPlugin::<ExtractOccluder2d>::default())
+            .add_plugins(ExtractComponentPlugin::<Occluder2d>::default());
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
         };
 
-        render_app.add_systems(
-            Render,
-            prepare_occluder_count_textures.in_set(RenderSet::PrepareResources),
-        );
+        render_app
+            .add_systems(
+                Render,
+                prepare_occluder_count_textures.in_set(RenderSet::PrepareResources),
+            )
+            .add_systems(
+                Render,
+                prepare_occluder_2d_bind_group.in_set(RenderSet::PrepareBindGroups),
+            );
     }
 
     fn finish(&self, app: &mut App) {
@@ -46,18 +62,18 @@ impl Plugin for OccluderPipelinePlugin {
             return;
         };
         render_app
-            .init_resource::<OccluderPipeline>()
-            .init_resource::<OccluderBuffers>();
+            .init_resource::<Occluder2dPipeline>()
+            .init_resource::<Occluder2dBuffers>();
     }
 }
 
 #[derive(Component)]
 #[require(Transform)]
-pub struct Occluder {
+pub struct Occluder2d {
     pub half_size: Vec2,
 }
 
-impl Occluder {
+impl Occluder2d {
     pub fn new(half_x: f32, half_y: f32) -> Self {
         Self {
             half_size: Vec2::new(half_x, half_y),
@@ -65,9 +81,9 @@ impl Occluder {
     }
 }
 
-impl ExtractComponent for Occluder {
-    type Out = (RenderOccluder, OccluderBounds);
-    type QueryData = (&'static GlobalTransform, &'static Occluder);
+impl ExtractComponent for Occluder2d {
+    type Out = (ExtractOccluder2d, Occluder2dBounds);
+    type QueryData = (&'static GlobalTransform, &'static Occluder2d);
     type QueryFilter = ();
 
     fn extract_component(
@@ -78,13 +94,13 @@ impl ExtractComponent for Occluder {
         let (a, b) = affine.inverse_transpose_3x3();
 
         Some((
-            RenderOccluder {
+            ExtractOccluder2d {
                 world_from_local: affine.to_transpose(),
                 local_from_world_transpose_a: a,
                 local_from_world_transpose_b: b,
                 half_size: occluder.half_size,
             },
-            OccluderBounds {
+            Occluder2dBounds {
                 world_pos: affine_a.translation.xy(),
                 half_size: occluder.half_size,
             },
@@ -94,7 +110,7 @@ impl ExtractComponent for Occluder {
 
 /// Render world version of [`PointLight2d`].
 #[derive(Component, ShaderType, Clone, Copy, Debug)]
-pub struct RenderOccluder {
+pub struct ExtractOccluder2d {
     world_from_local: [Vec4; 3],
     local_from_world_transpose_a: [Vec4; 2],
     local_from_world_transpose_b: f32,
@@ -102,12 +118,12 @@ pub struct RenderOccluder {
 }
 
 #[derive(Component, Clone, Copy)]
-pub struct OccluderBounds {
+pub struct Occluder2dBounds {
     pub world_pos: Vec2,
     pub half_size: Vec2,
 }
 
-impl OccluderBounds {
+impl Occluder2dBounds {
     pub fn visible_from_point_light(&self, light: &PointLight2dBounds) -> bool {
         let min_rect = self.world_pos - self.half_size;
         let max_rect = self.world_pos + self.half_size;
@@ -120,37 +136,37 @@ impl OccluderBounds {
 
 #[derive(Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
-pub struct OccluderVertex {
+pub struct Occluder2dVertex {
     position: Vec3,
     normal: Vec3,
 }
 
-impl OccluderVertex {
+impl Occluder2dVertex {
     const fn new(position: Vec3, normal: Vec3) -> Self {
-        OccluderVertex { position, normal }
+        Occluder2dVertex { position, normal }
     }
 }
 
 #[derive(Resource)]
-pub struct OccluderBuffers {
-    pub vertices: RawBufferVec<OccluderVertex>,
+pub struct Occluder2dBuffers {
+    pub vertices: RawBufferVec<Occluder2dVertex>,
     pub indices: RawBufferVec<u32>,
 }
 
-static VERTICES: [OccluderVertex; 8] = [
-    OccluderVertex::new(vec3(-1.0, -1.0, 0.0), vec3(-1.0, 0.0, 0.0)),
-    OccluderVertex::new(vec3(-1.0, -1.0, 0.0), vec3(0.0, -1.0, 0.0)),
-    OccluderVertex::new(vec3(1.0, -1.0, 0.0), vec3(0.0, -1.0, 0.0)),
-    OccluderVertex::new(vec3(1.0, -1.0, 0.0), vec3(1.0, 0.0, 0.0)),
-    OccluderVertex::new(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 0.0)),
-    OccluderVertex::new(vec3(1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0)),
-    OccluderVertex::new(vec3(-1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0)),
-    OccluderVertex::new(vec3(-1.0, 1.0, 0.0), vec3(-1.0, 0.0, 0.0)),
+static VERTICES: [Occluder2dVertex; 8] = [
+    Occluder2dVertex::new(vec3(-1.0, -1.0, 0.0), vec3(-1.0, 0.0, 0.0)),
+    Occluder2dVertex::new(vec3(-1.0, -1.0, 0.0), vec3(0.0, -1.0, 0.0)),
+    Occluder2dVertex::new(vec3(1.0, -1.0, 0.0), vec3(0.0, -1.0, 0.0)),
+    Occluder2dVertex::new(vec3(1.0, -1.0, 0.0), vec3(1.0, 0.0, 0.0)),
+    Occluder2dVertex::new(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 0.0)),
+    Occluder2dVertex::new(vec3(1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0)),
+    Occluder2dVertex::new(vec3(-1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0)),
+    Occluder2dVertex::new(vec3(-1.0, 1.0, 0.0), vec3(-1.0, 0.0, 0.0)),
 ];
 
 static INDICES: [u32; 18] = [0, 1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 0, 0, 2, 4, 4, 6, 0];
 
-impl FromWorld for OccluderBuffers {
+impl FromWorld for Occluder2dBuffers {
     fn from_world(world: &mut World) -> Self {
         let render_device = world.resource::<RenderDevice>();
         let render_queue = world.resource::<RenderQueue>();
@@ -168,7 +184,7 @@ impl FromWorld for OccluderBuffers {
         vbo.write_buffer(render_device, render_queue);
         ibo.write_buffer(render_device, render_queue);
 
-        OccluderBuffers {
+        Occluder2dBuffers {
             vertices: vbo,
             indices: ibo,
         }
@@ -226,19 +242,91 @@ pub fn prepare_occluder_count_textures(
 }
 
 #[derive(Resource)]
-pub struct OccluderPipeline {
+pub struct Occluder2dBindGroup {
+    value: BindGroup,
+}
+
+pub fn prepare_occluder_2d_bind_group(
+    mut commands: Commands,
+    uniforms: Res<ComponentUniforms<ExtractOccluder2d>>,
+    pipeline: Res<Occluder2dPipeline>,
+    render_device: Res<RenderDevice>,
+) {
+    if let Some(binding) = uniforms.uniforms().binding() {
+        commands.insert_resource(Occluder2dBindGroup {
+            value: render_device.create_bind_group(
+                "occluder_2d_bind_group",
+                &pipeline.layout,
+                &BindGroupEntries::single(binding),
+            ),
+        })
+    }
+}
+
+pub struct SetOccluder2dBindGroup<const I: usize>;
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetOccluder2dBindGroup<I> {
+    type Param = SRes<Occluder2dBindGroup>;
+    type ViewQuery = ();
+    type ItemQuery = Read<DynamicUniformIndex<ExtractOccluder2d>>;
+
+    fn render<'w>(
+        _item: &P,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        param: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let Some(index) = entity else {
+            return RenderCommandResult::Skip;
+        };
+        pass.set_bind_group(I, &param.into_inner().value, &[index.index()]);
+        RenderCommandResult::Success
+    }
+}
+
+pub struct DrawOccluder2d;
+impl<P: PhaseItem> RenderCommand<P> for DrawOccluder2d {
+    type Param = SRes<Occluder2dBuffers>;
+    type ViewQuery = ();
+    type ItemQuery = ();
+
+    fn render<'w>(
+        _item: &P,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        _entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        param: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let buffers = param.into_inner();
+
+        pass.set_vertex_buffer(0, buffers.vertices.buffer().unwrap().slice(..));
+        pass.set_index_buffer(
+            buffers.indices.buffer().unwrap().slice(..),
+            0,
+            IndexFormat::Uint32,
+        );
+        pass.draw_indexed(0..18, 0, 0..1);
+
+        RenderCommandResult::Success
+    }
+}
+
+#[derive(Resource)]
+pub struct Occluder2dPipeline {
     pub layout: BindGroupLayout,
     pub shadow_pipeline_id: CachedRenderPipelineId,
     pub cutout_pipeline_id: CachedRenderPipelineId,
     pub reset_pipeline_id: CachedRenderPipelineId,
 }
 
-pub fn build_occluder_pipeline_descriptor(
+pub fn build_occluder_2d_pipeline_descriptor(
     world: &mut World,
     cutout: bool,
-    occluder_layout: &BindGroupLayout,
+    occluder_layout: BindGroupLayout,
 ) -> RenderPipelineDescriptor {
     let render_device = world.resource::<RenderDevice>();
+    let post_process_res = world.resource::<PostProcessRes>();
+    let post_process_layout = post_process_res.layout.clone();
 
     let point_light_layout = point_light_bind_group_layout(render_device);
 
@@ -247,19 +335,19 @@ pub fn build_occluder_pipeline_descriptor(
     let mesh2d_pipeline = Mesh2dPipeline::from_world(world);
 
     let pos_buffer_layout = VertexBufferLayout {
-        array_stride: std::mem::size_of::<OccluderVertex>() as u64,
+        array_stride: std::mem::size_of::<Occluder2dVertex>() as u64,
         step_mode: VertexStepMode::Vertex,
         attributes: vec![
             // Position
             VertexAttribute {
                 format: VertexFormat::Float32x3,
-                offset: std::mem::offset_of!(OccluderVertex, position) as u64,
+                offset: std::mem::offset_of!(Occluder2dVertex, position) as u64,
                 shader_location: 0,
             },
             // Normals
             VertexAttribute {
                 format: VertexFormat::Float32x3,
-                offset: std::mem::offset_of!(OccluderVertex, normal) as u64,
+                offset: std::mem::offset_of!(Occluder2dVertex, normal) as u64,
                 shader_location: 1,
             },
         ],
@@ -282,9 +370,10 @@ pub fn build_occluder_pipeline_descriptor(
     RenderPipelineDescriptor {
         label,
         layout: vec![
+            post_process_layout,
             mesh2d_pipeline.view_layout,
             point_light_layout,
-            occluder_layout.clone(),
+            occluder_layout,
         ],
         vertex: VertexState {
             shader: shader.clone(),
@@ -333,27 +422,24 @@ pub fn build_occluder_pipeline_descriptor(
     }
 }
 
-impl FromWorld for OccluderPipeline {
+impl FromWorld for Occluder2dPipeline {
     fn from_world(world: &mut World) -> Self {
         let render_device = world.resource::<RenderDevice>();
 
-        let occluder_layout = render_device.create_bind_group_layout(
-            "point_light_bind_group_layout",
-            &BindGroupLayoutEntries::sequential(
+        let layout = render_device.create_bind_group_layout(
+            "occluder_bind_group_layout",
+            &BindGroupLayoutEntries::single(
                 ShaderStages::VERTEX_FRAGMENT,
-                (
-                    // occluder settings
-                    uniform_buffer::<RenderOccluder>(true),
-                ),
+                uniform_buffer::<ExtractOccluder2d>(true),
             ),
         );
 
         let reset_shader = world.load_asset("shaders/lighting/occluder_reset.wgsl");
 
         let shadow_pipeline_descriptor =
-            build_occluder_pipeline_descriptor(world, false, &occluder_layout);
+            build_occluder_2d_pipeline_descriptor(world, false, layout.clone());
         let cutout_pipeline_descriptor =
-            build_occluder_pipeline_descriptor(world, true, &occluder_layout);
+            build_occluder_2d_pipeline_descriptor(world, true, layout.clone());
 
         let pipeline_cache = world.resource_mut::<PipelineCache>();
         let shadow_pipeline_id = pipeline_cache.queue_render_pipeline(shadow_pipeline_descriptor);
@@ -399,8 +485,8 @@ impl FromWorld for OccluderPipeline {
             zero_initialize_workgroup_memory: false,
         });
 
-        OccluderPipeline {
-            layout: occluder_layout,
+        Occluder2dPipeline {
+            layout,
             shadow_pipeline_id,
             cutout_pipeline_id,
             reset_pipeline_id,
