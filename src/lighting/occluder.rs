@@ -33,8 +33,6 @@ use super::{
     AmbientLight2d,
 };
 
-pub const DEBUG_OCCLUDERS: bool = false;
-
 pub struct Occluder2dPipelinePlugin;
 
 impl Plugin for Occluder2dPipelinePlugin {
@@ -354,9 +352,6 @@ pub fn build_occluder_2d_pipeline_descriptor(
     };
 
     let mut shader_defs: Vec<ShaderDefVal> = vec![];
-    if DEBUG_OCCLUDERS {
-        shader_defs.push("DEBUG_OCCLUDERS".into());
-    }
     if cutout {
         shader_defs.push("OCCLUDER_CUTOUT".into());
     }
