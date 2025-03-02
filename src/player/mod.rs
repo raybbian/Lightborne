@@ -24,7 +24,7 @@ use crate::{
 };
 
 use kill::{
-    kill_player_on_hurt_intersection, reset_player_on_level_switch, reset_player_position,
+    kill_player_on_hurt_intersection, reset_player_on_kill, reset_player_on_level_switch,
     start_kill_animation, KillAnimationCallbacks, KillPlayerEvent,
 };
 use light::{
@@ -59,10 +59,7 @@ impl Plugin for PlayerManagementPlugin {
                 PreUpdate,
                 add_light_indicator.in_set(LevelSystems::Processing),
             )
-            .add_systems(
-                FixedUpdate,
-                update_light_indicator.in_set(LevelSystems::Simulation),
-            )
+            .add_systems(FixedUpdate, update_light_indicator)
             .add_systems(
                 FixedUpdate,
                 move_player
@@ -103,7 +100,7 @@ impl Plugin for PlayerManagementPlugin {
             .add_systems(
                 Update,
                 (
-                    reset_player_position.before(move_camera),
+                    reset_player_on_kill.before(move_camera),
                     // LMAO yeah so to reset the hair to a natural state i just simulate it 3 times
                     update_strand,
                     update_strand,
