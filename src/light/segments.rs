@@ -6,7 +6,12 @@ use super::{
     render::{LightMaterial, LightRenderData},
     LightBeamSource, LightColor, LIGHT_SPEED,
 };
-use crate::{level::sensor::LightSensor, lighting::light::LineLighting, shared::GroupLabel};
+use crate::{
+    level::sensor::LightSensor,
+    lighting::light::LineLighting,
+    particle::{ParticleEmitter, ParticleEmitterArea, ParticleEmitterOptions},
+    shared::GroupLabel,
+};
 
 /// Marker [`Component`] used to query for light segments.
 #[derive(Default, Component, Clone, Debug)]
@@ -15,7 +20,7 @@ pub struct LightSegment {
 }
 
 /// [`Bundle`] used in the initialization of the [`LightSegmentCache`] to spawn segment entities.
-#[derive(Bundle, Debug, Default, Clone)]
+#[derive(Bundle, Debug, Clone, Default)]
 pub struct LightSegmentBundle {
     pub segment: LightSegment,
     pub mesh: Mesh2d,

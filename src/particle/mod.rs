@@ -1,21 +1,26 @@
 use std::{f32::consts::PI, ops::Range, time::Duration};
 
-use bevy::{asset, prelude::*};
+use bevy::prelude::*;
+use dust::{spawn_player_walking_dust, DustSpawnStopwatch};
 use noise::{NoiseFn, Simplex};
-use rand::Rng;
+use rand::prelude::IndexedRandom;
 
-use crate::{camera::MainCamera, level::crystal::Crystal};
+pub mod dust;
+use crate::{camera::MainCamera, level::crystal::Crystal, light::segments::LightSegment};
 pub struct ParticlePlugin;
 impl Plugin for ParticlePlugin {
     fn build(&self, app: &mut App) {
         app
             .insert_resource(DustSpawnTimer::new())
             .insert_resource(Wind::new())
+            .insert_resource(DustSpawnStopwatch::default())
             .add_systems(Startup, setup)
             .add_systems(Update, spawn_particles)
             .add_systems(Update, update_particles)
             .add_systems(Update, update_particle_emitters)
-            .add_systems(Update, add_crystal_sparkles)
+            .add_systems(Update, add_crystal_shine)
+            .add_systems(Update, add_segment_sparks)
+            .add_systems(Update, spawn_player_walking_dust)
             .add_systems(Update, delete_particles)
         // end
         ;
@@ -46,7 +51,7 @@ impl Wind {
     }
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct ParticleAnimationOptions {
     pub frame_time: Duration,
     pub frame_count: usize,
@@ -54,13 +59,14 @@ pub struct ParticleAnimationOptions {
     pub repeat: bool,
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct ParticlePhysicsOptions {
     pub wind_mult: f32,
     pub gravity_mult: f32,
+    pub starting_velocity: Vec2,
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct ParticleOptions {
     pub life_time: Duration,
     pub physics: Option<ParticlePhysicsOptions>,
@@ -85,7 +91,11 @@ impl Particle {
     fn new(options: ParticleOptions, start_pos: Vec2) -> Self {
         Self {
             life_timer: Timer::new(options.life_time, TimerMode::Once),
-            velocity: Vec2::ZERO,
+            velocity: options
+                .physics
+                .clone()
+                .map(|p| p.starting_velocity)
+                .unwrap_or_default(),
 
             frame_index: 0,
             frame_timer: Timer::new(
@@ -128,22 +138,23 @@ impl ParticleBundle {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 
 pub enum ParticleEmitterArea {
     Point,
     Cuboid { half_x: f32, half_y: f32 },
     Circle { radius: f32 },
+    Capsule { radius: f32 },
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ParticleEmitterOptions {
     pub area: ParticleEmitterArea,
-    pub particle: ParticleOptions,
+    pub particles: Vec<ParticleOptions>,
     pub delay_range: Range<Duration>,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 #[require(Transform)]
 pub struct ParticleEmitter {
     pub options: ParticleEmitterOptions,
@@ -180,32 +191,6 @@ fn spawn_particles(
     camera_t: Query<&Transform, With<MainCamera>>,
     mut dust_timer: ResMut<DustSpawnTimer>,
 ) {
-    let Ok(camera_t) = camera_t.get_single() else {
-        return;
-    };
-    dust_timer.0.tick(time.delta());
-    return;
-    if dust_timer.0.finished() {
-        let mut rng = rand::rng();
-
-        let pos = camera_t.translation.truncate()
-            + Vec2::new(320.0 * rng.random::<f32>(), 180.0 * rng.random::<f32>())
-            - Vec2::new(320.0 * 0.5, 180.0 * 0.5);
-        commands.spawn(ParticleBundle::new(
-            ParticleOptions {
-                life_time: Duration::from_secs_f32(1.0),
-                physics: None,
-                animation: Some(ParticleAnimationOptions {
-                    frame_count: 9,
-                    frame_size: Vec2::new(5.0, 5.0),
-                    frame_time: Duration::from_secs_f32(0.05),
-                    repeat: false,
-                }),
-                image: asset_server.load("particle/shine.png"),
-            },
-            pos,
-        ));
-    }
 }
 
 fn update_particle_emitters(
@@ -235,9 +220,29 @@ fn update_particle_emitters(
                     let dist = rand::random_range(0.0..radius);
                     Vec2::new(angle.cos() * dist, angle.sin() * dist)
                 }
+                ParticleEmitterArea::Capsule { radius } => {
+                    let unit_vec = transform
+                        .rotation()
+                        .mul_vec3(Vec3::new(1.0, 0.0, 0.0))
+                        .truncate();
+                    let point_1_offset = unit_vec * transform.scale().x / 2.;
+                    let point_2_offset = -unit_vec * transform.scale().x / 2.;
+
+                    let weight = rand::random_range(0.0..1.0);
+                    let point_on_line = point_1_offset * weight + point_2_offset * (1.0 - weight);
+
+                    let angle = rand::random_range(0.0..(2.0 * PI));
+                    let dist = rand::random_range(0.0..radius);
+                    point_on_line + Vec2::new(angle.cos() * dist, angle.sin() * dist)
+                }
             };
         commands.spawn(ParticleBundle::new(
-            emitter.options.particle.clone(),
+            emitter
+                .options
+                .particles
+                .choose(&mut rand::rng())
+                .expect("ParticleBundle particles were empty")
+                .clone(),
             start_pos,
         ));
     }
@@ -264,7 +269,7 @@ fn update_particles(
             let mut velocity = particle.velocity;
             let mut accel = Vec2::ZERO;
 
-            accel += Vec2::new(0.0, -0.5) * time.delta_secs() * physics.gravity_mult;
+            accel += Vec2::new(0.0, -1.0) * time.delta_secs() * physics.gravity_mult;
 
             let wind_vec = wind.force_at(time.elapsed_secs(), pos);
             accel += wind_vec * time.delta_secs() * 300.0 * physics.wind_mult;
@@ -293,37 +298,72 @@ fn update_particles(
     }
 }
 
-fn add_crystal_sparkles(
+fn add_crystal_shine(
     mut commands: Commands,
     crystal: Query<(Entity, &Crystal), Changed<Crystal>>,
     asset_server: Res<AssetServer>,
 ) {
-    const FRAME_TIME: f32 = 0.05;
-    const FRAME_COUNT: usize = 9;
     for (entity, crystal) in crystal.iter() {
         if crystal.active {
             commands
                 .entity(entity)
-                .insert(ParticleEmitter::new(ParticleEmitterOptions {
+                .insert_if_new(ParticleEmitter::new(ParticleEmitterOptions {
                     area: ParticleEmitterArea::Cuboid {
                         half_x: 4.0,
                         half_y: 4.0,
                     },
                     delay_range: Duration::from_secs_f32(0.0)..Duration::from_secs_f32(30.0),
-                    particle: ParticleOptions {
-                        life_time: Duration::from_secs_f32(FRAME_TIME * FRAME_COUNT as f32),
-                        physics: None,
-                        animation: Some(ParticleAnimationOptions {
-                            frame_count: FRAME_COUNT,
-                            frame_size: Vec2::new(5.0, 5.0),
-                            frame_time: Duration::from_secs_f32(FRAME_TIME),
-                            repeat: false,
-                        }),
-                        image: asset_server.load("particle/shine.png"),
-                    },
+                    particles: vec![
+                        {
+                            const FRAME_TIME: f32 = 0.05;
+                            const FRAME_COUNT: usize = 9;
+                            ParticleOptions {
+                                life_time: Duration::from_secs_f32(FRAME_TIME * FRAME_COUNT as f32),
+                                physics: None,
+                                animation: Some(ParticleAnimationOptions {
+                                    frame_count: FRAME_COUNT,
+                                    frame_size: Vec2::new(5.0, 5.0),
+                                    frame_time: Duration::from_secs_f32(FRAME_TIME),
+                                    repeat: false,
+                                }),
+                                image: asset_server.load("particle/shine_1.png"),
+                            }
+                        },
+                        {
+                            const FRAME_TIME: f32 = 0.05;
+                            const FRAME_COUNT: usize = 5;
+                            ParticleOptions {
+                                life_time: Duration::from_secs_f32(FRAME_TIME * FRAME_COUNT as f32),
+                                physics: None,
+                                animation: Some(ParticleAnimationOptions {
+                                    frame_count: FRAME_COUNT,
+                                    frame_size: Vec2::new(3.0, 3.0),
+                                    frame_time: Duration::from_secs_f32(FRAME_TIME),
+                                    repeat: false,
+                                }),
+                                image: asset_server.load("particle/shine_2.png"),
+                            }
+                        },
+                    ],
                 }));
         } else {
             commands.entity(entity).remove::<ParticleEmitter>();
         }
     }
+}
+
+fn add_segment_sparks(
+    mut commands: Commands,
+    light_segment: Query<(Entity, &LightSegment), Changed<LightSegment>>,
+    asset_server: Res<AssetServer>,
+) {
+    // for (entity, light_segment) in light_segment.iter() {
+    //     commands
+    //         .entity(entity)
+    //         .insert(ParticleEmitter::new(ParticleEmitterOptions {
+    //             area: ParticleEmitterArea::Capsule { radius: 2.0 },
+    //             delay_range: Duration::from_secs_f32(0.0)..Duration::from_secs_f32(1.0),
+    //             particle: create_shine_particle_options(&asset_server),
+    //         }));
+    // }
 }
