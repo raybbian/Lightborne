@@ -23,6 +23,13 @@ pub enum GameState {
     SwitchAnimation,
     KillAnimation,
     Paused,
+    Ui,
+}
+
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum UiState {
+    LevelSelect,
+    None,
 }
 
 #[derive(Event, PartialEq, Eq)]
