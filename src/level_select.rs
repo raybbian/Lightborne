@@ -67,7 +67,7 @@ fn spawn_level_select(
                     ..default()
                 })
                 .with_children(|parent| {
-                    for i in 1..=num_levels {
+                    for i in 0..num_levels {
                         parent
                             .spawn((
                                 Button,
