@@ -8,6 +8,7 @@ use match_player::{
     post_update_match_player_pixel, pre_update_match_player_pixel, update_match_player_z,
 };
 use strand::{add_player_hair_and_cloth, update_player_strand_offsets, update_strand};
+use indicator::{add_light_indicator, update_light_indicator, LightIndicatorData};
 
 use crate::{
     input::update_cursor_world_coords,
@@ -26,6 +27,7 @@ mod match_player;
 pub mod movement;
 mod spawn;
 mod strand;
+mod indicator;
 
 /// [`Plugin`] for anything player based.
 pub struct PlayerManagementPlugin;
@@ -80,7 +82,13 @@ impl Plugin for PlayerManagementPlugin {
             PreUpdate,
             add_player_hair_and_cloth.in_set(LevelSystems::Processing),
         )
-        .add_systems(FixedUpdate, update_player_strand_offsets);
+        .add_systems(FixedUpdate, update_player_strand_offsets)
+        .init_resource::<LightIndicatorData>()
+        .add_systems(
+            PreUpdate,
+            add_light_indicator.in_set(LevelSystems::Processing)
+        )
+        .add_systems(Update, update_light_indicator);
     }
 }
 

@@ -14,8 +14,8 @@ use super::PlayerMarker;
 /// that color remaining.
 #[derive(Component, Default)]
 pub struct PlayerLightInventory {
-    current_color: LightColor,
-    sources: EnumMap<LightColor, Option<Entity>>,
+    pub current_color: LightColor,
+    pub sources: EnumMap<LightColor, Option<Entity>>,
 }
 
 /// [`System`] to handle the keyboard presses corresponding to color switches.
