@@ -81,10 +81,9 @@ pub fn update_light_indicator(
     };
 
     let material = match inventory.sources[inventory.current_color] {
-        false => light_data.dimmed_material_map[inventory.current_color.into()].clone(),
+        false => light_data.dimmed_material_map[inventory.current_color].clone(),
         true => light_data.material_map[inventory.current_color].clone(),
     };
 
     commands.entity(indicator).insert(material);
 }
-
