@@ -94,16 +94,14 @@ pub enum LevelSystems {
 pub fn get_ldtk_level_data(
     ldtk_assets: Res<Assets<LdtkProject>>,
     query_ldtk: Query<&LdtkProjectHandle>,
-) -> Vec<Level> {
-    // Get level uid -> iid map
+) -> Result<Vec<Level>, String> {
     let Ok(ldtk_handle) = query_ldtk.get_single() else {
-        panic!("Could not find LDTK project handle!");
+        return Err("Could not find LDTK project handle!".into());
     };
-
     let Some(ldtk_project) = ldtk_assets.get(ldtk_handle) else {
-        panic!("Failed to get LdtkProject asset!");
+        return Err("Failed to get LdtkProject asset!".into());
     };
-    ldtk_project.json_data().levels.clone()
+    Ok(ldtk_project.json_data().levels.clone())
 }
 
 /// [`System`] that will run on [`Update`] to check if the Player has moved to another level. If
@@ -125,7 +123,9 @@ fn switch_level(
     let Ok(player_transform) = q_player.get_single() else {
         return;
     };
-    let ldtk_levels = get_ldtk_level_data(ldtk_project_assets, ldtk_projects);
+    let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_project_assets, ldtk_projects) else {
+        return;
+    };
     for level in ldtk_levels {
         let world_box = Rect::new(
             level.world_x as f32,

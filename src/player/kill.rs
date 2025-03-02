@@ -7,7 +7,7 @@ use bevy_rapier2d::prelude::*;
 use crate::{
     camera::{CameraTransition, CameraTransitionEvent},
     level::{entity::HurtMarker, start_flag::StartFlag, CurrentLevel},
-    shared::{GameState, ResetLevel},
+    shared::{GameState, ResetLevel, LYRA_RESPAWN_EPSILON},
 };
 
 use super::{
@@ -34,8 +34,9 @@ pub fn reset_player_position(
         if current_level.level_iid == flag.level_iid {
             transform.translation.x =
                 instance.world_x.expect("Lightborne uses Free world layout") as f32;
-            transform.translation.y =
-                -instance.world_y.expect("Lightborne uses Free world layout") as f32 + 3.0;
+            transform.translation.y = -instance.world_y.expect("Lightborne uses Free world layout")
+                as f32
+                + LYRA_RESPAWN_EPSILON;
             // add small height so Lyra is not stuck into the floor
             return;
         }

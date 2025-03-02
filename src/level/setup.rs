@@ -19,7 +19,7 @@ impl Plugin for LevelSetupPlugin {
     }
 }
 
-fn setup_level(
+pub fn setup_level(
     mut commands: Commands,
     mut next_game_state: ResMut<NextState<GameState>>,
     asset_server: Res<AssetServer>,
@@ -29,5 +29,5 @@ fn setup_level(
         ldtk_handle: asset_server.load(&config.level_config.level_path).into(),
         ..Default::default()
     });
-    next_game_state.set(GameState::Playing);
+    next_game_state.set(GameState::Ui);
 }
