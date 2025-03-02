@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use super::PlayerMarker;
+use super::{spawn::PlayerHurtMarker, PlayerMarker};
 
 /// The number of [`FixedUpdate`] steps the player can jump for after pressing the spacebar.
 const SHOULD_JUMP_TICKS: isize = 8;
@@ -26,6 +26,7 @@ const PLAYER_GRAVITY: f32 = 0.15;
 pub struct PlayerMovement {
     /// Holds information that is passed into the rapier character controller's translation
     velocity: Vec2,
+    pub crouching: bool,
     should_jump_ticks_remaining: isize,
     coyote_time_ticks_remaining: isize,
     jump_boost_ticks_remaining: isize,
@@ -38,6 +39,34 @@ pub fn queue_jump(mut q_player: Query<&mut PlayerMovement, With<PlayerMarker>>) 
         return;
     };
     player.should_jump_ticks_remaining = SHOULD_JUMP_TICKS;
+}
+
+/// [`System`] that is run on [`Update`] to crouch player
+pub fn crouch_player(
+    // query transform
+    mut q_player: Query<(&mut PlayerMovement, &mut Collider), With<PlayerMarker>>,
+    mut q_hitbox: Query<&mut Transform, (With<PlayerHurtMarker>, Without<PlayerMarker>)>,
+    //ButtonInput<KeyCode> resource (access resource)
+    keys: Res<ButtonInput<KeyCode>>,
+) {
+    // ensure only 1 candidate to match query; let Ok = pattern matching
+    let Ok((mut player, mut _collider)) = q_player.get_single_mut() else {
+        return;
+    };
+    let Ok(mut hitbox_transform) = q_hitbox.get_single_mut() else {
+        return;
+    };
+    hitbox_transform.translation = Vec3::new(0., 0., 0.);
+
+    // TODO: fix colliders (both player and hurtbox)
+
+    if keys.just_pressed(KeyCode::KeyS) && !player.crouching {
+        // decrease size by half
+        player.crouching = true;
+    }
+    if keys.just_released(KeyCode::KeyS) && player.crouching {
+        player.crouching = false;
+    }
 }
 
 /// [`System`] that is run on [`Update`] to move the player around.

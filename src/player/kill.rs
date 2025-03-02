@@ -1,13 +1,12 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    level::{
-        entity::{HurtMarker, Spike},
-        misc::StartFlag,
-        CurrentLevel,
-    },
+    camera::{CameraTransition, CameraTransitionEvent},
+    level::{entity::HurtMarker, start_flag::StartFlag, CurrentLevel},
     shared::{GameState, ResetLevel},
 };
 
@@ -19,7 +18,6 @@ use super::{
 /// immediately.
 pub fn reset_player_position(
     mut q_player: Query<&mut Transform, With<PlayerMarker>>,
-    mut next_game_state: ResMut<NextState<GameState>>,
     mut ev_reset_level: EventReader<ResetLevel>,
     q_start_flag: Query<(&StartFlag, &EntityInstance)>,
     current_level: Res<CurrentLevel>,
@@ -32,14 +30,13 @@ pub fn reset_player_position(
         return;
     };
 
-    next_game_state.set(GameState::Playing);
-
     for (flag, instance) in q_start_flag.iter() {
         if current_level.level_iid == flag.level_iid {
             transform.translation.x =
                 instance.world_x.expect("Lightborne uses Free world layout") as f32;
             transform.translation.y =
-                -instance.world_y.expect("Lightborne uses Free world layout") as f32;
+                -instance.world_y.expect("Lightborne uses Free world layout") as f32 + 3.0;
+            // add small height so Lyra is not stuck into the floor
             return;
         }
     }
@@ -49,31 +46,103 @@ pub fn reset_player_position(
 
 /// Resets the player inventory and movement information on a [`LevelSwitchEvent`]
 pub fn reset_player_on_level_switch(
-    mut q_player: Query<(&mut PlayerMovement, &mut PlayerLightInventory), With<PlayerMarker>>,
+    mut q_player: Query<
+        (
+            &mut PlayerMovement,
+            &mut PlayerLightInventory,
+            &mut Transform,
+        ),
+        With<PlayerMarker>,
+    >,
+    current_level: Res<CurrentLevel>,
 ) {
-    let Ok((mut movement, mut inventory)) = q_player.get_single_mut() else {
+    let Ok((mut movement, mut inventory, mut transform)) = q_player.get_single_mut() else {
         return;
     };
 
+    // FIXME: workaround for crouch transform
+    *transform = transform.with_scale(Vec3::ONE);
+
     *movement = PlayerMovement::default();
-    *inventory = PlayerLightInventory::default();
+    *inventory = PlayerLightInventory::colors(&current_level.allowed_colors);
 }
 
 /// Kills player upon touching a HURT_BOX
-pub fn kill_player_on_spike(
+pub fn kill_player_on_hurt_intersection(
     rapier_context: Query<&RapierContext>,
     q_player: Query<Entity, With<PlayerHurtMarker>>,
-    mut q_hurt: Query<(&mut Spike, Entity), With<HurtMarker>>,
-    mut ev_reset_level: EventWriter<ResetLevel>,
+    q_hurt: Query<Entity, With<HurtMarker>>,
+    mut ev_kill_player: EventWriter<KillPlayerEvent>,
 ) {
-    let rapier = rapier_context.single();
-    for player in q_player.iter() {
-        for (mut spike, hurt) in q_hurt.iter_mut() {
-            if rapier.intersection_pair(player, hurt) == Some(true) {
-                spike.add_death();
-                ev_reset_level.send(ResetLevel::Respawn);
-                return;
-            }
+    let Ok(rapier) = rapier_context.get_single() else {
+        return;
+    };
+    let Ok(player) = q_player.get_single() else {
+        return;
+    };
+
+    for hurt in q_hurt.iter() {
+        if rapier.intersection_pair(player, hurt) == Some(true) {
+            ev_kill_player.send(KillPlayerEvent);
+            return;
         }
     }
+}
+
+/// Systems that kill the player should send this event instead of ResetLevel::Respawn, so the
+/// transition is started.
+#[derive(Event)]
+pub struct KillPlayerEvent;
+
+#[derive(Resource)]
+pub struct KillAnimationCallbacks {
+    // once the screen is completely black
+    cb1: SystemId,
+    // once the screen is ready for play
+    cb2: SystemId,
+}
+
+impl FromWorld for KillAnimationCallbacks {
+    fn from_world(world: &mut World) -> Self {
+        KillAnimationCallbacks {
+            cb1: world.register_system(after_slide_to_black),
+            cb2: world.register_system(after_slide_from_black),
+        }
+    }
+}
+
+pub fn start_kill_animation(
+    mut ev_transition_camera: EventWriter<CameraTransitionEvent>,
+    callbacks: Res<KillAnimationCallbacks>,
+    cur_game_state: Res<State<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+) {
+    if *cur_game_state.get() == GameState::KillAnimation {
+        return;
+    }
+    ev_transition_camera.send(CameraTransitionEvent {
+        duration: Duration::from_millis(400),
+        ease_fn: EaseFunction::SineInOut,
+        callback: Some(callbacks.cb1),
+        effect: CameraTransition::SlideToBlack,
+    });
+    next_game_state.set(GameState::KillAnimation);
+}
+
+pub fn after_slide_to_black(
+    mut ev_transition_camera: EventWriter<CameraTransitionEvent>,
+    mut ev_reset_level: EventWriter<ResetLevel>,
+    callbacks: Res<KillAnimationCallbacks>,
+) {
+    ev_transition_camera.send(CameraTransitionEvent {
+        duration: Duration::from_millis(400),
+        ease_fn: EaseFunction::SineInOut,
+        callback: Some(callbacks.cb2),
+        effect: CameraTransition::SlideFromBlack,
+    });
+    ev_reset_level.send(ResetLevel::Respawn);
+}
+
+pub fn after_slide_from_black(mut next_game_state: ResMut<NextState<GameState>>) {
+    next_game_state.set(GameState::Playing);
 }

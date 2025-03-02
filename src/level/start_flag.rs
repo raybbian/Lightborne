@@ -1,36 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::light::sensor::LightSensorBundle;
-
-use super::interactable::InteractableSFX;
-
-/// [`Component`] to mark buttons in the level.
-#[derive(Default, Component)]
-pub struct ButtonMarker;
-
-/// [`Bundle`] registered with Ldtk to spawn buttons.
-#[derive(Default, Bundle, LdtkEntity)]
-pub struct ButtonBundle {
-    marker: ButtonMarker,
-    #[sprite_sheet]
-    sprite_sheet: Sprite,
-    #[from_entity_instance]
-    light_sensor: LightSensorBundle,
-}
-
-pub fn process_buttons(
-    mut commands: Commands,
-    q_button: Query<Entity, Added<ButtonMarker>>,
-    asset_server: Res<AssetServer>,
-) {
-    for button in q_button.iter() {
-        commands.entity(button).insert(InteractableSFX {
-            on_triggered: Some(asset_server.load("sfx/button.wav")),
-        });
-    }
-}
-
 /// [`Component`] to mark start flags in the level. Used to query for when start flags are loaded
 /// by Ldtk.
 #[derive(Default, Component)]
@@ -41,7 +11,7 @@ pub struct StartMarker;
 #[derive(Default, Component)]
 pub struct StartFlag {
     /// The `level_iid` of the `StartFlag`'s level.
-    pub level_iid: String,
+    pub level_iid: LevelIid,
 }
 
 /// [`Bundle`] spawned in by Ldtk corresponding to start flags.
@@ -72,7 +42,7 @@ pub fn init_start_marker(
             continue;
         };
         commands.entity(entity).insert(StartFlag {
-            level_iid: level_iid.to_string(),
+            level_iid: level_iid.clone(),
         });
     }
 }

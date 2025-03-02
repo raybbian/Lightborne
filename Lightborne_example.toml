@@ -1,3 +1,4 @@
+# NOTE: Modifying this file will no longer do anything. You should instead make a copy of this file, name it Lightborne.toml, and edit it instead.
 [level_config]
 level_index = 3
 level_path = "levels/lightborne.ldtk"

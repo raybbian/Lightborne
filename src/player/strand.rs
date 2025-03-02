@@ -1,10 +1,13 @@
 use std::ops::Range;
 
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 
-use crate::player::match_player::MatchPlayerPixel;
+use crate::{
+    animation::AnimationConfig, player::match_player::MatchPlayerPixel, shared::GroupLabel,
+};
 
-use super::{match_player::MatchPlayerZ, PlayerMarker};
+use super::{animation::PlayerAnimationType, match_player::MatchPlayerZ, PlayerMarker};
 
 #[derive(Component)]
 /// [`Component`] representing one node in a chain of strands, used to simulate hair and clothes.
@@ -24,6 +27,9 @@ pub struct Strand {
     /// should have a lower `priority` value.
     pub priority: u32,
 
+    /// Specifies whether the strand collides with the ground
+    pub physics: bool,
+
     last_pos: Vec2,
 }
 
@@ -35,6 +41,7 @@ impl Strand {
         gravity: f32,
         friction: f32,
         priority: u32,
+        physics: bool,
     ) -> Self {
         Self {
             connect,
@@ -44,6 +51,7 @@ impl Strand {
             friction,
             priority,
             last_pos: Vec2::new(0.0, 0.0),
+            physics,
         }
     }
 }
@@ -51,6 +59,7 @@ impl Strand {
 pub fn update_strand(
     mut q_strand: Query<(Entity, &mut Strand)>,
     mut q_transforms: Query<&mut Transform>,
+    rapier_context: ReadDefaultRapierContext,
 ) {
     let mut strands = q_strand.iter_mut().collect::<Vec<_>>();
     strands.sort_by(|(_, a), (_, b)| a.priority.cmp(&b.priority));
@@ -70,6 +79,25 @@ pub fn update_strand(
         let acceleration = Vec2::new(0.0, -strand.gravity);
         pos += velocity + acceleration;
 
+        if strand.physics {
+            let filter = QueryFilter::new().groups(CollisionGroups::new(
+                GroupLabel::STRAND,
+                GroupLabel::TERRAIN,
+            ));
+            if let Some((_, toi)) = rapier_context.cast_ray(
+                transform.translation.truncate(),
+                Vec2::new(0.0, -1.0),
+                2.0,
+                true,
+                filter,
+            ) {
+                let ground_level = transform.translation.y - toi;
+                if pos.y < ground_level {
+                    pos.y = ground_level;
+                }
+            }
+        }
+
         let diff = connect_pos - pos;
         if diff.length() != strand.dist {
             let dist_to_move = diff.length() - strand.dist;
@@ -77,6 +105,16 @@ pub fn update_strand(
         }
 
         transform.translation = pos.extend(transform.translation.z);
+    }
+}
+
+pub struct StrandLayerGroup<'a> {
+    assets: &'a [&'a str],
+}
+
+impl<'a> StrandLayerGroup<'a> {
+    fn new(assets: &'a [&str]) -> Self {
+        StrandLayerGroup { assets }
     }
 }
 
@@ -93,29 +131,45 @@ pub fn add_player_hair_and_cloth(
         0.2..0.15,
         0.8,
         &[
-            &["hair/clump_tiny_outline.png", "hair/clump_tiny.png"],
-            &["hair/clump_small_outline.png", "hair/clump_small.png"],
-            &["hair/clump_outline.png", "hair/clump.png"],
+            StrandLayerGroup::new(&["hair/clump_tiny_outline.png", "hair/clump_tiny.png"]),
+            StrandLayerGroup::new(&["hair/clump_small_outline.png", "hair/clump_small.png"]),
+            StrandLayerGroup::new(&["hair/clump_outline.png", "hair/clump.png"]),
         ],
-        &[2, 1, 1, 0],
+        &[(2, false), (1, false), (1, false), (0, false)],
         Vec3::new(-2.0, 3.0, -0.3),
         PlayerRootStrandType::Hair,
         &mut commands,
         entity,
         &asset_server,
+        Vec2::ZERO,
     );
     for i in 0..=1 {
         add_player_strand(
             1.0,
-            0.12..0.0,
+            0.12..0.03,
             0.6,
             &[
-                &["cloth/clump_tiny_outline.png", "cloth/clump_tiny.png"],
-                &["cloth/clump_small_outline.png", "cloth/clump_small.png"],
-                &["cloth/clump_outline.png", "cloth/clump.png"],
+                StrandLayerGroup::new(&["cloth/clump_tiny_outline.png", "cloth/clump_tiny.png"]),
+                StrandLayerGroup::new(&["cloth/clump_small_outline.png", "cloth/clump_small.png"]),
+                StrandLayerGroup::new(&["cloth/clump_outline.png", "cloth/clump.png"]),
             ],
-            &[1, 1, 0, 0, 0, 0, 0, 0],
-            Vec3::new(if i == 0 { -3.0 } else { 5.0 }, -4.0, -0.2),
+            &[
+                (1, false),
+                (1, false),
+                (0, false),
+                (0, false),
+                (0, false),
+                (0, true),
+                (0, true),
+                (0, true),
+                (0, true),
+                (0, true),
+                (0, true),
+            ],
+            // &[
+            //     1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            // ],
+            Vec3::new(if i == 0 { -3.0 } else { 5.0 }, -5.0, -0.2),
             if i == 0 {
                 PlayerRootStrandType::LeftCloth
             } else {
@@ -124,6 +178,7 @@ pub fn add_player_hair_and_cloth(
             &mut commands,
             entity,
             &asset_server,
+            Vec2::new(0.0, 1.0),
         );
     }
 }
@@ -131,46 +186,28 @@ pub fn add_player_hair_and_cloth(
 /// Creates a chain of strands to the player.
 ///
 /// Each created [`Strand`] component has a `dist` of `strand_dist`, and a `gravity` of at `strand_gravity.start` near the player that slowly turns into
-/// `strand_gravity.end`. The function layers the sprites in each list of `layer_assets`
-/// based on their order, and creates an entity for each index in `layer_indices`.
-///
-/// # Example
-/// ```
-/// add_player_strand(
-///     2.0,
-///     0.2..0.15,
-///     0.85,
-///     &[
-///         &["hair/clump_tiny_outline.png", "hair/clump_tiny.png"],
-///         &["hair/clump_small_outline.png", "hair/clump_small.png"],
-///         &["hair/clump_outline.png", "hair/clump.png"],
-///     ],
-///     &[2, 1, 1, 0],
-///     Vec3::new(-2.0, 3.0, -0.3),
-///     PlayerRootStrandType::Hair,
-///     &mut commands,
-///     entity,
-///     &asset_server,
-/// );
-/// ```
+/// `strand_gravity.end`. The function layers the sprites in each list of `layer_groups`
+/// based on their order, and creates an entity for each index in `layer_group_order`.
+#[allow(clippy::too_many_arguments)]
 pub fn add_player_strand(
     strand_dist: f32,
     strand_gravity: Range<f32>,
     strand_friction: f32,
 
-    layer_assets: &[&[&str]],
-    layer_indices: &[usize],
+    layer_groups: &[StrandLayerGroup],
+    layer_group_order: &[(usize, bool)],
     player_offset: Vec3,
     player_root_strand_type: PlayerRootStrandType,
 
     commands: &mut Commands,
     player_entity: Entity,
     asset_server: &Res<AssetServer>,
+    sprite_translate: Vec2,
 ) {
     let mut connect = player_entity;
-    for (i, &hair_type) in layer_indices.iter().enumerate() {
+    for (i, &(layer_index, physics)) in layer_group_order.iter().enumerate() {
         let first = i == 0;
-        let hair_layers = layer_assets[hair_type];
+        let strand_layer_group = &layer_groups[layer_index];
         let new_id = commands
             .spawn((
                 Strand::new(
@@ -182,10 +219,11 @@ pub fn add_player_strand(
                     },
                     if first { 0.0 } else { strand_dist },
                     strand_gravity.start
-                        + (i as f32 / layer_indices.len() as f32)
+                        + (i as f32 / layer_group_order.len() as f32)
                             * (strand_gravity.end - strand_gravity.start),
                     strand_friction,
                     i as u32,
+                    physics,
                 ),
                 MatchPlayerPixel(default()),
                 Transform::default(),
@@ -195,9 +233,10 @@ pub fn add_player_strand(
                 },
             ))
             .with_children(|parent| {
-                for (layer_i, &layer) in hair_layers.into_iter().enumerate() {
-                    let layer_transform =
-                        Transform::from_translation(Vec3::new(0., 0., (layer_i as f32) * 0.01));
+                for (layer_i, &layer) in strand_layer_group.assets.iter().enumerate() {
+                    let layer_transform = Transform::from_translation(
+                        Vec3::new(0., 0., (layer_i as f32) * 0.01) + sprite_translate.extend(0.0),
+                    );
 
                     parent.spawn((
                         Sprite::from_image(asset_server.load(layer)),
@@ -230,15 +269,20 @@ pub enum PlayerRootStrandType {
 pub fn update_player_strand_offsets(
     mut strands: Query<(&mut Strand, &PlayerRootStrandType)>,
     // currently queries for nothing, could be changed to query for a e.g. a Direction component.
-    player: Query<(), With<PlayerMarker>>,
+    player: Query<(&PlayerAnimationType, &Sprite, &AnimationConfig), With<PlayerMarker>>,
 ) {
-    let Ok(()) = player.get_single() else { return }; // update this to read player state, e.g. player direction.
+    let Ok((anim_type, sprite, anim_config)) = player.get_single() else {
+        return;
+    }; // update this to read player state, e.g. player direction.
     for (mut strand, ty) in strands.iter_mut() {
         strand.offset = match ty {
             // update these to dynamically reflect player state, e.g. setting the Hair strand's offset to (2.0, 3.0) when facing left.
-            PlayerRootStrandType::Hair => Vec2::new(-2.0, 3.0),
-            PlayerRootStrandType::LeftCloth => Vec2::new(-3.0, -4.0),
-            PlayerRootStrandType::RightCloth => Vec2::new(5.0, -4.0),
+            PlayerRootStrandType::Hair => anim_type.hair_offset(anim_config.cur_index),
+            PlayerRootStrandType::LeftCloth => anim_type.left_cloth_offset(anim_config.cur_index),
+            PlayerRootStrandType::RightCloth => anim_type.right_cloth_offset(anim_config.cur_index),
         };
+        if sprite.flip_x {
+            strand.offset.x *= -1.0;
+        }
     }
 }

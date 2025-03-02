@@ -18,7 +18,7 @@ impl Plugin for PausePlugin {
 #[derive(Component)]
 pub struct PauseMarker;
 
-fn spawn_pause(mut commands: Commands) {
+fn spawn_pause(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             Node {
@@ -28,12 +28,12 @@ fn spawn_pause(mut commands: Commands) {
                 justify_content: JustifyContent::Center,
                 ..default()
             },
-            BackgroundColor(Color::linear_rgba(0., 0., 0., 0.0)),
+            BackgroundColor(Color::linear_rgba(0., 0., 0., 0.7)),
             PauseMarker,
         ))
         .with_child((
-            Text::new("Paused"),
-            TextColor(Color::linear_rgb(1.0, 1.0, 1.0)),
+            ImageNode::from(asset_server.load("ui/pause_menu.png")),
+            Transform::from_scale(Vec3::new(5.0, 5.0, 1.0)),
         ));
 }
 
@@ -48,5 +48,6 @@ fn toggle_pause(state: Res<State<GameState>>, mut next_state: ResMut<NextState<G
     next_state.set(match state.get() {
         GameState::Paused => GameState::Playing,
         GameState::Playing => GameState::Paused,
+        _ => state.get().clone(),
     })
 }

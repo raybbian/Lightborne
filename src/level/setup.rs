@@ -11,6 +11,7 @@ impl Plugin for LevelSetupPlugin {
                 level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
                     load_level_neighbors: true,
                 },
+                level_background: LevelBackground::Nonexistent,
                 ..default()
             })
             .add_systems(Startup, setup_level);

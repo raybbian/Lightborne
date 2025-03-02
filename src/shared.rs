@@ -12,16 +12,24 @@ impl GroupLabel {
     pub const LIGHT_SENSOR: Group = Group::GROUP_5;
     pub const HURT_BOX: Group = Group::GROUP_6;
     pub const WHITE_RAY: Group = Group::GROUP_7;
+    pub const STRAND: Group = Group::GROUP_8;
+    pub const BLUE_RAY: Group = Group::GROUP_9;
+    pub const ALL: Group = Group::from_bits_truncate(!0);
 }
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameState {
     Playing,
+    SwitchAnimation,
+    KillAnimation,
     Paused,
 }
 
 #[derive(Event, PartialEq, Eq)]
 pub enum ResetLevel {
+    /// Sent to run systems that reset the player state on respawn. If you are trying to kill the
+    /// player, use `KillPlayerEvent` instead
     Respawn,
+    /// Sent to run systems that reset the level state on level switch
     Switching,
 }
