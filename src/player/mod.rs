@@ -5,6 +5,7 @@ use bevy::{
 };
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
+use indicator::{add_light_indicator, update_light_indicator, LightIndicatorData};
 use match_player::{
     post_update_match_player_pixel, pre_update_match_player_pixel, update_match_player_z,
 };
@@ -34,6 +35,7 @@ use movement::{crouch_player, move_player, queue_jump, PlayerMovement};
 use spawn::{add_player_sensors, init_player_bundle, PlayerHurtMarker};
 
 mod animation;
+mod indicator;
 mod kill;
 pub mod light;
 pub mod match_player;
@@ -47,10 +49,19 @@ pub struct PlayerManagementPlugin;
 impl Plugin for PlayerManagementPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<KillAnimationCallbacks>()
+            .init_resource::<LightIndicatorData>()
             .add_event::<KillPlayerEvent>()
             .add_systems(
                 PreUpdate,
                 add_player_sensors.in_set(LevelSystems::Processing),
+            )
+            .add_systems(
+                PreUpdate,
+                add_light_indicator.in_set(LevelSystems::Processing),
+            )
+            .add_systems(
+                FixedUpdate,
+                update_light_indicator.in_set(LevelSystems::Simulation),
             )
             .add_systems(
                 FixedUpdate,
