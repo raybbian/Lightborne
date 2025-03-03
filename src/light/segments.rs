@@ -78,9 +78,10 @@ impl FromWorld for LightSegmentCache {
     }
 }
 
-/// System to insert line lights into segments. This insertion cannot be done because doing so
-/// inserts the archetype in the world before the required components are registered for it.
-/// This is currently not allowed, and therefore the light segments must be added later.
+/// System to insert line lights into segments. This insertion cannot be done in FromWorld
+/// because doing so inserts the archetype in the world before the required components are
+/// registered for it. This is currently not allowed by Bevy, and therefore the light segments
+/// must be added later.
 pub fn insert_line_lights(
     mut commands: Commands,
     q_new_segments: Query<(Entity, &LightSegment), Added<LightSegment>>,
