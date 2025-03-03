@@ -99,11 +99,16 @@ impl LightColor {
     }
 
     pub fn indicator_color(&self) -> Color {
-        self.button_color()
+        match self {
+            LightColor::Red => Color::srgb(1.0, 0.375, 0.25),
+            LightColor::Green => Color::srgb(0.25, 1.0, 0.75),
+            LightColor::White => Color::srgb(0.5, 0.5, 0.5),
+            LightColor::Blue => Color::srgb(0.25, 0.5, 1.0),
+        }
     }
 
     pub fn indicator_dimmed_color(&self) -> Color {
-        self.button_color().with_alpha(0.15)
+        self.indicator_color().with_alpha(0.15)
     }
 
     pub fn button_color(&self) -> Color {
