@@ -7,7 +7,7 @@ use bevy::{
             SystemParamItem,
         },
     },
-    math::{vec3, Affine3},
+    math::{vec3, Affine3, Affine3A},
     prelude::*,
     render::{
         camera::ExtractedCamera,
@@ -28,7 +28,7 @@ use bevy::{
 use bytemuck::{Pod, Zeroable};
 
 use super::{
-    point_light::{point_light_bind_group_layout, PointLight2dBounds},
+    line_light::{line_light_bind_group_layout, LineLight2dBounds},
     render::PostProcessRes,
     AmbientLight2d,
 };
@@ -88,8 +88,10 @@ impl ExtractComponent for Occluder2d {
         (transform, occluder): QueryItem<'_, Self::QueryData>,
     ) -> Option<Self::Out> {
         // FIXME: should not do calculations in extract
-        let affine_a = transform.affine();
-        let affine = Affine3::from(&affine_a);
+        let (scale, rotation, translation) = transform.to_scale_rotation_translation();
+        let transform_no_scale =
+            Affine3A::from_scale_rotation_translation(scale.signum(), rotation, translation);
+        let affine = Affine3::from(&transform_no_scale);
         let (a, b) = affine.inverse_transpose_3x3();
 
         Some((
@@ -107,7 +109,7 @@ impl ExtractComponent for Occluder2d {
     }
 }
 
-/// Render world version of [`PointLight2d`].
+/// Render world version of [`Occluder2d`].
 #[derive(Component, ShaderType, Clone, Copy, Debug)]
 pub struct ExtractOccluder2d {
     world_from_local: [Vec4; 3],
@@ -123,7 +125,7 @@ pub struct Occluder2dBounds {
 }
 
 impl Occluder2dBounds {
-    pub fn visible_from_point_light(&self, light: &PointLight2dBounds) -> bool {
+    pub fn visible_from_line_light(&self, light: &LineLight2dBounds) -> bool {
         let occluder_pos = self.transform.translation.xy();
         let min_rect = occluder_pos - self.half_size;
         let max_rect = occluder_pos + self.half_size;
@@ -197,6 +199,7 @@ impl FromWorld for Occluder2dBuffers {
 pub struct OccluderCountTexture(pub ViewDepthTexture);
 
 /// Prepare my own texture because theirs has funny sample count??
+#[allow(clippy::type_complexity)]
 pub fn prepare_occluder_count_textures(
     mut commands: Commands,
     mut texture_cache: ResMut<TextureCache>,
@@ -330,7 +333,7 @@ pub fn build_occluder_2d_pipeline_descriptor(
     let post_process_res = world.resource::<PostProcessRes>();
     let post_process_layout = post_process_res.layout.clone();
 
-    let point_light_layout = point_light_bind_group_layout(render_device);
+    let line_light_layout = line_light_bind_group_layout(render_device);
 
     let shader = world.load_asset("shaders/lighting/occluder.wgsl");
 
@@ -371,7 +374,7 @@ pub fn build_occluder_2d_pipeline_descriptor(
         layout: vec![
             post_process_layout,
             mesh2d_pipeline.view_layout,
-            point_light_layout,
+            line_light_layout,
             occluder_layout,
         ],
         vertex: VertexState {
@@ -494,5 +497,17 @@ impl FromWorld for Occluder2dPipeline {
             cutout_pipeline_id,
             reset_pipeline_id,
         }
+    }
+}
+
+// WebGL2 requires thes structs be 16-byte aligned
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::mem;
+
+    #[test]
+    fn occluder_2d_alignment() {
+        assert_eq!(mem::size_of::<ExtractOccluder2d>() % 16, 0);
     }
 }

@@ -29,13 +29,13 @@ use bevy::{
 
 use super::{
     ambient_light::{AmbientLight2dPipeline, SetAmbientLight2dBindGroup},
+    line_light::{
+        DrawLineLight2d, ExtractLineLight2d, LineLight2dBounds, LineLight2dPipeline,
+        SetLineLight2dBindGroup,
+    },
     occluder::{
         DrawOccluder2d, ExtractOccluder2d, Occluder2dBounds, Occluder2dPipeline,
         OccluderCountTexture, SetOccluder2dBindGroup,
-    },
-    point_light::{
-        DrawPointLight2d, ExtractPointLight2d, PointLight2dBounds, PointLight2dPipeline,
-        SetPointLight2dBindGroup,
     },
     AmbientLight2d,
 };
@@ -142,16 +142,19 @@ pub fn extract_deferred_lighting_2d_camera_phases(
     phases.retain(|camera_entity, _| live_entities.contains(camera_entity));
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn queue_deferred_lighting(
     deferred_lighting_draw_functions: Res<DrawFunctions<DeferredLighting2d>>,
     occluder_pipeline: Res<Occluder2dPipeline>,
-    point_light_pipeline: Res<PointLight2dPipeline>,
+    line_light_pipeline: Res<LineLight2dPipeline>,
     ambient_light_pipeline: Res<AmbientLight2dPipeline>,
-    q_point_lights: Query<(Entity, &MainEntity, &PointLight2dBounds), With<ExtractPointLight2d>>,
+    q_line_lights: Query<(Entity, &MainEntity, &LineLight2dBounds), With<ExtractLineLight2d>>,
     q_occluder: Query<(Entity, &MainEntity, &Occluder2dBounds), With<ExtractOccluder2d>>,
     mut deferred_lighting_phases: ResMut<ViewSortedRenderPhases<DeferredLighting2d>>,
     views: Query<(Entity, &MainEntity), With<AmbientLight2d>>,
 ) {
+    // TODO: ignore invisible entities
+
     for (view_e, view_me) in views.iter() {
         let Some(phase) = deferred_lighting_phases.get_mut(&view_e) else {
             continue;
@@ -166,12 +169,12 @@ pub fn queue_deferred_lighting(
         let render_occluder = deferred_lighting_draw_functions
             .read()
             .id::<RenderOccluder>();
-        let prepare_point_light = deferred_lighting_draw_functions
+        let prepare_line_light = deferred_lighting_draw_functions
             .read()
-            .id::<PreparePointLight2d>();
-        let render_point_light = deferred_lighting_draw_functions
+            .id::<PrepareLineLight2d>();
+        let render_line_light = deferred_lighting_draw_functions
             .read()
-            .id::<RenderPointLight2d>();
+            .id::<RenderLineLight2d>();
         let reset_stencil_buffer = deferred_lighting_draw_functions
             .read()
             .id::<ResetOccluderStencil>();
@@ -208,17 +211,17 @@ pub fn queue_deferred_lighting(
         );
 
         // Start rendering lights
-        for (pl_e, pl_me, light_bounds) in q_point_lights.iter() {
-            // Set bind group 2 - point light uniform
+        for (pl_e, pl_me, light_bounds) in q_line_lights.iter() {
+            // Set bind group 2 - line light uniform
             add_phase_item(
-                point_light_pipeline.pipeline_id,
-                prepare_point_light,
+                line_light_pipeline.pipeline_id,
+                prepare_line_light,
                 (pl_e, *pl_me),
             );
 
             // Render occluder shadows
             for (ocl_e, ocl_me, occluder_bounds) in q_occluder.iter() {
-                if !occluder_bounds.visible_from_point_light(light_bounds) {
+                if !occluder_bounds.visible_from_line_light(light_bounds) {
                     continue;
                 }
                 add_phase_item(
@@ -230,7 +233,7 @@ pub fn queue_deferred_lighting(
 
             // Cutout occluder bodies
             for (ocl_e, ocl_me, occluder_bounds) in q_occluder.iter() {
-                if !occluder_bounds.visible_from_point_light(light_bounds) {
+                if !occluder_bounds.visible_from_line_light(light_bounds) {
                     continue;
                 }
                 add_phase_item(
@@ -242,8 +245,8 @@ pub fn queue_deferred_lighting(
 
             // Render the actual light now
             add_phase_item(
-                point_light_pipeline.pipeline_id,
-                render_point_light,
+                line_light_pipeline.pipeline_id,
+                render_line_light,
                 (pl_e, *pl_me),
             );
 
@@ -264,20 +267,16 @@ pub type PrepareDeferredLighting = (
 
 pub type RenderAmbientLight2d = (SetItemPipeline, SetAmbientLight2dBindGroup<2>, DrawTriangle);
 
-pub type PreparePointLight2d = SetPointLight2dBindGroup<2>;
+pub type PrepareLineLight2d = SetLineLight2dBindGroup<2>;
 
 pub type RenderOccluder = (
     SetItemPipeline,
-    // SetPointLight2dBindGroup<2>,
+    // SetLineLight2dBindGroup<2>,
     SetOccluder2dBindGroup<3>,
     DrawOccluder2d,
 );
 
-pub type RenderPointLight2d = (
-    SetItemPipeline,
-    SetPointLight2dBindGroup<2>,
-    DrawPointLight2d,
-);
+pub type RenderLineLight2d = (SetItemPipeline, SetLineLight2dBindGroup<2>, DrawLineLight2d);
 
 pub type ResetOccluderStencil = (SetItemPipeline, DrawTriangle);
 
@@ -337,7 +336,7 @@ impl ViewNode for DeferredLightingNode {
         let mut render_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
             label: Some("deferred_lighting_pass"),
             color_attachments: &[Some(RenderPassColorAttachment {
-                view: &post_process.destination,
+                view: post_process.destination,
                 resolve_target: None,
                 ops: Operations::default(),
             })],

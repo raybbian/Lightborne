@@ -6,8 +6,8 @@ use bevy::{
 use enum_map::Enum;
 use render::{LightMaterial, LightRenderData};
 use segments::{
-    cleanup_light_sources, simulate_light_sources, tick_light_sources, LightSegmentCache,
-    PrevLightBeamPlayback,
+    cleanup_light_sources, insert_line_lights, simulate_light_sources, tick_light_sources,
+    LightSegmentCache, PrevLightBeamPlayback,
 };
 
 use crate::{level::LevelSystems, shared::ResetLevel};
@@ -33,6 +33,7 @@ impl Plugin for LightManagementPlugin {
                 FixedUpdate,
                 (simulate_light_sources, tick_light_sources).in_set(LevelSystems::Simulation),
             )
+            .add_systems(Update, insert_line_lights)
             .add_systems(Update, cleanup_light_sources.run_if(on_event::<ResetLevel>));
     }
 }

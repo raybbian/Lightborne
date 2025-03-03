@@ -1,7 +1,7 @@
 #import bevy_render::view::View
 #import bevy_render::globals::Globals
 #import "shaders/lighting/functions.wgsl" as light_functions
-#import "shaders/lighting/point_light.wgsl"::PointLight2d
+#import "shaders/lighting/line_light.wgsl"::LineLight2d
 
 struct Vertex {
     @location(0) position: vec3<f32>,
@@ -21,7 +21,7 @@ struct Occluder2d {
 
 @group(1) @binding(0) var<uniform> view: View;
 @group(1) @binding(1) var<uniform> globals: Globals;
-@group(2) @binding(0) var<uniform> light: PointLight2d;
+@group(2) @binding(0) var<uniform> light: LineLight2d;
 @group(3) @binding(0) var<uniform> occluder: Occluder2d;
 
 // Returns the point on the infinite line (through a and b) that is closest to p

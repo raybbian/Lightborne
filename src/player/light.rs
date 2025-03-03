@@ -9,7 +9,7 @@ use crate::{
         segments::{play_light_beam, PrevLightBeamPlayback},
         LightBeamSource, LightColor,
     },
-    lighting::PointLight2d,
+    lighting::LineLight2d,
 };
 
 use super::PlayerMarker;
@@ -132,7 +132,7 @@ pub fn shoot_light(
         .insert(PrevLightBeamPlayback::from_color(
             player_inventory.current_color,
         ))
-        .insert(PointLight2d {
+        .insert(LineLight2d {
             color: player_inventory.current_color.lighting_color().extend(1.0),
             half_length: 0.0,
             radius: 30.0,

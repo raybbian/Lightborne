@@ -14,7 +14,7 @@ struct VertexOutput {
     @location(1) uv: vec2<f32>,
 }
 
-struct PointLight2d {
+struct LineLight2d {
     world_from_local: mat3x4<f32>,
     local_from_world_transpose_a: mat2x4<f32>,
     local_from_world_transpose_b: f32,
@@ -29,7 +29,7 @@ struct PointLight2d {
 @group(0) @binding(1) var unlit_sampler: sampler;
 @group(1) @binding(0) var<uniform> view: View;
 @group(1) @binding(1) var<uniform> globals: Globals;
-@group(2) @binding(0) var<uniform> light: PointLight2d;
+@group(2) @binding(0) var<uniform> light: LineLight2d;
 
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
@@ -53,7 +53,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     return out;
 }
 
-fn point_light_color(uv: vec2<f32>, screen_uv: vec2<f32>) -> vec4<f32> {
+fn line_light_color(uv: vec2<f32>, screen_uv: vec2<f32>) -> vec4<f32> {
     let one_tex_uv = uv * 2.0 - vec2<f32>(1.0); // -1 to 1
     let base_color = textureSample(unlit_image, unlit_sampler, screen_uv);
 
@@ -77,5 +77,5 @@ fn fragment(
     in: VertexOutput
 ) -> @location(0) vec4<f32> {
     let screen_uv = in.position.xy / view.viewport.zw;
-    return point_light_color(in.uv, screen_uv);
+    return line_light_color(in.uv, screen_uv);
 }

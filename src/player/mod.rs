@@ -15,7 +15,7 @@ use crate::{
         entity::{adjust_semisolid_colliders, set_semisolid},
         LevelSystems,
     },
-    lighting::PointLight2d,
+    lighting::LineLight2d,
     shared::{GameState, ResetLevel},
 };
 
@@ -136,7 +136,7 @@ pub struct PlayerBundle {
     player_movement: PlayerMovement,
     player_state: PlayerState,
     light_inventory: PlayerLightInventory,
-    point_lighting: PointLight2d,
+    point_lighting: LineLight2d,
 }
 
 /// [`Bundle`] registered with Ldtk that will be spawned in with the level.

@@ -166,3 +166,15 @@ impl FromWorld for AmbientLight2dPipeline {
         }
     }
 }
+
+// WebGL2 requires thes structs be 16-byte aligned
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::mem;
+
+    #[test]
+    fn ambient_light_2d_alignment() {
+        assert_eq!(mem::size_of::<AmbientLight2d>() % 16, 0);
+    }
+}
