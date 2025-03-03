@@ -21,7 +21,7 @@ use bevy::{
         },
         renderer::{RenderContext, RenderDevice},
         sync_world::{MainEntity, RenderEntity},
-        view::ViewTarget,
+        view::{RenderVisibleEntities, ViewTarget},
         Extract,
     },
     sprite::SetMesh2dViewBindGroup,
@@ -37,7 +37,7 @@ use super::{
         DrawOccluder2d, ExtractOccluder2d, Occluder2dBounds, Occluder2dPipeline,
         OccluderCountTexture, SetOccluder2dBindGroup,
     },
-    AmbientLight2d,
+    AmbientLight2d, LineLight2d, Occluder2d,
 };
 
 /// Deferred Lighting [`SortedPhaseItem`]s.
@@ -148,14 +148,14 @@ pub fn queue_deferred_lighting(
     occluder_pipeline: Res<Occluder2dPipeline>,
     line_light_pipeline: Res<LineLight2dPipeline>,
     ambient_light_pipeline: Res<AmbientLight2dPipeline>,
-    q_line_lights: Query<(Entity, &MainEntity, &LineLight2dBounds), With<ExtractLineLight2d>>,
-    q_occluder: Query<(Entity, &MainEntity, &Occluder2dBounds), With<ExtractOccluder2d>>,
+    q_line_lights: Query<&LineLight2dBounds, With<ExtractLineLight2d>>,
+    q_occluder: Query<&Occluder2dBounds, With<ExtractOccluder2d>>,
     mut deferred_lighting_phases: ResMut<ViewSortedRenderPhases<DeferredLighting2d>>,
-    views: Query<(Entity, &MainEntity), With<AmbientLight2d>>,
+    views: Query<(Entity, &MainEntity, &RenderVisibleEntities), With<AmbientLight2d>>,
 ) {
     // TODO: ignore invisible entities
 
-    for (view_e, view_me) in views.iter() {
+    for (view_e, view_me, visible_entities) in views.iter() {
         let Some(phase) = deferred_lighting_phases.get_mut(&view_e) else {
             continue;
         };
@@ -211,35 +211,44 @@ pub fn queue_deferred_lighting(
         );
 
         // Start rendering lights
-        for (pl_e, pl_me, light_bounds) in q_line_lights.iter() {
+        for (pl_e, pl_me) in visible_entities.iter::<With<LineLight2d>>() {
+            let Ok(light_bounds) = q_line_lights.get(*pl_e) else {
+                continue;
+            };
             // Set bind group 2 - line light uniform
             add_phase_item(
                 line_light_pipeline.pipeline_id,
                 prepare_line_light,
-                (pl_e, *pl_me),
+                (*pl_e, *pl_me),
             );
 
             // Render occluder shadows
-            for (ocl_e, ocl_me, occluder_bounds) in q_occluder.iter() {
+            for (ocl_e, ocl_me) in visible_entities.iter::<With<Occluder2d>>() {
+                let Ok(occluder_bounds) = q_occluder.get(*ocl_e) else {
+                    continue;
+                };
                 if !occluder_bounds.visible_from_line_light(light_bounds) {
                     continue;
                 }
                 add_phase_item(
                     occluder_pipeline.shadow_pipeline_id,
                     render_occluder,
-                    (ocl_e, *ocl_me),
+                    (*ocl_e, *ocl_me),
                 );
             }
 
             // Cutout occluder bodies
-            for (ocl_e, ocl_me, occluder_bounds) in q_occluder.iter() {
+            for (ocl_e, ocl_me) in visible_entities.iter::<With<Occluder2d>>() {
+                let Ok(occluder_bounds) = q_occluder.get(*ocl_e) else {
+                    continue;
+                };
                 if !occluder_bounds.visible_from_line_light(light_bounds) {
                     continue;
                 }
                 add_phase_item(
                     occluder_pipeline.cutout_pipeline_id,
                     render_occluder,
-                    (ocl_e, *ocl_me),
+                    (*ocl_e, *ocl_me),
                 );
             }
 
@@ -247,14 +256,14 @@ pub fn queue_deferred_lighting(
             add_phase_item(
                 line_light_pipeline.pipeline_id,
                 render_line_light,
-                (pl_e, *pl_me),
+                (*pl_e, *pl_me),
             );
 
             // Reset the occluder
             add_phase_item(
                 occluder_pipeline.reset_pipeline_id,
                 reset_stencil_buffer,
-                (pl_e, *pl_me),
+                (*pl_e, *pl_me),
             );
         }
     }

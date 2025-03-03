@@ -15,11 +15,12 @@ use bevy::{
             ComponentUniforms, DynamicUniformIndex, ExtractComponent, ExtractComponentPlugin,
             UniformComponentPlugin,
         },
+        primitives::Aabb,
         render_phase::{PhaseItem, RenderCommand, RenderCommandResult, TrackedRenderPass},
         render_resource::{binding_types::uniform_buffer, *},
         renderer::{RenderDevice, RenderQueue},
         texture::TextureCache,
-        view::{ViewDepthTexture, ViewTarget},
+        view::{check_visibility, ViewDepthTexture, ViewTarget, VisibilitySystems},
         Render, RenderApp, RenderSet,
     },
     sprite::Mesh2dPipeline,
@@ -38,7 +39,14 @@ pub struct Occluder2dPipelinePlugin;
 impl Plugin for Occluder2dPipelinePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(UniformComponentPlugin::<ExtractOccluder2d>::default())
-            .add_plugins(ExtractComponentPlugin::<Occluder2d>::default());
+            .add_plugins(ExtractComponentPlugin::<Occluder2d>::default())
+            .add_systems(
+                PostUpdate,
+                (
+                    calculate_occluder_2d_bounds.in_set(VisibilitySystems::CalculateBounds),
+                    check_visibility::<With<Occluder2d>>.in_set(VisibilitySystems::CheckVisibility),
+                ),
+            );
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
@@ -76,6 +84,19 @@ impl Occluder2d {
         Self {
             half_size: Vec2::new(half_x, half_y),
         }
+    }
+}
+
+pub fn calculate_occluder_2d_bounds(
+    mut commands: Commands,
+    q_light_changed: Query<(Entity, &Occluder2d), Changed<Occluder2d>>,
+) {
+    for (entity, occluder) in q_light_changed.iter() {
+        let aabb = Aabb {
+            center: Vec3::ZERO.into(),
+            half_extents: occluder.half_size.extend(0.0).into(),
+        };
+        commands.entity(entity).try_insert(aabb);
     }
 }
 
@@ -156,6 +177,8 @@ pub struct Occluder2dBuffers {
     pub vertices: RawBufferVec<Occluder2dVertex>,
     pub indices: RawBufferVec<u32>,
 }
+
+const OCCLUDER_2D_NUM_INDICES: u32 = 18;
 
 static VERTICES: [Occluder2dVertex; 8] = [
     Occluder2dVertex::new(vec3(-1.0, -1.0, 0.0), vec3(-1.0, 0.0, 0.0)),
@@ -310,7 +333,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawOccluder2d {
             0,
             IndexFormat::Uint32,
         );
-        pass.draw_indexed(0..18, 0, 0..1);
+        pass.draw_indexed(0..OCCLUDER_2D_NUM_INDICES, 0, 0..1);
 
         RenderCommandResult::Success
     }

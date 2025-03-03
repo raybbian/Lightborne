@@ -14,10 +14,11 @@ use bevy::{
             UniformComponentPlugin,
         },
         mesh::VertexBufferLayout,
+        primitives::Aabb,
         render_phase::{PhaseItem, RenderCommand, RenderCommandResult, TrackedRenderPass},
         render_resource::{binding_types::uniform_buffer, *},
         renderer::{RenderDevice, RenderQueue},
-        view::ViewTarget,
+        view::{check_visibility, ViewTarget, VisibilitySystems},
         Render, RenderApp, RenderSet,
     },
     sprite::Mesh2dPipeline,
@@ -31,7 +32,15 @@ pub struct LineLight2dPlugin;
 impl Plugin for LineLight2dPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(ExtractComponentPlugin::<LineLight2d>::default())
-            .add_plugins(UniformComponentPlugin::<ExtractLineLight2d>::default());
+            .add_plugins(UniformComponentPlugin::<ExtractLineLight2d>::default())
+            .add_systems(
+                PostUpdate,
+                (
+                    calculate_line_light_2d_bounds.in_set(VisibilitySystems::CalculateBounds),
+                    check_visibility::<With<LineLight2d>>
+                        .in_set(VisibilitySystems::CheckVisibility),
+                ),
+            );
 
         let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
             return;
@@ -68,6 +77,21 @@ impl LineLight2d {
             radius,
             volumetric_intensity,
         }
+    }
+}
+
+pub fn calculate_line_light_2d_bounds(
+    mut commands: Commands,
+    q_light_changed: Query<(Entity, &LineLight2d), Changed<LineLight2d>>,
+) {
+    for (entity, light) in q_light_changed.iter() {
+        let aabb = Aabb {
+            center: Vec3::ZERO.into(),
+            half_extents: Vec2::splat(light.half_length + light.radius)
+                .extend(0.0)
+                .into(),
+        };
+        commands.entity(entity).try_insert(aabb);
     }
 }
 
