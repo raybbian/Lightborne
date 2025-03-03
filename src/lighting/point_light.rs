@@ -55,6 +55,7 @@ impl Plugin for PointLight2dPlugin {
 #[require(Transform)]
 pub struct PointLight2d {
     pub color: Vec4,
+    pub half_length: f32,
     pub radius: f32,
     pub volumetric_intensity: f32,
 }
@@ -67,6 +68,7 @@ impl ExtractComponent for PointLight2d {
     fn extract_component(
         (transform, point_light): QueryItem<'_, Self::QueryData>,
     ) -> Option<Self::Out> {
+        // FIXME: don't do computations in extract
         let affine_a = transform.affine();
         let affine = Affine3::from(&affine_a);
         let (a, b) = affine.inverse_transpose_3x3();
@@ -77,11 +79,13 @@ impl ExtractComponent for PointLight2d {
                 local_from_world_transpose_a: a,
                 local_from_world_transpose_b: b,
                 color: point_light.color,
+                half_length: point_light.half_length,
                 radius: point_light.radius,
                 volumetric_intensity: point_light.volumetric_intensity,
             },
             PointLight2dBounds {
-                world_pos: affine_a.translation.xy(),
+                transform: transform.compute_transform(),
+                half_length: point_light.half_length,
                 radius: point_light.radius,
             },
         ))
@@ -95,14 +99,16 @@ pub struct ExtractPointLight2d {
     local_from_world_transpose_a: [Vec4; 2],
     local_from_world_transpose_b: f32,
     color: Vec4,
+    pub half_length: f32,
     pub radius: f32,
     volumetric_intensity: f32,
 }
 
 #[derive(Component, Clone, Copy)]
 pub struct PointLight2dBounds {
-    pub world_pos: Vec2,
+    pub transform: Transform,
     pub radius: f32,
+    pub half_length: f32,
 }
 
 #[derive(Clone, Copy, Pod, Zeroable)]
@@ -110,11 +116,24 @@ pub struct PointLight2dBounds {
 pub struct PointLight2dVertex {
     position: Vec3,
     uv: Vec2,
+    /// 0 -> inner, 1 -> outer
+    variant: u32,
 }
 
 impl PointLight2dVertex {
-    const fn new(position: Vec3, uv: Vec2) -> Self {
-        PointLight2dVertex { position, uv }
+    const fn inner(position: Vec3, uv: Vec2) -> Self {
+        PointLight2dVertex {
+            position,
+            uv,
+            variant: 0,
+        }
+    }
+    const fn outer(position: Vec3, uv: Vec2) -> Self {
+        PointLight2dVertex {
+            position,
+            uv,
+            variant: 1,
+        }
     }
 }
 
@@ -124,14 +143,20 @@ pub struct PointLight2dBuffers {
     pub indices: RawBufferVec<u32>,
 }
 
-static VERTICES: [PointLight2dVertex; 4] = [
-    PointLight2dVertex::new(vec3(-1.0, -1.0, 0.0), vec2(0.0, 0.0)),
-    PointLight2dVertex::new(vec3(1.0, -1.0, 0.0), vec2(1.0, 0.0)),
-    PointLight2dVertex::new(vec3(1.0, 1.0, 0.0), vec2(1.0, 1.0)),
-    PointLight2dVertex::new(vec3(-1.0, 1.0, 0.0), vec2(0.0, 1.0)),
+pub const POINT_LIGHT_2D_NUM_INDICES: u32 = 18;
+
+static VERTICES: [PointLight2dVertex; 8] = [
+    PointLight2dVertex::inner(vec3(-1.0, -1.0, 0.0), vec2(0.5, 0.0)),
+    PointLight2dVertex::inner(vec3(1.0, -1.0, 0.0), vec2(0.5, 0.0)),
+    PointLight2dVertex::inner(vec3(1.0, 1.0, 0.0), vec2(0.5, 1.0)),
+    PointLight2dVertex::inner(vec3(-1.0, 1.0, 0.0), vec2(0.5, 1.0)),
+    PointLight2dVertex::outer(vec3(-1.0, -1.0, 0.0), vec2(0.0, 0.0)),
+    PointLight2dVertex::outer(vec3(1.0, -1.0, 0.0), vec2(1.0, 0.0)),
+    PointLight2dVertex::outer(vec3(1.0, 1.0, 0.0), vec2(1.0, 1.0)),
+    PointLight2dVertex::outer(vec3(-1.0, 1.0, 0.0), vec2(0.0, 1.0)),
 ];
 
-static INDICES: [u32; 6] = [0, 1, 2, 2, 3, 0];
+static INDICES: [u32; 18] = [0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1, 4, 0, 3, 3, 7, 4];
 
 impl FromWorld for PointLight2dBuffers {
     fn from_world(world: &mut World) -> Self {
@@ -234,7 +259,7 @@ impl<P: PhaseItem> RenderCommand<P> for DrawPointLight2d {
             0,
             IndexFormat::Uint32,
         );
-        pass.draw_indexed(0..6, 0, 0..1);
+        pass.draw_indexed(0..POINT_LIGHT_2D_NUM_INDICES, 0, 0..1);
 
         RenderCommandResult::Success
     }
@@ -271,6 +296,12 @@ impl FromWorld for PointLight2dPipeline {
                     format: VertexFormat::Float32x2,
                     offset: std::mem::offset_of!(PointLight2dVertex, uv) as u64,
                     shader_location: 1,
+                },
+                // Variant (Inner vs Outer vertex)
+                VertexAttribute {
+                    format: VertexFormat::Uint32,
+                    offset: std::mem::offset_of!(PointLight2dVertex, variant) as u64,
+                    shader_location: 2,
                 },
             ],
         };

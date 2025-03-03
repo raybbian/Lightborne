@@ -87,6 +87,7 @@ impl ExtractComponent for Occluder2d {
     fn extract_component(
         (transform, occluder): QueryItem<'_, Self::QueryData>,
     ) -> Option<Self::Out> {
+        // FIXME: should not do calculations in extract
         let affine_a = transform.affine();
         let affine = Affine3::from(&affine_a);
         let (a, b) = affine.inverse_transpose_3x3();
@@ -99,7 +100,7 @@ impl ExtractComponent for Occluder2d {
                 half_size: occluder.half_size,
             },
             Occluder2dBounds {
-                world_pos: affine_a.translation.xy(),
+                transform: transform.compute_transform(),
                 half_size: occluder.half_size,
             },
         ))
@@ -117,18 +118,21 @@ pub struct ExtractOccluder2d {
 
 #[derive(Component, Clone, Copy)]
 pub struct Occluder2dBounds {
-    pub world_pos: Vec2,
+    pub transform: Transform,
     pub half_size: Vec2,
 }
 
 impl Occluder2dBounds {
     pub fn visible_from_point_light(&self, light: &PointLight2dBounds) -> bool {
-        let min_rect = self.world_pos - self.half_size;
-        let max_rect = self.world_pos + self.half_size;
+        let occluder_pos = self.transform.translation.xy();
+        let min_rect = occluder_pos - self.half_size;
+        let max_rect = occluder_pos + self.half_size;
 
-        let closest_point = light.world_pos.clamp(min_rect, max_rect);
+        let light_pos = light.transform.translation.xy();
+        let closest_point = light_pos.clamp(min_rect, max_rect);
 
-        light.world_pos.distance_squared(closest_point) <= light.radius * light.radius
+        light_pos.distance_squared(closest_point)
+            <= (light.radius + light.half_length) * (light.radius + light.half_length)
     }
 }
 
@@ -383,10 +387,14 @@ pub fn build_occluder_2d_pipeline_descriptor(
             targets: vec![Some(ColorTargetState {
                 format: ViewTarget::TEXTURE_FORMAT_HDR,
                 blend: Some(BlendState {
-                    color: BlendComponent::REPLACE,
+                    color: BlendComponent {
+                        src_factor: BlendFactor::One,
+                        dst_factor: BlendFactor::One,
+                        operation: BlendOperation::Add,
+                    },
                     alpha: BlendComponent::REPLACE,
                 }),
-                write_mask: ColorWrites::ALPHA,
+                write_mask: ColorWrites::ALL,
             })],
         }),
         primitive: PrimitiveState::default(),

@@ -5,6 +5,7 @@
 struct Vertex {
     @location(0) position: vec3<f32>,
     @location(1) uv: vec2<f32>,
+    @location(2) variant: u32,
 }
 
 struct VertexOutput {
@@ -18,6 +19,7 @@ struct PointLight2d {
     local_from_world_transpose_a: mat2x4<f32>,
     local_from_world_transpose_b: f32,
     color: vec4<f32>,
+    half_length: f32,
     radius: f32,
     volumetric_intensity: f32,
 }
@@ -36,7 +38,12 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     out.uv = vertex.uv;
 
     let world_from_local = light_functions::get_world_from_local(light.world_from_local);
-    let new_position = vertex.position * light.radius;
+    
+    var new_position = vertex.position * vec3<f32>(light.half_length, light.radius, 1.0);
+    if vertex.variant == 1 { 
+        new_position.x += vertex.position.x * light.radius;
+    }
+
     out.world_position = light_functions::position_local_to_world(
         world_from_local,
         vec4<f32>(new_position, 1.0)
@@ -51,14 +58,14 @@ fn point_light_color(uv: vec2<f32>, screen_uv: vec2<f32>) -> vec4<f32> {
     let base_color = textureSample(unlit_image, unlit_sampler, screen_uv);
 
     let distance = min(length(one_tex_uv) * base_color.a, 1.0);
-    let angle = abs(atan2(one_tex_uv.y, one_tex_uv.x));
+    // let angle = abs(atan2(one_tex_uv.y, one_tex_uv.x));
 
     let radial_fall_off = pow(1.0 - distance, 2.0);
-    let angular_fall_off = smoothstep(-3.14159, 3.14159, angle);
+    // let angular_fall_off = smoothstep(-3.14159, 3.14159, angle);
     let normal_fall_off = 1.0;
     let intensity = light.color.a;
 
-    let final_intensity = intensity * radial_fall_off * angular_fall_off * normal_fall_off;
+    let final_intensity = intensity * radial_fall_off * normal_fall_off;
     let light_color = final_intensity * light.color.rgb;
     let shaded_color = base_color.rgb * light_color + light_color * light.volumetric_intensity;
 

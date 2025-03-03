@@ -66,7 +66,7 @@ fn setup_camera(mut commands: Commands) {
         Camera2d,
         MainCamera,
         AmbientLight2d {
-            color: Vec4::new(1.0, 1.0, 1.0, 0.1),
+            color: Vec4::new(1.0, 1.0, 1.0, 0.25),
         },
         Camera {
             hdr: true,

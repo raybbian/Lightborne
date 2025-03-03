@@ -46,8 +46,9 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
         light_inventory: PlayerLightInventory::default(),
         point_lighting: PointLight2d {
             color: Vec4::new(0.8, 0.8, 0.8, 1.0),
-            radius: 60.0,
-            volumetric_intensity: 0.0,
+            half_length: 50.0,
+            radius: 30.0,
+            volumetric_intensity: 0.005,
         },
     }
 }

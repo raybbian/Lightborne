@@ -63,11 +63,6 @@ impl Plugin for DeferredLightingPlugin {
                     Node2d::EndMainPass,
                 ),
             )
-            // .add_systems(
-            //     Render,
-            //     batch_and_prepare_binned_render_phase::<DeferredLighting2d, Mesh2dPipeline>
-            //         .in_set(RenderSet::PrepareResources),
-            // )
             .add_systems(
                 Render,
                 (

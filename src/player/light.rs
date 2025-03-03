@@ -134,6 +134,7 @@ pub fn shoot_light(
         ))
         .insert(PointLight2d {
             color: player_inventory.current_color.lighting_color().extend(1.0),
+            half_length: 0.0,
             radius: 30.0,
             volumetric_intensity: 0.0,
         })

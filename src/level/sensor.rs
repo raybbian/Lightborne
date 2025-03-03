@@ -103,8 +103,9 @@ pub fn sensor_point_light(entity_instance: &EntityInstance) -> PointLight2d {
 
     PointLight2d {
         color: light_color.lighting_color().extend(0.5),
+        half_length: 0.0,
         radius: 30.0,
-        volumetric_intensity: 0.0,
+        volumetric_intensity: 0.005,
     }
 }
 
