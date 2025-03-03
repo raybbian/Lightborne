@@ -69,14 +69,14 @@ impl DustSurface {
 
     fn spawn_interval(&self) -> Duration {
         Duration::from_secs_f32(match self {
-            Self::Wall => 0.03,
+            Self::Wall => 0.05,
             Self::Crystal => 0.06,
         })
     }
 
     fn splash_amount(&self) -> usize {
         match self {
-            Self::Wall => 10,
+            Self::Wall => 7,
             Self::Crystal => 2,
         }
     }
@@ -97,11 +97,11 @@ impl DustSurface {
         match self {
             Self::Wall => Vec2::new(
                 rand::random_range(-1.0..1.0) * 20.0,
-                rand::random_range(20.0..50.0),
+                rand::random_range(10.0..40.0),
             ),
             Self::Crystal => Vec2::new(
                 rand::random_range(-1.0..1.0) * 10.0,
-                rand::random_range(10.0..40.0),
+                rand::random_range(8.0..30.0),
             ),
         }
     }
