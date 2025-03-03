@@ -11,6 +11,7 @@ use input::{init_cursor_world_coords, update_cursor_world_coords};
 use level::LevelManagementPlugin;
 use light::LightManagementPlugin;
 use lighting::LightingPlugin;
+use particle::ParticlePlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
 use shared::{GameState, ResetLevel};
@@ -23,6 +24,7 @@ mod input;
 mod level;
 mod light;
 mod lighting;
+mod particle;
 mod pause;
 mod player;
 mod shared;
@@ -56,6 +58,7 @@ fn main() {
         .add_plugins(PlayerManagementPlugin)
         .add_plugins(LevelManagementPlugin)
         .add_plugins(LightManagementPlugin)
+        .add_plugins(ParticlePlugin)
         .add_plugins(PausePlugin)
         .add_plugins(CameraPlugin)
         .add_plugins(LightingPlugin)

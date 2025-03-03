@@ -59,7 +59,7 @@ pub struct CrystalColor {
 pub struct Crystal {
     color: CrystalColor,
     init_active: bool,
-    active: bool,
+    pub active: bool,
 }
 
 /// Identifier [`Component`] used to label the ID of white crystals
