@@ -106,7 +106,7 @@ fn setup_camera(
         Camera2d,
         MainCamera,
         AmbientLight2d {
-            color: Vec4::new(1.0, 1.0, 1.0, 0.25),
+            color: Vec4::new(1.0, 1.0, 1.0, 0.4),
         },
         Camera {
             hdr: true,

@@ -42,7 +42,7 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
             combine_rule: CoefficientCombineRule::Min,
         },
         light_inventory: PlayerLightInventory::default(),
-        point_lighting: LineLight2d::point(Vec4::new(1.0, 1.0, 1.0, 1.0), 40.0, 0.005),
+        point_lighting: LineLight2d::point(Vec4::new(1.0, 1.0, 1.0, 1.0), 50.0, 0.008),
         animation_type: PlayerAnimationType::Idle,
         animation_config: AnimationConfig::from(PlayerAnimationType::Idle),
     }

@@ -101,7 +101,7 @@ pub fn sensor_point_light(entity_instance: &EntityInstance) -> LineLight2d {
         .expect("light_color needs to be an enum field on all buttons")
         .into();
 
-    LineLight2d::point(light_color.lighting_color().extend(0.5), 35.0, 0.005)
+    LineLight2d::point(light_color.lighting_color().extend(0.5), 35.0, 0.008)
 }
 
 /// [`System`] that resets the [`LightSensor`]s when a [`LevelSwitchEvent`] is received.

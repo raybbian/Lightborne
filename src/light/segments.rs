@@ -91,7 +91,7 @@ pub fn insert_line_lights(
             color: segment.color.lighting_color().extend(1.0),
             half_length: 10.0,
             radius: 20.0,
-            volumetric_intensity: 0.005,
+            volumetric_intensity: 0.008,
         });
     }
 }
