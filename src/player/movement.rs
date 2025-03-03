@@ -54,9 +54,6 @@ pub fn crouch_player(
     };
 
     // TODO: fix colliders (both player and hurtbox)
-
-    // TODO: fix colliders (both player and hurtbox)
-
     if keys.just_pressed(KeyCode::KeyS) && !player.crouching {
         // decrease size by half
         player.crouching = true;
