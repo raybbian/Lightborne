@@ -21,8 +21,6 @@ jobs:
   # Build for wasm
   release-wasm:
     runs-on: ubuntu-latest
-    env:
-      RUSTFLAGS: '--cfg getrandom_backend="wasm_js"'
     steps:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
@@ -33,13 +31,13 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Build
-        run: |
-          cargo build --release --target wasm32-unknown-unknown
-
       - name: install wasm-bindgen-cli
         run: |
           cargo install wasm-bindgen-cli
+
+      - name: Build
+        run: |
+          RUSTFLAGS='--cfg getrandom_backend="wasm_js"' cargo build --release --target wasm32-unknown-unknown
 
       - name: Prepare package
         run: |
