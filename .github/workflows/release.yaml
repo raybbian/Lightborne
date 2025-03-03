@@ -32,13 +32,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-      - name: install wasm-bindgen-cli
-        run: |
-          cargo install wasm-bindgen-cli
 
       - name: Build
         run: |
           cargo build --release --target wasm32-unknown-unknown
+
+      - name: install wasm-bindgen-cli
+        run: |
+          cargo install wasm-bindgen-cli
 
       - name: Prepare package
         run: |
