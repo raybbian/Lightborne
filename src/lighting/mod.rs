@@ -12,7 +12,7 @@ use bevy::{
 
 pub use ambient_light::AmbientLight2d;
 pub use line_light::LineLight2d;
-pub use occluder::Occluder2d;
+pub use occluder::{Occluder2d, Occluder2dGroups};
 
 use ambient_light::AmbientLight2dPlugin;
 use line_light::LineLight2dPlugin;

@@ -40,6 +40,7 @@ impl Plugin for Occluder2dPipelinePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(UniformComponentPlugin::<ExtractOccluder2d>::default())
             .add_plugins(ExtractComponentPlugin::<Occluder2d>::default())
+            .add_plugins(ExtractComponentPlugin::<Occluder2dGroups>::default())
             .add_systems(
                 PostUpdate,
                 (
@@ -70,6 +71,35 @@ impl Plugin for Occluder2dPipelinePlugin {
         render_app
             .init_resource::<Occluder2dPipeline>()
             .init_resource::<Occluder2dBuffers>();
+    }
+}
+
+/// Add to line lights and occluders to mark which occluders should occlude which line lights.
+/// An occluder will only occlude a line light if (line light's occluder mask) & (occluder
+/// occluder mask) is not zero.
+#[derive(Component, ExtractComponent, Clone, Copy)]
+pub struct Occluder2dGroups(pub u32);
+
+impl Occluder2dGroups {
+    pub const NONE: Self = Self(0);
+    pub const ALL: Self = Self(!0);
+
+    pub fn group(layer: u32) -> Self {
+        Self(1 << layer)
+    }
+
+    pub fn from_groups(layers: &[u32]) -> Self {
+        let mut mask = 0;
+        for i in layers {
+            mask |= 1 << i;
+        }
+        Self(mask)
+    }
+}
+
+impl Default for Occluder2dGroups {
+    fn default() -> Self {
+        Self::ALL
     }
 }
 

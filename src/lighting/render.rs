@@ -34,7 +34,7 @@ use super::{
         SetLineLight2dBindGroup,
     },
     occluder::{
-        DrawOccluder2d, ExtractOccluder2d, Occluder2dBounds, Occluder2dPipeline,
+        DrawOccluder2d, ExtractOccluder2d, Occluder2dBounds, Occluder2dGroups, Occluder2dPipeline,
         OccluderCountTexture, SetOccluder2dBindGroup,
     },
     AmbientLight2d, LineLight2d, Occluder2d,
@@ -148,8 +148,8 @@ pub fn queue_deferred_lighting(
     occluder_pipeline: Res<Occluder2dPipeline>,
     line_light_pipeline: Res<LineLight2dPipeline>,
     ambient_light_pipeline: Res<AmbientLight2dPipeline>,
-    q_line_lights: Query<&LineLight2dBounds, With<ExtractLineLight2d>>,
-    q_occluder: Query<&Occluder2dBounds, With<ExtractOccluder2d>>,
+    q_line_lights: Query<(&LineLight2dBounds, Option<&Occluder2dGroups>), With<ExtractLineLight2d>>,
+    q_occluder: Query<(&Occluder2dBounds, Option<&Occluder2dGroups>), With<ExtractOccluder2d>>,
     mut deferred_lighting_phases: ResMut<ViewSortedRenderPhases<DeferredLighting2d>>,
     views: Query<(Entity, &MainEntity, &RenderVisibleEntities), With<AmbientLight2d>>,
 ) {
@@ -212,9 +212,11 @@ pub fn queue_deferred_lighting(
 
         // Start rendering lights
         for (pl_e, pl_me) in visible_entities.iter::<With<LineLight2d>>() {
-            let Ok(light_bounds) = q_line_lights.get(*pl_e) else {
+            let Ok((light_bounds, light_group)) = q_line_lights.get(*pl_e) else {
                 continue;
             };
+            let light_group = light_group.copied().unwrap_or(Occluder2dGroups::default());
+
             // Set bind group 2 - line light uniform
             add_phase_item(
                 line_light_pipeline.pipeline_id,
@@ -222,14 +224,26 @@ pub fn queue_deferred_lighting(
                 (*pl_e, *pl_me),
             );
 
-            // Render occluder shadows
+            // filter occluders
+            let mut occluders: Vec<(Entity, MainEntity)> = vec![];
             for (ocl_e, ocl_me) in visible_entities.iter::<With<Occluder2d>>() {
-                let Ok(occluder_bounds) = q_occluder.get(*ocl_e) else {
+                let Ok((occluder_bounds, occluder_group)) = q_occluder.get(*ocl_e) else {
                     continue;
                 };
+                let occluder_group = occluder_group
+                    .copied()
+                    .unwrap_or(Occluder2dGroups::default());
+                if occluder_group.0 & light_group.0 == 0 {
+                    continue;
+                }
                 if !occluder_bounds.visible_from_line_light(light_bounds) {
                     continue;
                 }
+                occluders.push((*ocl_e, *ocl_me));
+            }
+
+            // Render occluder shadows
+            for (ocl_e, ocl_me) in occluders.iter() {
                 add_phase_item(
                     occluder_pipeline.shadow_pipeline_id,
                     render_occluder,
@@ -238,13 +252,7 @@ pub fn queue_deferred_lighting(
             }
 
             // Cutout occluder bodies
-            for (ocl_e, ocl_me) in visible_entities.iter::<With<Occluder2d>>() {
-                let Ok(occluder_bounds) = q_occluder.get(*ocl_e) else {
-                    continue;
-                };
-                if !occluder_bounds.visible_from_line_light(light_bounds) {
-                    continue;
-                }
+            for (ocl_e, ocl_me) in occluders.iter() {
                 add_phase_item(
                     occluder_pipeline.cutout_pipeline_id,
                     render_occluder,
