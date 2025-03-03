@@ -8,7 +8,7 @@ use crate::{
     level::CurrentLevel,
     light::{
         segments::{play_light_beam, PrevLightBeamPlayback},
-        LightBeamSource, LightColor,
+        LightBeamSource, LightColor, LightSourceZMarker,
     },
     lighting::LineLight2d,
 };
@@ -81,7 +81,6 @@ pub fn handle_color_switch(
         return;
     };
 
-    // TODO: refactor this code
     let binds: [(KeyCode, LightColor); 4] = [
         (KeyCode::Digit1, LightColor::Green),
         (KeyCode::Digit2, LightColor::Red),
@@ -108,10 +107,14 @@ pub fn should_shoot_light<const V: bool>(
 pub fn shoot_light(
     mut commands: Commands,
     mut q_player: Query<(&Transform, &mut PlayerLightInventory), With<PlayerMarker>>,
+    q_light_source_z: Query<&Transform, With<LightSourceZMarker>>,
     q_cursor: Query<&CursorWorldCoords>,
     asset_server: Res<AssetServer>,
 ) {
     let Ok((player_transform, mut player_inventory)) = q_player.get_single_mut() else {
+        return;
+    };
+    let Ok(light_source_z) = q_light_source_z.get_single() else {
         return;
     };
     let Ok(cursor_pos) = q_cursor.get_single() else {
@@ -131,7 +134,8 @@ pub fn shoot_light(
         return;
     }
 
-    let mut source_transform = Transform::from_translation(ray_pos.extend(1.0)); //hardcode hack fix
+    let mut source_transform =
+        Transform::from_translation(ray_pos.extend(light_source_z.translation.z));
     source_transform.rotate_z(ray_dir.to_angle());
     let mut source_sprite = Sprite::from_image(asset_server.load("light/compass.png"));
     source_sprite.color = Color::srgb(2.0, 2.0, 2.0);
@@ -151,12 +155,11 @@ pub fn shoot_light(
         .insert(PrevLightBeamPlayback::from_color(
             player_inventory.current_color,
         ))
-        .insert(LineLight2d {
-            color: player_inventory.current_color.lighting_color().extend(1.0),
-            half_length: 0.0,
-            radius: 30.0,
-            volumetric_intensity: 0.0,
-        })
+        .insert(LineLight2d::point(
+            player_inventory.current_color.lighting_color().extend(1.0),
+            30.0,
+            0.0,
+        ))
         .insert(source_sprite)
         .insert(source_transform)
         .with_child(outer_source_sprite);

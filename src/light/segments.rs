@@ -4,7 +4,7 @@ use enum_map::EnumMap;
 
 use super::{
     render::{LightMaterial, LightRenderData},
-    LightBeamSource, LightColor, LIGHT_SPEED,
+    LightBeamSource, LightColor, LightSegmentZMarker, LIGHT_SPEED,
 };
 use crate::{level::sensor::LightSensor, lighting::LineLight2d, shared::GroupLabel};
 
@@ -237,16 +237,23 @@ pub fn simulate_light_sources(
     mut q_light_sources: Query<(&mut LightBeamSource, &mut PrevLightBeamPlayback)>,
     mut q_rapier: Query<&mut RapierContext>,
     mut q_light_sensor: Query<&mut LightSensor>,
-    mut q_segments: Query<(
-        &mut Transform,
-        &mut Visibility,
-        &mut LineLight2d,
-        &LightSegment,
-    )>,
+    mut q_segments: Query<
+        (
+            &mut Transform,
+            &mut Visibility,
+            &mut LineLight2d,
+            &LightSegment,
+        ),
+        Without<LightSegmentZMarker>,
+    >,
+    q_light_segment_z: Query<&Transform, With<LightSegmentZMarker>>,
     segment_cache: Res<LightSegmentCache>,
     light_bounce_sfx: Local<LightBounceSfx>,
 ) {
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
+        return;
+    };
+    let Ok(light_segment_z) = q_light_segment_z.get_single() else {
         return;
     };
     // Reborrow!!!
@@ -355,6 +362,10 @@ pub fn simulate_light_sources(
                 *c_transform = Transform::default();
                 *c_visibility = Visibility::Hidden;
             }
+
+            // match the z index with the dummy entity spawned by ldtk to match the stupid ldtk
+            // plugin's arbitrary z-indexing order
+            c_transform.translation.z = light_segment_z.translation.z;
         }
     }
 }

@@ -2,6 +2,7 @@ use bevy::{
     prelude::*,
     sprite::{AlphaMode2d, Material2dPlugin},
 };
+use bevy_ecs_ldtk::prelude::*;
 
 use enum_map::Enum;
 use render::{LightMaterial, LightRenderData};
@@ -29,6 +30,8 @@ impl Plugin for LightManagementPlugin {
         app.add_plugins(Material2dPlugin::<LightMaterial>::default())
             .init_resource::<LightRenderData>()
             .init_resource::<LightSegmentCache>()
+            .register_ldtk_entity::<LightSegmentZBundle>("LightSegmentZMarker")
+            .register_ldtk_entity::<LightSourceZBundle>("LightSourceZMarker")
             .add_systems(
                 FixedUpdate,
                 (simulate_light_sources, tick_light_sources).in_set(LevelSystems::Simulation),
@@ -36,6 +39,28 @@ impl Plugin for LightManagementPlugin {
             .add_systems(Update, insert_line_lights)
             .add_systems(Update, cleanup_light_sources.in_set(LevelSystems::Reset));
     }
+}
+
+#[derive(Default, Component)]
+pub struct LightSourceZMarker;
+
+#[derive(Bundle, LdtkEntity)]
+pub struct LightSourceZBundle {
+    #[default]
+    marker: LightSourceZMarker,
+    #[worldly]
+    worldly: Worldly,
+}
+
+#[derive(Default, Component)]
+pub struct LightSegmentZMarker;
+
+#[derive(Bundle, LdtkEntity)]
+pub struct LightSegmentZBundle {
+    #[default]
+    marker: LightSegmentZMarker,
+    #[worldly]
+    worldly: Worldly,
 }
 
 /// [`Enum`] for each of the light colors.
