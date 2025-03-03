@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use super::{spawn::PlayerHurtMarker, PlayerMarker};
+use super::PlayerMarker;
 
 /// The number of [`FixedUpdate`] steps the player can jump for after pressing the spacebar.
 const SHOULD_JUMP_TICKS: isize = 8;
@@ -25,20 +25,11 @@ const PLAYER_GRAVITY: f32 = 0.15;
 #[derive(Component, Default)]
 pub struct PlayerMovement {
     /// Holds information that is passed into the rapier character controller's translation
-    velocity: Vec2,
+    pub velocity: Vec2,
     pub crouching: bool,
     should_jump_ticks_remaining: isize,
     coyote_time_ticks_remaining: isize,
     jump_boost_ticks_remaining: isize,
-}
-
-#[derive(Component, Default, PartialEq, Eq)]
-pub enum PlayerState {
-    #[default]
-    Idle,
-    Jumping,
-    Falling,
-    Moving,
 }
 
 /// [`System`] that is run the frame the space bar is pressed. Allows the player to jump for the
@@ -53,51 +44,23 @@ pub fn queue_jump(mut q_player: Query<&mut PlayerMovement, With<PlayerMarker>>) 
 /// [`System`] that is run on [`Update`] to crouch player
 pub fn crouch_player(
     // query transform
-    mut q_player: Query<(&mut PlayerMovement, &mut Transform), With<PlayerMarker>>,
-    mut q_hitbox: Query<&mut Transform, (With<PlayerHurtMarker>, Without<PlayerMarker>)>,
+    mut q_player: Query<(&mut PlayerMovement, &mut Collider), With<PlayerMarker>>,
     //ButtonInput<KeyCode> resource (access resource)
     keys: Res<ButtonInput<KeyCode>>,
 ) {
     // ensure only 1 candidate to match query; let Ok = pattern matching
-    let Ok((mut player, mut transform)) = q_player.get_single_mut() else {
+    let Ok((mut player, mut _collider)) = q_player.get_single_mut() else {
         return;
     };
-    let Ok(mut hitbox_transform) = q_hitbox.get_single_mut() else {
-        return;
-    };
-    hitbox_transform.translation = Vec3::new(0., 0., 0.);
+
+    // TODO: fix colliders (both player and hurtbox)
 
     if keys.just_pressed(KeyCode::KeyS) && !player.crouching {
         // decrease size by half
-        transform.scale.y *= 0.5;
-        transform.translation.y -= 5.0;
         player.crouching = true;
     }
     if keys.just_released(KeyCode::KeyS) && player.crouching {
-        transform.scale.y *= 2.0;
-        transform.translation.y += 5.0;
         player.crouching = false;
-    }
-}
-
-pub fn update_player_state(
-    mut q_player: Query<
-        (&mut PlayerState, &KinematicCharacterControllerOutput),
-        With<PlayerMarker>,
-    >,
-) {
-    let Ok((mut state, output)) = q_player.get_single_mut() else {
-        return;
-    };
-
-    if output.effective_translation.y > 0.0 {
-        *state = PlayerState::Jumping;
-    } else if output.effective_translation.y <= 0.0 && !output.grounded {
-        *state = PlayerState::Falling;
-    } else if output.grounded && output.effective_translation.x.abs() > 0.1 {
-        *state = PlayerState::Moving;
-    } else if output.grounded {
-        *state = PlayerState::Idle;
     }
 }
 

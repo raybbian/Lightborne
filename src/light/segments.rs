@@ -15,7 +15,7 @@ pub struct LightSegment {
 }
 
 /// [`Bundle`] used in the initialization of the [`LightSegmentCache`] to spawn segment entities.
-#[derive(Bundle, Debug, Default, Clone)]
+#[derive(Bundle, Debug, Clone, Default)]
 pub struct LightSegmentBundle {
     pub segment: LightSegment,
     pub mesh: Mesh2d,
@@ -131,6 +131,7 @@ pub struct LightBeamIntersection {
 pub struct LightBeamPlayback {
     pub intersections: Vec<LightBeamIntersection>,
     pub end_point: Option<Vec2>,
+    pub elapsed_time: f32,
 }
 
 impl LightBeamPlayback {
@@ -188,6 +189,7 @@ pub fn play_light_beam(
     let mut playback = LightBeamPlayback {
         intersections: vec![],
         end_point: None,
+        elapsed_time: 0.0,
     };
 
     for _ in 0..source.color.num_bounces() + 1 {
@@ -195,16 +197,22 @@ pub fn play_light_beam(
             rapier_context.cast_ray_and_get_normal(ray_pos, ray_dir, remaining_time, true, ray_qry)
         else {
             let final_point = ray_pos + ray_dir * remaining_time;
+            playback.elapsed_time += remaining_time;
             playback.end_point = Some(final_point);
             break;
         };
 
+        if intersection.time_of_impact < 0.01 {
+            break;
+        }
+
+        playback.elapsed_time += intersection.time_of_impact;
         remaining_time -= intersection.time_of_impact;
 
         playback.intersections.push(LightBeamIntersection {
             entity,
             point: intersection.point,
-            time: source.time_traveled - remaining_time,
+            time: playback.elapsed_time,
         });
 
         ray_pos = intersection.point;
@@ -254,8 +262,7 @@ pub fn simulate_light_sources(
             let prev_x = prev_playback.intersections[i];
             let new_x = playback.intersections[i];
 
-            let is_same_intersection =
-                prev_x.is_some_and(|prev_x| prev_x.point.abs_diff_eq(new_x.point, 1.0));
+            let is_same_intersection = prev_x.is_some_and(|prev_x| prev_x.entity == new_x.entity);
 
             // diff intersection
             if !is_same_intersection {
@@ -315,6 +322,10 @@ pub fn simulate_light_sources(
                     *intersection = None;
                 }
                 break;
+            } else {
+                // keep on updating the previous intersection buffer because this could be a moving
+                // platform
+                prev_playback.intersections[i] = Some(new_x);
             }
         }
 

@@ -10,7 +10,7 @@ use segments::{
     LightSegmentCache, PrevLightBeamPlayback,
 };
 
-use crate::{level::LevelSystems, shared::ResetLevel};
+use crate::level::LevelSystems;
 
 mod render;
 pub mod segments;
@@ -34,7 +34,7 @@ impl Plugin for LightManagementPlugin {
                 (simulate_light_sources, tick_light_sources).in_set(LevelSystems::Simulation),
             )
             .add_systems(Update, insert_line_lights)
-            .add_systems(Update, cleanup_light_sources.run_if(on_event::<ResetLevel>));
+            .add_systems(Update, cleanup_light_sources.in_set(LevelSystems::Reset));
     }
 }
 
@@ -83,8 +83,8 @@ impl LightColor {
 
     pub fn lighting_color(&self) -> Vec3 {
         match self {
-            LightColor::Red => Vec3::new(1.0, 0.1, 0.1),
-            LightColor::Green => Vec3::new(0.0, 1.0, 0.0),
+            LightColor::Red => Vec3::new(0.8, 0.2, 0.1),
+            LightColor::Green => Vec3::new(0.0, 0.9, 0.5),
             LightColor::White => Vec3::new(0.8, 0.8, 0.5),
             LightColor::Blue => Vec3::new(0.0, 0.0, 1.0),
         }
@@ -92,11 +92,24 @@ impl LightColor {
 
     pub fn light_beam_color(&self) -> Color {
         match self {
-            LightColor::Red => Color::srgb(5.0, 0.0, 3.0),
-            LightColor::Green => Color::srgb(3.0, 5.0, 0.0),
+            LightColor::Red => Color::srgb(4.0, 1.5, 1.0),
+            LightColor::Green => Color::srgb(1.0, 4.0, 3.0),
             LightColor::White => Color::srgb(2.0, 2.0, 2.0),
             LightColor::Blue => Color::srgb(1.0, 2.0, 4.0),
         }
+    }
+
+    pub fn indicator_color(&self) -> Color {
+        match self {
+            LightColor::Red => Color::srgb(1.0, 0.375, 0.25),
+            LightColor::Green => Color::srgb(0.25, 1.0, 0.75),
+            LightColor::White => Color::srgb(0.5, 0.5, 0.5),
+            LightColor::Blue => Color::srgb(0.25, 0.5, 1.0),
+        }
+    }
+
+    pub fn indicator_dimmed_color(&self) -> Color {
+        self.indicator_color().with_alpha(0.15)
     }
 
     pub fn button_color(&self) -> Color {

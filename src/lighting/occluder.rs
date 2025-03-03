@@ -74,7 +74,7 @@ impl Plugin for Occluder2dPipelinePlugin {
 }
 
 #[derive(Component)]
-#[require(Transform)]
+#[require(Transform, Visibility)]
 pub struct Occluder2d {
     pub half_size: Vec2,
 }

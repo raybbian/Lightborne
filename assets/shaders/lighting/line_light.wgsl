@@ -57,7 +57,7 @@ fn line_light_color(uv: vec2<f32>, screen_uv: vec2<f32>) -> vec4<f32> {
     let one_tex_uv = uv * 2.0 - vec2<f32>(1.0); // -1 to 1
     let base_color = textureSample(unlit_image, unlit_sampler, screen_uv);
 
-    let distance = min(length(one_tex_uv) * base_color.a, 1.0);
+    let distance = min(length(one_tex_uv), 1.0);
     // let angle = abs(atan2(one_tex_uv.y, one_tex_uv.x));
 
     let radial_fall_off = pow(1.0 - distance, 2.0);

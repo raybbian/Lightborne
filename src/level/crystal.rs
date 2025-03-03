@@ -5,11 +5,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rapier2d::prelude::*;
 
-use crate::{
-    light::LightColor,
-    lighting::Occluder2d,
-    shared::{GroupLabel, ResetLevel},
-};
+use crate::{light::LightColor, lighting::Occluder2d, shared::GroupLabel};
 
 use super::{entity::HurtMarker, CurrentLevel, LevelSystems};
 
@@ -36,7 +32,7 @@ impl Plugin for CrystalPlugin {
                 Update,
                 (
                     on_crystal_changed.in_set(LevelSystems::Simulation),
-                    reset_crystals.run_if(on_event::<ResetLevel>),
+                    reset_crystals.in_set(LevelSystems::Reset),
                 ),
             );
 
@@ -63,7 +59,7 @@ pub struct CrystalColor {
 pub struct Crystal {
     color: CrystalColor,
     init_active: bool,
-    active: bool,
+    pub active: bool,
 }
 
 /// Identifier [`Component`] used to label the ID of white crystals
@@ -210,14 +206,12 @@ pub struct CrystalBundle {
     crystal: Crystal,
     #[from_int_grid_cell]
     cell: IntGridCell,
-    // collider_based_occluder: ColliderBasedOccluder,
     hurt_marker: HurtMarker,
 }
 
 impl Default for CrystalBundle {
     fn default() -> Self {
         Self {
-            // collider_based_occluder: ColliderBasedOccluder { indent: 2.0 },
             crystal: Crystal::default(),
             cell: IntGridCell::default(),
             hurt_marker: HurtMarker,

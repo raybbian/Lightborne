@@ -5,6 +5,7 @@ use itertools::Itertools;
 
 use crate::{
     input::CursorWorldCoords,
+    level::CurrentLevel,
     light::{
         segments::{play_light_beam, PrevLightBeamPlayback},
         LightBeamSource, LightColor,
@@ -18,20 +19,23 @@ use super::PlayerMarker;
 /// that color remaining.
 #[derive(Component, Default, Debug)]
 pub struct PlayerLightInventory {
-    current_color: LightColor,
+    /// set to true when LMB is clicked, set to false when RMB is clicked/LMB is released
+    should_shoot: bool,
+    pub current_color: LightColor,
     /// Is true if the color is available
-    sources: EnumMap<LightColor, bool>,
+    pub sources: EnumMap<LightColor, bool>,
 }
 
 impl PlayerLightInventory {
     pub fn colors(colors: &[LightColor]) -> Self {
         PlayerLightInventory {
+            should_shoot: false,
             current_color: colors[0],
             sources: enum_map! {
-                LightColor::Green => colors.contains(&LightColor::Green),
-                LightColor::Blue => colors.contains(&LightColor::Blue),
-                LightColor::Red => colors.contains(&LightColor::Red),
-                LightColor::White => colors.contains(&LightColor::White),
+                LightColor::Green =>true,
+                LightColor::Blue => true,
+                LightColor::Red => true,
+                LightColor::White =>true,
             },
         }
     }
@@ -71,22 +75,34 @@ pub fn despawn_angle_indicator(mut commands: Commands, q_angle: Query<Entity, Wi
 pub fn handle_color_switch(
     keys: Res<ButtonInput<KeyCode>>,
     mut q_inventory: Query<&mut PlayerLightInventory>,
+    current_level: Res<CurrentLevel>,
 ) {
     let Ok(mut inventory) = q_inventory.get_single_mut() else {
         return;
     };
-    if keys.just_pressed(KeyCode::Digit1) {
-        inventory.current_color = LightColor::Green;
+
+    // TODO: refactor this code
+    let binds: [(KeyCode, LightColor); 4] = [
+        (KeyCode::Digit1, LightColor::Green),
+        (KeyCode::Digit2, LightColor::Red),
+        (KeyCode::Digit3, LightColor::White),
+        (KeyCode::Digit4, LightColor::Blue),
+    ];
+
+    for (key, color) in binds {
+        if keys.just_pressed(key) && current_level.allowed_colors.contains(&color) {
+            inventory.current_color = color;
+        }
     }
-    if keys.just_pressed(KeyCode::Digit2) {
-        inventory.current_color = LightColor::Red;
-    }
-    if keys.just_pressed(KeyCode::Digit3) {
-        inventory.current_color = LightColor::White;
-    }
-    if keys.just_pressed(KeyCode::Digit4) {
-        inventory.current_color = LightColor::Blue;
-    }
+}
+
+pub fn should_shoot_light<const V: bool>(
+    mut q_player: Query<&mut PlayerLightInventory, With<PlayerMarker>>,
+) {
+    let Ok(mut inventory) = q_player.get_single_mut() else {
+        return;
+    };
+    inventory.should_shoot = V;
 }
 
 pub fn shoot_light(
@@ -101,6 +117,9 @@ pub fn shoot_light(
     let Ok(cursor_pos) = q_cursor.get_single() else {
         return;
     };
+    if !player_inventory.should_shoot {
+        return;
+    }
     if !player_inventory.sources[player_inventory.current_color] {
         return;
     }
@@ -146,6 +165,7 @@ pub fn shoot_light(
     // need to "reborrow" it to turn it into &mut. See https://bevy-cheatbook.github.io/pitfalls/split-borrows.html
     let player_inventory = &mut *player_inventory;
     player_inventory.sources[player_inventory.current_color] = false;
+    player_inventory.should_shoot = false;
 }
 
 /// [`System`] that uses [`Gizmos`] to preview the light path while the left mouse button is held
@@ -167,6 +187,9 @@ pub fn preview_light_path(
     let Ok(cursor_pos) = q_cursor.get_single() else {
         return;
     };
+    if !inventory.should_shoot {
+        return;
+    }
     if !inventory.sources[inventory.current_color] {
         return;
     }
