@@ -21,7 +21,8 @@ jobs:
   # Build for wasm
   release-wasm:
     runs-on: ubuntu-latest
-
+    env:
+      RUSTFLAGS: '--cfg getrandom_backend="wasm_js"'
     steps:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
