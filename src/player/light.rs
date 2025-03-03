@@ -10,6 +10,7 @@ use crate::{
         segments::{play_light_beam, PrevLightBeamPlayback},
         LightBeamSource, LightColor,
     },
+    lighting::LineLight2d,
 };
 
 use super::PlayerMarker;
@@ -150,6 +151,12 @@ pub fn shoot_light(
         .insert(PrevLightBeamPlayback::from_color(
             player_inventory.current_color,
         ))
+        .insert(LineLight2d {
+            color: player_inventory.current_color.lighting_color().extend(1.0),
+            half_length: 0.0,
+            radius: 30.0,
+            volumetric_intensity: 0.0,
+        })
         .insert(source_sprite)
         .insert(source_transform)
         .with_child(outer_source_sprite);

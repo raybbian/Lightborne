@@ -4,9 +4,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{
-    lighting::occluder::ColliderBasedOccluder, particle::dust::DustSurface, shared::GroupLabel,
-};
+use crate::{lighting::Occluder2d, particle::dust::DustSurface, shared::GroupLabel};
 
 /// Marker [`Component`] representing a wall.
 #[derive(Default, Component)]
@@ -157,50 +155,44 @@ pub fn spawn_wall_collision(
                 }
 
                 commands.entity(level_entity).with_children(|level| {
-                    level
-                        .spawn(Name::new("Wall Colliders"))
-                        .insert(Transform::default())
-                        .with_children(|colliders| {
-                            // Spawn colliders for every rectangle..
-                            // Making the collider a child of the level serves two purposes:
-                            // 1. Adjusts the transforms to be relative to the level for free
-                            // 2. the colliders will be despawned automatically when levels unload
-                            for wall_rect in wall_rects {
-                                colliders
-                                    .spawn_empty()
-                                    .insert(Name::new("Wall Collider"))
-                                    .insert(Collider::cuboid(
-                                        (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
-                                            * grid_size as f32
-                                            / 2.,
-                                        (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
-                                            * grid_size as f32
-                                            / 2.,
-                                    ))
-                                    .insert(CollisionGroups::new(
-                                        GroupLabel::TERRAIN,
-                                        GroupLabel::PLAYER_COLLIDER
-                                            | GroupLabel::LIGHT_RAY
-                                            | GroupLabel::WHITE_RAY
-                                            | GroupLabel::STRAND
-                                            | GroupLabel::BLUE_RAY,
-                                    ))
-                                    .insert(RigidBody::Fixed)
-                                    .insert(Friction::new(1.0))
-                                    .insert(Transform::from_xyz(
-                                        (wall_rect.left + wall_rect.right + 1) as f32
-                                            * grid_size as f32
-                                            / 2.,
-                                        (wall_rect.bottom + wall_rect.top + 1) as f32
-                                            * grid_size as f32
-                                            / 2.,
-                                        0.,
-                                    ))
-                                    .insert(ColliderBasedOccluder::default())
-                                    .insert(DustSurface::Wall)
-                                    .insert(GlobalTransform::default());
-                            }
-                        });
+                    // Spawn colliders for every rectangle..
+                    // Making the collider a child of the level serves two purposes:
+                    // 1. Adjusts the transforms to be relative to the level for free
+                    // 2. the colliders will be despawned automatically when levels unload
+                    for wall_rect in wall_rects {
+                        let collider_dims = (
+                            (wall_rect.right as f32 - wall_rect.left as f32 + 1.)
+                                * grid_size as f32
+                                / 2.,
+                            (wall_rect.top as f32 - wall_rect.bottom as f32 + 1.)
+                                * grid_size as f32
+                                / 2.,
+                        );
+                        level
+                            .spawn_empty()
+                            .insert(Name::new("Wall Collider"))
+                            .insert(Collider::cuboid(collider_dims.0, collider_dims.1))
+                            .insert(Occluder2d::new(collider_dims.0, collider_dims.1))
+                            .insert(CollisionGroups::new(
+                                GroupLabel::TERRAIN,
+                                GroupLabel::PLAYER_COLLIDER
+                                    | GroupLabel::LIGHT_RAY
+                                    | GroupLabel::WHITE_RAY
+                                    | GroupLabel::STRAND
+                                    | GroupLabel::BLUE_RAY,
+                            ))
+                            .insert(RigidBody::Fixed)
+                            .insert(Friction::new(1.0))
+                            .insert(Transform::from_xyz(
+                                (wall_rect.left + wall_rect.right + 1) as f32 * grid_size as f32
+                                    / 2.,
+                                (wall_rect.bottom + wall_rect.top + 1) as f32 * grid_size as f32
+                                    / 2.,
+                                0.,
+                            ))
+                            .insert(DustSurface::Wall)
+                            .insert(GlobalTransform::default());
+                    }
                 });
             }
         });

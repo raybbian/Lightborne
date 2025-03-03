@@ -1,332 +1,536 @@
 use bevy::{
-    asset::RenderAssetUsages,
+    core_pipeline::fullscreen_vertex_shader::fullscreen_shader_vertex_state,
+    ecs::{
+        query::{QueryItem, ROQueryItem},
+        system::{
+            lifetimeless::{Read, SRes},
+            SystemParamItem,
+        },
+    },
+    math::{vec3, Affine3, Affine3A},
     prelude::*,
-    render::{mesh::PrimitiveTopology, view::RenderLayers},
+    render::{
+        camera::ExtractedCamera,
+        extract_component::{
+            ComponentUniforms, DynamicUniformIndex, ExtractComponent, ExtractComponentPlugin,
+            UniformComponentPlugin,
+        },
+        primitives::Aabb,
+        render_phase::{PhaseItem, RenderCommand, RenderCommandResult, TrackedRenderPass},
+        render_resource::{binding_types::uniform_buffer, *},
+        renderer::{RenderDevice, RenderQueue},
+        texture::TextureCache,
+        view::{check_visibility, ViewDepthTexture, ViewTarget, VisibilitySystems},
+        Render, RenderApp, RenderSet,
+    },
+    sprite::Mesh2dPipeline,
+    utils::HashMap,
 };
-use bevy_rapier2d::prelude::*;
-
-use crate::camera::MainCamera;
+use bytemuck::{Pod, Zeroable};
 
 use super::{
-    combine_lights,
-    light::{draw_lights, LineLighting, PointLighting},
-    material::FrameMaskMaterial,
-    CombinedLighting, LightingRenderData, FRAMES_LAYER,
+    line_light::{line_light_bind_group_layout, LineLight2dBounds},
+    render::PostProcessRes,
+    AmbientLight2d,
 };
 
-/// [`Component`] that automatically attaches [`Occluder`] components as children of an entity based on the shape of its [`Collider`].
-/// Also automatically removes and reattaches [`Occluder`]s when the [`Collider`] is removed/reattached (e.g. crystals).
-/// Currently only works on cuboid colliders.
-#[derive(Component)]
-pub struct ColliderBasedOccluder {
-    /// How many pixels to reduce the size of the collider by.
-    /// Used mainly to make crystal occluders a bit smaller to allow light to pass through in a cool way.
-    pub indent: f32,
-}
+pub struct Occluder2dPipelinePlugin;
 
-impl Default for ColliderBasedOccluder {
-    fn default() -> Self {
-        Self { indent: 0.0 }
-    }
-}
-
-/// [`Component`] that represents a line that prevents light from passing through.
-/// The two points that make up the line are calculated by adding `point_1_offset` and `point_2_offset`
-/// to the entity's [`Transform`].
-#[derive(Component)]
-#[require(Transform)]
-pub struct Occluder {
-    pub point_1_offset: Vec2,
-    pub point_2_offset: Vec2,
-}
-
-pub struct OccluderPlugin;
-impl Plugin for OccluderPlugin {
+impl Plugin for Occluder2dPipelinePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, spawn_collider_occluders)
-            .add_systems(Update, despawn_collider_occluders)
-            .add_systems(Update, spawn_occluder_renderers)
-            .add_observer(on_remove_occluder_despawn_occluder_renderers)
-            .add_systems(PostUpdate, draw_occluders.after(draw_lights));
+        app.add_plugins(UniformComponentPlugin::<ExtractOccluder2d>::default())
+            .add_plugins(ExtractComponentPlugin::<Occluder2d>::default())
+            .add_systems(
+                PostUpdate,
+                (
+                    calculate_occluder_2d_bounds.in_set(VisibilitySystems::CalculateBounds),
+                    check_visibility::<With<Occluder2d>>.in_set(VisibilitySystems::CheckVisibility),
+                ),
+            );
+
+        let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
+            return;
+        };
+
+        render_app
+            .add_systems(
+                Render,
+                prepare_occluder_count_textures.in_set(RenderSet::PrepareResources),
+            )
+            .add_systems(
+                Render,
+                prepare_occluder_2d_bind_group.in_set(RenderSet::PrepareBindGroups),
+            );
+    }
+
+    fn finish(&self, app: &mut App) {
+        let Some(render_app) = app.get_sub_app_mut(RenderApp) else {
+            return;
+        };
+        render_app
+            .init_resource::<Occluder2dPipeline>()
+            .init_resource::<Occluder2dBuffers>();
     }
 }
 
-/// [`Component`] used to internally to render each occluder. Every time an [`Occluder`] component
-/// is spawned/inserted, 16 [`OccluderRendererBundle`]s are spawned, one to occlude each light source. They are despawned
-/// when the entity is despawned or the [`Occluder`] component is removed.
-///
-/// Note: You shouldn't use this component, use [`Occluder`] instead.
 #[derive(Component)]
-struct OccluderRenderer {
-    pub frame_index: usize,
-    pub occluder: Entity,
+#[require(Transform, Visibility)]
+pub struct Occluder2d {
+    pub half_size: Vec2,
 }
 
-#[derive(Bundle)]
-struct OccluderRendererBundle {
-    occluder_renderer: OccluderRenderer,
-    render_layers: RenderLayers,
-    material: MeshMaterial2d<FrameMaskMaterial>,
-    mesh: Mesh2d,
-    transform: Transform,
-    visibility: Visibility,
-}
-
-impl OccluderRendererBundle {
-    fn new(frame_index: usize, occluder: Entity, render: &Res<LightingRenderData>) -> Self {
-        OccluderRendererBundle {
-            occluder_renderer: OccluderRenderer {
-                frame_index,
-                occluder,
-            },
-            render_layers: FRAMES_LAYER,
-            material: MeshMaterial2d(render.frame_mask_materials[frame_index].clone()),
-            mesh: Mesh2d(render.default_occluder_mesh.clone()),
-            transform: Transform::default(),
-            visibility: Visibility::Visible,
+impl Occluder2d {
+    pub fn new(half_x: f32, half_y: f32) -> Self {
+        Self {
+            half_size: Vec2::new(half_x, half_y),
         }
     }
 }
 
-fn spawn_collider_occluders(
+pub fn calculate_occluder_2d_bounds(
     mut commands: Commands,
-    q_colliders: Query<(Entity, &Collider, &ColliderBasedOccluder), Added<Collider>>,
+    q_light_changed: Query<(Entity, &Occluder2d), Changed<Occluder2d>>,
 ) {
-    for (entity, (point_1, point_2)) in q_colliders
-        .iter()
-        .map(
-            |(entity, collider, collider_based_occluder)| match collider.as_typed_shape() {
-                ColliderView::Cuboid(cub) => {
-                    let (half_x, half_y) = cub.half_extents().into();
-                    let half_x = half_x - collider_based_occluder.indent;
-                    let half_y = half_y - collider_based_occluder.indent;
-                    let four_corners = [(-1., -1.), (-1., 1.), (1., 1.), (1., -1.)]
-                        .map(|(x, y)| Vec2::new(half_x * x, half_y * y));
-                    (
-                        entity,
-                        [
-                            (four_corners[0], four_corners[1]),
-                            (four_corners[1], four_corners[2]),
-                            (four_corners[2], four_corners[3]),
-                            (four_corners[3], four_corners[0]),
-                        ],
-                    )
-                }
-                _ => panic!("Tried adding occluder based on non-cuboid collider"),
-            },
-        )
-        .flat_map(|(entity, sides)| sides.into_iter().map(move |side| (entity, side)))
-    {
-        let occluder = commands
-            .spawn((Occluder {
-                point_1_offset: point_1,
-                point_2_offset: point_2,
-            },))
-            .id();
-        commands.entity(entity).add_child(occluder);
-    }
-}
-
-fn despawn_collider_occluders(
-    mut commands: Commands,
-    mut removed: RemovedComponents<Collider>,
-    q_colliders: Query<(Entity, &Children), With<ColliderBasedOccluder>>,
-    q_occluders: Query<Entity, With<Occluder>>,
-) {
-    for removed_collider_entity in removed.read() {
-        let Ok((collider_entity, children)) = q_colliders.get(removed_collider_entity) else {
-            continue;
+    for (entity, occluder) in q_light_changed.iter() {
+        let aabb = Aabb {
+            center: Vec3::ZERO.into(),
+            half_extents: occluder.half_size.extend(0.0).into(),
         };
-        if collider_entity != removed_collider_entity {
-            continue;
+        commands.entity(entity).try_insert(aabb);
+    }
+}
+
+impl ExtractComponent for Occluder2d {
+    type Out = (ExtractOccluder2d, Occluder2dBounds);
+    type QueryData = (&'static GlobalTransform, &'static Occluder2d);
+    type QueryFilter = ();
+
+    fn extract_component(
+        (transform, occluder): QueryItem<'_, Self::QueryData>,
+    ) -> Option<Self::Out> {
+        // FIXME: should not do calculations in extract
+        let (scale, rotation, translation) = transform.to_scale_rotation_translation();
+        let transform_no_scale =
+            Affine3A::from_scale_rotation_translation(scale.signum(), rotation, translation);
+        let affine = Affine3::from(&transform_no_scale);
+        let (a, b) = affine.inverse_transpose_3x3();
+
+        Some((
+            ExtractOccluder2d {
+                world_from_local: affine.to_transpose(),
+                local_from_world_transpose_a: a,
+                local_from_world_transpose_b: b,
+                half_size: occluder.half_size,
+            },
+            Occluder2dBounds {
+                transform: transform.compute_transform(),
+                half_size: occluder.half_size,
+            },
+        ))
+    }
+}
+
+/// Render world version of [`Occluder2d`].
+#[derive(Component, ShaderType, Clone, Copy, Debug)]
+pub struct ExtractOccluder2d {
+    world_from_local: [Vec4; 3],
+    local_from_world_transpose_a: [Vec4; 2],
+    local_from_world_transpose_b: f32,
+    half_size: Vec2,
+}
+
+#[derive(Component, Clone, Copy)]
+pub struct Occluder2dBounds {
+    pub transform: Transform,
+    pub half_size: Vec2,
+}
+
+impl Occluder2dBounds {
+    pub fn visible_from_line_light(&self, light: &LineLight2dBounds) -> bool {
+        let occluder_pos = self.transform.translation.xy();
+        let min_rect = occluder_pos - self.half_size;
+        let max_rect = occluder_pos + self.half_size;
+
+        let light_pos = light.transform.translation.xy();
+        let closest_point = light_pos.clamp(min_rect, max_rect);
+
+        light_pos.distance_squared(closest_point)
+            <= (light.radius + light.half_length) * (light.radius + light.half_length)
+    }
+}
+
+#[derive(Clone, Copy, Pod, Zeroable)]
+#[repr(C)]
+pub struct Occluder2dVertex {
+    position: Vec3,
+    normal: Vec3,
+}
+
+impl Occluder2dVertex {
+    const fn new(position: Vec3, normal: Vec3) -> Self {
+        Occluder2dVertex { position, normal }
+    }
+}
+
+#[derive(Resource)]
+pub struct Occluder2dBuffers {
+    pub vertices: RawBufferVec<Occluder2dVertex>,
+    pub indices: RawBufferVec<u32>,
+}
+
+const OCCLUDER_2D_NUM_INDICES: u32 = 18;
+
+static VERTICES: [Occluder2dVertex; 8] = [
+    Occluder2dVertex::new(vec3(-1.0, -1.0, 0.0), vec3(-1.0, 0.0, 0.0)),
+    Occluder2dVertex::new(vec3(-1.0, -1.0, 0.0), vec3(0.0, -1.0, 0.0)),
+    Occluder2dVertex::new(vec3(1.0, -1.0, 0.0), vec3(0.0, -1.0, 0.0)),
+    Occluder2dVertex::new(vec3(1.0, -1.0, 0.0), vec3(1.0, 0.0, 0.0)),
+    Occluder2dVertex::new(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 0.0)),
+    Occluder2dVertex::new(vec3(1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0)),
+    Occluder2dVertex::new(vec3(-1.0, 1.0, 0.0), vec3(0.0, 1.0, 0.0)),
+    Occluder2dVertex::new(vec3(-1.0, 1.0, 0.0), vec3(-1.0, 0.0, 0.0)),
+];
+
+static INDICES: [u32; 18] = [0, 1, 2, 2, 3, 4, 4, 5, 6, 6, 7, 0, 0, 2, 4, 4, 6, 0];
+
+impl FromWorld for Occluder2dBuffers {
+    fn from_world(world: &mut World) -> Self {
+        let render_device = world.resource::<RenderDevice>();
+        let render_queue = world.resource::<RenderQueue>();
+
+        let mut vbo = RawBufferVec::new(BufferUsages::VERTEX);
+        let mut ibo = RawBufferVec::new(BufferUsages::INDEX);
+
+        for vtx in &VERTICES {
+            vbo.push(*vtx);
         }
-        for child in children.iter() {
-            let Ok(occluder_entity) = q_occluders.get(*child) else {
-                continue;
-            };
-            commands.entity(occluder_entity).despawn();
+        for index in &INDICES {
+            ibo.push(*index);
+        }
+
+        vbo.write_buffer(render_device, render_queue);
+        ibo.write_buffer(render_device, render_queue);
+
+        Occluder2dBuffers {
+            vertices: vbo,
+            indices: ibo,
         }
     }
 }
 
-fn spawn_occluder_renderers(
-    mut commands: Commands,
-    q_occluders: Query<Entity, Added<Occluder>>,
-    render: Res<LightingRenderData>,
-) {
-    for entity in q_occluders.iter() {
-        for frame_index in 0..16 {
-            commands.spawn(OccluderRendererBundle::new(frame_index, entity, &render));
-        }
-    }
-}
+#[derive(Component)]
+pub struct OccluderCountTexture(pub ViewDepthTexture);
 
-fn on_remove_occluder_despawn_occluder_renderers(
-    removed: Trigger<OnRemove, Occluder>,
-    mut commands: Commands,
-    q_occluder_renderers: Query<(Entity, &OccluderRenderer)>,
-) {
-    let removed_occluder = removed.entity();
-    for (entity, occluder_renderer) in q_occluder_renderers.iter() {
-        if occluder_renderer.occluder == removed_occluder {
-            commands.entity(entity).despawn();
-        }
-    }
-}
-
-fn vector_to_segment(p: Vec2, a: Vec2, b: Vec2) -> Vec2 {
-    // Vector from A to P
-    let ap = p - a;
-
-    // Vector from A to B
-    let ab = b - a;
-
-    // Squared length of AB
-    let ab_length_squared = ab.dot(ab);
-
-    // Handle degenerate case: A and B are the same point
-    if ab_length_squared == 0.0 {
-        return -ap; // The vector directly towards A (or B, since they're the same)
-    }
-
-    // Projection of P onto the infinite line defined by A and B
-    let t = f32::clamp(ap.dot(ab) / ab_length_squared, 0.0, 1.0); // Clamp t to [0, 1]
-
-    // Closest point on the segment
-    let closest_point = a + t * ab;
-
-    // Return vector towards the segment
-    closest_point - p
-}
-
+/// Prepare my own texture because theirs has funny sample count??
 #[allow(clippy::type_complexity)]
-fn draw_occluders(
-    mut meshes: ResMut<Assets<Mesh>>,
-
-    mut q_occluder_renderers: Query<
-        (
-            &OccluderRenderer,
-            &mut Visibility,
-            &mut Transform,
-            &mut Mesh2d,
-        ),
-        (
-            Without<MainCamera>,
-            Without<LineLighting>,
-            Without<PointLighting>,
-        ),
-    >,
-
-    q_occluder: Query<(&Occluder, &GlobalTransform)>,
-    q_camera: Query<&Transform, With<MainCamera>>,
-
-    q_line_lights: Query<(&GlobalTransform, &Visibility, &LineLighting)>,
-    q_point_lights: Query<(&GlobalTransform, &Visibility, &PointLighting)>,
+pub fn prepare_occluder_count_textures(
+    mut commands: Commands,
+    mut texture_cache: ResMut<TextureCache>,
+    render_device: Res<RenderDevice>,
+    views: Query<(Entity, &ExtractedCamera), (With<Camera2d>, With<AmbientLight2d>)>,
 ) {
-    let Ok(camera_t) = q_camera.get_single() else {
-        return;
-    };
-    let camera_translation = camera_t.translation.truncate();
-
-    let lights = combine_lights(q_line_lights, q_point_lights, 16);
-
-    for (occluder_renderer, mut visibility, mut transform, mut mesh) in
-        q_occluder_renderers.iter_mut()
-    {
-        let Ok((occluder, occluder_transform)) = q_occluder.get(occluder_renderer.occluder) else {
-            continue;
-        };
-        let Some(CombinedLighting {
-            pos_1: light_pos_1,
-            pos_2: light_pos_2,
-            radius,
-            ..
-        }) = lights.get(occluder_renderer.frame_index)
-        else {
-            *visibility = Visibility::Hidden;
+    let mut textures = HashMap::default();
+    for (view, camera) in &views {
+        let Some(physical_target_size) = camera.physical_target_size else {
             continue;
         };
 
-        let point_1 = occluder.point_1_offset + occluder_transform.translation().truncate();
-        let point_2 = occluder.point_2_offset + occluder_transform.translation().truncate();
+        let cached_texture = textures
+            .entry(camera.target.clone())
+            .or_insert_with(|| {
+                // The size of the depth texture
+                let size = Extent3d {
+                    depth_or_array_layers: 1,
+                    width: physical_target_size.x,
+                    height: physical_target_size.y,
+                };
 
-        let frame_i = occluder_renderer.frame_index % 4;
-        let frame_j = occluder_renderer.frame_index / 4;
+                let descriptor = TextureDescriptor {
+                    label: Some("occluder_count_texture"),
+                    size,
+                    mip_level_count: 1,
+                    sample_count: 1,
+                    dimension: TextureDimension::D2,
+                    format: TextureFormat::Stencil8,
+                    usage: TextureUsages::RENDER_ATTACHMENT,
+                    view_formats: &[],
+                };
 
-        let point_1_to_segment = vector_to_segment(point_1, *light_pos_1, *light_pos_2);
-        let point_2_to_segment = vector_to_segment(point_2, *light_pos_1, *light_pos_2);
+                texture_cache.get(&render_device, descriptor)
+            })
+            .clone();
 
-        let camera_point = |p: Vec2| p - camera_translation + Vec2::new(320.0 * 0.5, -180. * 0.5);
-
-        let out_of_bounds = |p: Vec2| {
-            let x = p.x;
-            let y = p.y;
-            let buffer = 4.0;
-            !(x > -buffer && x < 320. + buffer && y < buffer && y > -180.0 - buffer)
-        };
-
-        let frame_point = |p: Vec2| {
-            camera_point(p)
-                + Vec2::new(320.0 * -2., 180. * 2.)
-                + Vec2::new(320. * frame_i as f32, -180. * frame_j as f32)
-        };
-
-        let point_1_frame = frame_point(point_1);
-
-        let pos = point_1_frame;
-
-        let is_out_of_bounds =
-            out_of_bounds(camera_point(point_1)) || out_of_bounds(camera_point(point_2));
-
-        let is_out_of_lights = point_1_to_segment.length() > *radius
-            && point_2_to_segment.length() > *radius
-            && (point_1 - point_2).length() < *radius * 2.0;
-
-        if is_out_of_bounds || is_out_of_lights {
-            *visibility = Visibility::Hidden;
-            continue;
-        }
-
-        let occluder_polygon =
-            create_occluder_polygon(point_1, point_2, point_1_to_segment, point_2_to_segment);
-
-        let shape = meshes.add(polygon_mesh(&occluder_polygon.map(|x| x - point_1)));
-        *transform = Transform::default().with_translation(pos.extend(1.0));
-        *mesh = Mesh2d(shape);
-        *visibility = Visibility::Visible;
+        commands
+            .entity(view)
+            .insert(OccluderCountTexture(ViewDepthTexture::new(
+                cached_texture,
+                Some(0.0),
+            )));
     }
 }
 
-fn create_occluder_polygon(
-    point_1: Vec2,
-    point_2: Vec2,
-    point_1_to_segment: Vec2,
-    point_2_to_segment: Vec2,
-) -> [Vec2; 4] {
-    [
-        point_1,
-        point_2,
-        point_2 - point_2_to_segment.normalize() * 1000.0,
-        point_1 - point_1_to_segment.normalize() * 1000.0,
-    ]
+#[derive(Resource)]
+pub struct Occluder2dBindGroup {
+    value: BindGroup,
 }
-fn polygon_mesh(vertices: &[Vec2]) -> Mesh {
-    let mut triangles = Vec::new();
-    for i in 0..(vertices.len() - 1) {
-        triangles.extend(
-            [
-                vertices[0].extend(0.),
-                vertices[i].extend(0.),
-                vertices[i + 1].extend(0.),
-            ]
-            .map(|v| [v.x, v.y, v.z]),
+
+pub fn prepare_occluder_2d_bind_group(
+    mut commands: Commands,
+    uniforms: Res<ComponentUniforms<ExtractOccluder2d>>,
+    pipeline: Res<Occluder2dPipeline>,
+    render_device: Res<RenderDevice>,
+) {
+    if let Some(binding) = uniforms.uniforms().binding() {
+        commands.insert_resource(Occluder2dBindGroup {
+            value: render_device.create_bind_group(
+                "occluder_2d_bind_group",
+                &pipeline.layout,
+                &BindGroupEntries::single(binding),
+            ),
+        })
+    }
+}
+
+pub struct SetOccluder2dBindGroup<const I: usize>;
+impl<P: PhaseItem, const I: usize> RenderCommand<P> for SetOccluder2dBindGroup<I> {
+    type Param = SRes<Occluder2dBindGroup>;
+    type ViewQuery = ();
+    type ItemQuery = Read<DynamicUniformIndex<ExtractOccluder2d>>;
+
+    fn render<'w>(
+        _item: &P,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        param: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let Some(index) = entity else {
+            return RenderCommandResult::Skip;
+        };
+        pass.set_bind_group(I, &param.into_inner().value, &[index.index()]);
+        RenderCommandResult::Success
+    }
+}
+
+pub struct DrawOccluder2d;
+impl<P: PhaseItem> RenderCommand<P> for DrawOccluder2d {
+    type Param = SRes<Occluder2dBuffers>;
+    type ViewQuery = ();
+    type ItemQuery = ();
+
+    fn render<'w>(
+        _item: &P,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        _entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        param: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        let buffers = param.into_inner();
+
+        pass.set_vertex_buffer(0, buffers.vertices.buffer().unwrap().slice(..));
+        pass.set_index_buffer(
+            buffers.indices.buffer().unwrap().slice(..),
+            0,
+            IndexFormat::Uint32,
         );
+        pass.draw_indexed(0..OCCLUDER_2D_NUM_INDICES, 0, 0..1);
+
+        RenderCommandResult::Success
     }
-    Mesh::new(
-        PrimitiveTopology::TriangleList,
-        RenderAssetUsages::default(),
-    )
-    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, vec![[0., 1., 0.]; triangles.len()])
-    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, vec![[0., 0.]; triangles.len()])
-    .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, triangles)
+}
+
+#[derive(Resource)]
+pub struct Occluder2dPipeline {
+    pub layout: BindGroupLayout,
+    pub shadow_pipeline_id: CachedRenderPipelineId,
+    pub cutout_pipeline_id: CachedRenderPipelineId,
+    pub reset_pipeline_id: CachedRenderPipelineId,
+}
+
+pub fn build_occluder_2d_pipeline_descriptor(
+    world: &mut World,
+    cutout: bool,
+    occluder_layout: BindGroupLayout,
+) -> RenderPipelineDescriptor {
+    let render_device = world.resource::<RenderDevice>();
+    let post_process_res = world.resource::<PostProcessRes>();
+    let post_process_layout = post_process_res.layout.clone();
+
+    let line_light_layout = line_light_bind_group_layout(render_device);
+
+    let shader = world.load_asset("shaders/lighting/occluder.wgsl");
+
+    let mesh2d_pipeline = Mesh2dPipeline::from_world(world);
+
+    let pos_buffer_layout = VertexBufferLayout {
+        array_stride: std::mem::size_of::<Occluder2dVertex>() as u64,
+        step_mode: VertexStepMode::Vertex,
+        attributes: vec![
+            // Position
+            VertexAttribute {
+                format: VertexFormat::Float32x3,
+                offset: std::mem::offset_of!(Occluder2dVertex, position) as u64,
+                shader_location: 0,
+            },
+            // Normals
+            VertexAttribute {
+                format: VertexFormat::Float32x3,
+                offset: std::mem::offset_of!(Occluder2dVertex, normal) as u64,
+                shader_location: 1,
+            },
+        ],
+    };
+
+    let mut shader_defs: Vec<ShaderDefVal> = vec![];
+    if cutout {
+        shader_defs.push("OCCLUDER_CUTOUT".into());
+    }
+
+    let label = if cutout {
+        Some("occluder_cutout_pipeline".into())
+    } else {
+        Some("occluder_pipeline".into())
+    };
+
+    RenderPipelineDescriptor {
+        label,
+        layout: vec![
+            post_process_layout,
+            mesh2d_pipeline.view_layout,
+            line_light_layout,
+            occluder_layout,
+        ],
+        vertex: VertexState {
+            shader: shader.clone(),
+            shader_defs: shader_defs.clone(),
+            entry_point: "vertex".into(),
+            buffers: vec![pos_buffer_layout],
+        },
+        fragment: Some(FragmentState {
+            shader,
+            shader_defs,
+            entry_point: "fragment".into(),
+            targets: vec![Some(ColorTargetState {
+                format: ViewTarget::TEXTURE_FORMAT_HDR,
+                blend: Some(BlendState {
+                    color: BlendComponent {
+                        src_factor: BlendFactor::One,
+                        dst_factor: BlendFactor::One,
+                        operation: BlendOperation::Add,
+                    },
+                    alpha: BlendComponent::REPLACE,
+                }),
+                write_mask: ColorWrites::ALL,
+            })],
+        }),
+        primitive: PrimitiveState::default(),
+        depth_stencil: Some(DepthStencilState {
+            format: TextureFormat::Stencil8,
+            depth_write_enabled: false,
+            depth_compare: CompareFunction::Always,
+            stencil: StencilState {
+                front: StencilFaceState {
+                    compare: CompareFunction::Always,
+                    fail_op: StencilOperation::Keep,
+                    depth_fail_op: StencilOperation::Keep,
+                    pass_op: if cutout {
+                        StencilOperation::Zero
+                    } else {
+                        StencilOperation::IncrementClamp
+                    },
+                },
+                back: StencilFaceState::default(),
+                read_mask: 0xFF,
+                write_mask: 0xFF,
+            },
+            bias: DepthBiasState::default(),
+        }),
+        multisample: MultisampleState::default(),
+        push_constant_ranges: vec![],
+        zero_initialize_workgroup_memory: false,
+    }
+}
+
+impl FromWorld for Occluder2dPipeline {
+    fn from_world(world: &mut World) -> Self {
+        let render_device = world.resource::<RenderDevice>();
+
+        let layout = render_device.create_bind_group_layout(
+            "occluder_bind_group_layout",
+            &BindGroupLayoutEntries::single(
+                ShaderStages::VERTEX_FRAGMENT,
+                uniform_buffer::<ExtractOccluder2d>(true),
+            ),
+        );
+
+        let reset_shader = world.load_asset("shaders/lighting/occluder_reset.wgsl");
+
+        let shadow_pipeline_descriptor =
+            build_occluder_2d_pipeline_descriptor(world, false, layout.clone());
+        let cutout_pipeline_descriptor =
+            build_occluder_2d_pipeline_descriptor(world, true, layout.clone());
+
+        let pipeline_cache = world.resource_mut::<PipelineCache>();
+        let shadow_pipeline_id = pipeline_cache.queue_render_pipeline(shadow_pipeline_descriptor);
+        let cutout_pipeline_id = pipeline_cache.queue_render_pipeline(cutout_pipeline_descriptor);
+
+        let reset_pipeline_id = pipeline_cache.queue_render_pipeline(RenderPipelineDescriptor {
+            label: Some("occluder_reset_pipeline".into()),
+            layout: vec![],
+            vertex: fullscreen_shader_vertex_state(),
+            fragment: Some(FragmentState {
+                shader: reset_shader,
+                shader_defs: vec![],
+                entry_point: "fragment".into(),
+                targets: vec![Some(ColorTargetState {
+                    format: ViewTarget::TEXTURE_FORMAT_HDR,
+                    blend: Some(BlendState {
+                        color: BlendComponent::REPLACE,
+                        alpha: BlendComponent::REPLACE,
+                    }),
+                    write_mask: ColorWrites::ALPHA,
+                })],
+            }),
+            primitive: PrimitiveState::default(),
+            depth_stencil: Some(DepthStencilState {
+                format: TextureFormat::Stencil8,
+                depth_write_enabled: false,
+                depth_compare: CompareFunction::Always,
+                stencil: StencilState {
+                    front: StencilFaceState {
+                        compare: CompareFunction::Always,
+                        fail_op: StencilOperation::Zero,
+                        depth_fail_op: StencilOperation::Zero,
+                        pass_op: StencilOperation::Zero,
+                    },
+                    back: StencilFaceState::default(),
+                    read_mask: 0xFF,
+                    write_mask: 0xFF,
+                },
+                bias: DepthBiasState::default(),
+            }),
+            multisample: MultisampleState::default(),
+            push_constant_ranges: vec![],
+            zero_initialize_workgroup_memory: false,
+        });
+
+        Occluder2dPipeline {
+            layout,
+            shadow_pipeline_id,
+            cutout_pipeline_id,
+            reset_pipeline_id,
+        }
+    }
+}
+
+// WebGL2 requires thes structs be 16-byte aligned
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::mem;
+
+    #[test]
+    fn occluder_2d_alignment() {
+        assert_eq!(mem::size_of::<ExtractOccluder2d>() % 16, 0);
+    }
 }

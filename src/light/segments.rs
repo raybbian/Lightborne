@@ -6,12 +6,7 @@ use super::{
     render::{LightMaterial, LightRenderData},
     LightBeamSource, LightColor, LIGHT_SPEED,
 };
-use crate::{
-    level::sensor::LightSensor,
-    lighting::light::LineLighting,
-    particle::{ParticleEmitter, ParticleEmitterArea, ParticleEmitterOptions},
-    shared::GroupLabel,
-};
+use crate::{level::sensor::LightSensor, lighting::LineLight2d, shared::GroupLabel};
 
 /// Marker [`Component`] used to query for light segments.
 #[derive(Default, Component, Clone, Debug)]
@@ -27,7 +22,6 @@ pub struct LightSegmentBundle {
     pub material: MeshMaterial2d<LightMaterial>,
     pub visibility: Visibility,
     pub transform: Transform,
-    pub line_light: LineLighting,
 }
 
 /// [`Resource`] used to store [`Entity`] handles to the light segments so they aren't added and
@@ -53,10 +47,6 @@ impl FromWorld for LightSegmentCache {
                 material: render_data.material_map[color].clone(),
                 visibility: Visibility::Hidden,
                 transform: Transform::default(),
-                line_light: LineLighting {
-                    radius: 20.0,
-                    color: color.lighting_color(),
-                },
             }
         }
 
@@ -85,6 +75,24 @@ impl FromWorld for LightSegmentCache {
         }
 
         cache
+    }
+}
+
+/// System to insert line lights into segments. This insertion cannot be done in FromWorld
+/// because doing so inserts the archetype in the world before the required components are
+/// registered for it. This is currently not allowed by Bevy, and therefore the light segments
+/// must be added later.
+pub fn insert_line_lights(
+    mut commands: Commands,
+    q_new_segments: Query<(Entity, &LightSegment), Added<LightSegment>>,
+) {
+    for (entity, segment) in q_new_segments.iter() {
+        commands.entity(entity).insert(LineLight2d {
+            color: segment.color.lighting_color().extend(1.0),
+            half_length: 10.0,
+            radius: 20.0,
+            volumetric_intensity: 0.005,
+        });
     }
 }
 
@@ -229,7 +237,12 @@ pub fn simulate_light_sources(
     mut q_light_sources: Query<(&mut LightBeamSource, &mut PrevLightBeamPlayback)>,
     mut q_rapier: Query<&mut RapierContext>,
     mut q_light_sensor: Query<&mut LightSensor>,
-    mut q_segments: Query<(&mut Transform, &mut Visibility, &LightSegment)>,
+    mut q_segments: Query<(
+        &mut Transform,
+        &mut Visibility,
+        &mut LineLight2d,
+        &LightSegment,
+    )>,
     segment_cache: Res<LightSegmentCache>,
     light_bounce_sfx: Local<LightBounceSfx>,
 ) {
@@ -284,7 +297,7 @@ pub fn simulate_light_sources(
 
                 if play_sound {
                     let reflect = match q_segments.get(new_x.entity) {
-                        Ok((_, _, segment)) => segment.color == LightColor::White,
+                        Ok((_, _, _, segment)) => segment.color == LightColor::White,
                         _ => false,
                     };
 
@@ -318,7 +331,9 @@ pub fn simulate_light_sources(
         }
 
         for (i, segment) in segment_cache.segments[source.color].iter().enumerate() {
-            let Ok((mut c_transform, mut c_visibility, _)) = q_segments.get_mut(*segment) else {
+            let Ok((mut c_transform, mut c_visibility, mut line_light, _)) =
+                q_segments.get_mut(*segment)
+            else {
                 panic!("Segment did not have visibility or transform");
             };
 
@@ -331,10 +346,12 @@ pub fn simulate_light_sources(
                     .with_scale(scale)
                     .with_rotation(Quat::from_rotation_z(rotation));
 
+                line_light.half_length = scale.x / 2.0;
                 *c_transform = transform;
                 *c_visibility = Visibility::Visible;
             } else {
                 // required for white beam
+                line_light.half_length = 0.0;
                 *c_transform = Transform::default();
                 *c_visibility = Visibility::Hidden;
             }

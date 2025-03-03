@@ -55,22 +55,12 @@ pub fn reset_player_on_kill(
 
 /// Resets the player inventory and movement information on a [`LevelSwitchEvent`]
 pub fn reset_player_on_level_switch(
-    mut q_player: Query<
-        (
-            &mut PlayerMovement,
-            &mut PlayerLightInventory,
-            &mut Transform,
-        ),
-        With<PlayerMarker>,
-    >,
+    mut q_player: Query<(&mut PlayerMovement, &mut PlayerLightInventory), With<PlayerMarker>>,
     current_level: Res<CurrentLevel>,
 ) {
-    let Ok((mut movement, mut inventory, mut transform)) = q_player.get_single_mut() else {
+    let Ok((mut movement, mut inventory)) = q_player.get_single_mut() else {
         return;
     };
-
-    // FIXME: workaround for crouch transform
-    *transform = transform.with_scale(Vec3::ONE);
 
     *movement = PlayerMovement::default();
     *inventory = PlayerLightInventory::colors(&current_level.allowed_colors);

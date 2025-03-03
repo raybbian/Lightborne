@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{animation::AnimationConfig, lighting::light::PointLighting, shared::GroupLabel};
+use crate::{animation::AnimationConfig, lighting::LineLight2d, shared::GroupLabel};
 
 use super::{
     animation::PlayerAnimationType, light::PlayerLightInventory, movement::PlayerMovement,
@@ -42,10 +42,7 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
             combine_rule: CoefficientCombineRule::Min,
         },
         light_inventory: PlayerLightInventory::default(),
-        point_lighting: PointLighting {
-            color: Vec3::new(0.8, 0.8, 0.8),
-            radius: 40.0,
-        },
+        point_lighting: LineLight2d::point(Vec4::new(0.8, 0.8, 0.8, 1.0), 40.0, 0.003),
         animation_type: PlayerAnimationType::Idle,
         animation_config: AnimationConfig::from(PlayerAnimationType::Idle),
     }
@@ -91,13 +88,10 @@ pub fn add_player_sensors(
             .insert(RigidBody::Dynamic)
             .insert(GravityScale(0.0))
             .insert(PlayerHurtMarker)
+            .insert(Transform::default())
             .insert(CollisionGroups::new(
                 GroupLabel::PLAYER_SENSOR,
                 GroupLabel::HURT_BOX | GroupLabel::TERRAIN,
-            ))
-            .insert(PointLight {
-                intensity: 100_000.0,
-                ..default()
-            });
+            ));
     });
 }

@@ -5,7 +5,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rapier2d::prelude::*;
 
-use crate::{light::LightColor, lighting::occluder::ColliderBasedOccluder, shared::GroupLabel};
+use crate::{light::LightColor, lighting::Occluder2d, shared::GroupLabel};
 
 use super::{entity::HurtMarker, CurrentLevel, LevelSystems};
 
@@ -206,14 +206,12 @@ pub struct CrystalBundle {
     crystal: Crystal,
     #[from_int_grid_cell]
     cell: IntGridCell,
-    collider_based_occluder: ColliderBasedOccluder,
     hurt_marker: HurtMarker,
 }
 
 impl Default for CrystalBundle {
     fn default() -> Self {
         Self {
-            collider_based_occluder: ColliderBasedOccluder { indent: 2.0 },
             crystal: Crystal::default(),
             cell: IntGridCell::default(),
             hurt_marker: HurtMarker,
@@ -236,6 +234,7 @@ fn add_crystal_colliders(
         if is_crystal_active(*cell) {
             let mut collider = commands.entity(entity);
             collider.insert(Collider::cuboid(4.0, 4.0));
+            collider.insert(Occluder2d::new(4.0, 4.0));
         }
     }
 }
@@ -252,7 +251,8 @@ fn activate_crystal(
 ) {
     commands
         .entity(crystal_entity)
-        .insert(Collider::cuboid(4.0, 4.0));
+        .insert(Collider::cuboid(4.0, 4.0))
+        .insert(Occluder2d::new(4.0, 4.0));
     crystal_index.0 -= CRYSTAL_INDEX_OFFSET;
 }
 
@@ -263,7 +263,9 @@ fn deactivate_crystal(
     crystal_entity: Entity,
     crystal_index: &mut TileTextureIndex,
 ) {
-    commands.entity(crystal_entity).remove::<Collider>();
+    commands
+        .entity(crystal_entity)
+        .remove::<(Collider, Occluder2d)>();
     crystal_index.0 += CRYSTAL_INDEX_OFFSET;
 }
 

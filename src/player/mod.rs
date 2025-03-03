@@ -19,7 +19,7 @@ use crate::{
         entity::{adjust_semisolid_colliders, set_semisolid},
         LevelSystems,
     },
-    lighting::light::PointLighting,
+    lighting::LineLight2d,
     shared::GameState,
 };
 
@@ -164,7 +164,7 @@ pub struct PlayerBundle {
     restitution: Restitution,
     player_movement: PlayerMovement,
     light_inventory: PlayerLightInventory,
-    point_lighting: PointLighting,
+    point_lighting: LineLight2d,
     animation_config: AnimationConfig,
     animation_type: PlayerAnimationType,
 }
