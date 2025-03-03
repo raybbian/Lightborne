@@ -15,7 +15,7 @@ pub enum PlayerAnimationType {
 }
 
 // HAIR, LEFT, RIGHT
-const OFFSETS: [[Vec2; 3]; 19] = [
+const OFFSETS: [[Vec2; 3]; 21] = [
     [vec2(-2.0, 3.0), vec2(-3.0, -6.0), vec2(4.0, -6.0)], // idle 1
     [vec2(-2.0, 4.0), vec2(-3.0, -5.0), vec2(4.0, -5.0)],
     [vec2(-2.0, 4.0), vec2(-3.0, -5.0), vec2(4.0, -5.0)],
@@ -32,9 +32,11 @@ const OFFSETS: [[Vec2; 3]; 19] = [
     [vec2(-2.0, 1.0), vec2(-3.0, -8.0), vec2(4.0, -7.0)],
     [vec2(-2.0, 0.0), vec2(-3.0, -8.0), vec2(4.0, -8.0)],
     [vec2(-2.0, 2.0), vec2(-3.0, -7.0), vec2(4.0, -6.0)], // jump 1
+    [vec2(-2.0, 1.0), vec2(-3.0, -8.0), vec2(4.0, -7.0)],
     [vec2(-2.0, 3.0), vec2(-3.0, -6.0), vec2(3.0, -6.0)],
     [vec2(-2.0, 4.0), vec2(-3.0, -5.0), vec2(3.0, -5.0)],
-    [vec2(-2.0, 4.0), vec2(-3.0, -5.0), vec2(3.0, -4.0)],
+    [vec2(-1.0, 4.0), vec2(-2.0, -5.0), vec2(3.0, -5.0)],
+    [vec2(-2.0, 4.0), vec2(-3.0, -5.0), vec2(3.0, -5.0)],
 ];
 
 impl PlayerAnimationType {
@@ -58,7 +60,7 @@ impl From<PlayerAnimationType> for AnimationConfig {
             PlayerAnimationType::Walk => AnimationConfig::new(3, 10, 12, true),
             PlayerAnimationType::Idle => AnimationConfig::new(0, 2, 6, true),
             PlayerAnimationType::Crouch => AnimationConfig::new(11, 14, 48, false),
-            PlayerAnimationType::Jump => AnimationConfig::new(15, 18, 8, false),
+            PlayerAnimationType::Jump => AnimationConfig::new(15, 20, 24, false),
         }
     }
 }
