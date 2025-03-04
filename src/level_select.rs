@@ -4,7 +4,7 @@ use bevy::asset::RenderAssetUsages;
 use bevy::image::{BevyDefault, TextureFormatPixelInfo};
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
-use bevy_ecs_ldtk::ldtk::Type;
+use bevy_ecs_ldtk::ldtk::{FieldValue, Type};
 use bevy_ecs_ldtk::prelude::LdtkFields;
 use bevy_ecs_ldtk::LevelIid;
 use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
@@ -19,25 +19,39 @@ pub struct LevelSelectPlugin;
 
 const START_FLAG_IDENT: &str = "Start";
 const TERRAIN_LAYER_IDENT: &str = "Terrain";
+const ENTITY_LAYER_IDENT: &str = "Entities";
+const SENSOR_ENTITY_IDENT: &str = "Sensor";
+const SENSOR_COLOR_IDENT: &str = "light_color";
 
+// [R, G, B, A] colors for level preview
 const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
     [0, 0, 0, 255],       // intgrid 0
-    [115, 62, 57, 255],   // intgrid 1
-    [255, 0, 0, 255],     // intgrid 2
+    [41, 54, 78, 255],    // intgrid 1
+    [117, 158, 202, 255], // intgrid 2
     [255, 0, 68, 255],    // intgrid 3
     [71, 1, 19, 255],     // intgrid 4
     [99, 199, 77, 255],   // intgrid 5
     [30, 61, 23, 255],    // intgrid 6
     [192, 203, 220, 255], // intgrid 7
     [55, 58, 62, 255],    // intgrid 8
-    [190, 74, 47, 255],   // intgrid 9
-    [215, 118, 67, 255],  // intgrid 10
+    [80, 183, 56, 255],   // intgrid 9
+    [43, 85, 136, 255],   // intgrid 10
     [0, 0, 0, 255],       // intgrid 11
     [0, 0, 0, 255],       // intgrid 12
     [0, 0, 0, 255],       // intgrid 13
     [0, 0, 0, 255],       // intgrid 14
     [115, 62, 57, 255],   // intgrid 15
 ];
+
+fn sensor_color_to_rgba(sensor_color: &str) -> [u8; 4] {
+    match sensor_color {
+        "Red" => [255, 143, 212, 255],
+        "Green" => [157, 253, 148, 255],
+        "White" => [229, 229, 229, 255],
+        "Blue" => [143, 225, 255, 255],
+        _ => [0, 0, 0, 255],
+    }
+}
 
 #[derive(Component)]
 struct LevelSelectUiMarker;
@@ -228,12 +242,10 @@ pub fn handle_level_selection(
                 let level_preview = match level_preview_store.0.get(level_id) {
                     Some(handle) => handle.clone(),
                     None => {
-                        let Some((layer_w, layer_h, layer_data)) = level
-                            .layer_instances
-                            .as_ref()
-                            .expect("Layers not found!")
-                            .iter()
-                            .find_map(|layer| {
+                        let level_layers =
+                            level.layer_instances.as_ref().expect("Layers not found!");
+                        let Some((layer_w, layer_h, layer_data)) =
+                            level_layers.iter().find_map(|layer| {
                                 if layer.identifier == TERRAIN_LAYER_IDENT {
                                     Some((
                                         layer.c_wid as usize,
@@ -245,14 +257,51 @@ pub fn handle_level_selection(
                                 }
                             })
                         else {
-                            panic!("Layer data not found!");
+                            panic!("Terrain layer data not found!");
+                        };
+                        let Some(level_entities) = level_layers.iter().find_map(|layer| {
+                            if layer.identifier == ENTITY_LAYER_IDENT {
+                                Some(&layer.entity_instances)
+                            } else {
+                                None
+                            }
+                        }) else {
+                            panic!("Entity layer data not found!");
                         };
                         let mut level_preview_data = Vec::with_capacity(layer_w * layer_h);
+                        let pixel_size = TextureFormat::bevy_default().pixel_size();
                         for tile in layer_data {
                             let color_scale = 17;
-                            for i in 0..TextureFormat::bevy_default().pixel_size() {
+                            for i in 0..pixel_size {
                                 level_preview_data.push(LEVEL_PREVIEW_COLORS[*tile as usize][i]);
                             }
+                        }
+                        for entity in level_entities {
+                            if entity.identifier != SENSOR_ENTITY_IDENT {
+                                continue;
+                            }
+                            let entity_coords = entity.grid;
+                            let Some(entity_color) =
+                                entity.field_instances.iter().find_map(|instance| {
+                                    if instance.identifier == SENSOR_COLOR_IDENT {
+                                        let FieldValue::Enum(Some(ref color)) = instance.value
+                                        else {
+                                            panic!("Sensor color should be an enum!");
+                                        };
+                                        Some(color)
+                                    } else {
+                                        None
+                                    }
+                                })
+                            else {
+                                panic!("Could not find sensor color field!");
+                            };
+                            let rgba = sensor_color_to_rgba(entity_color);
+                            let image_data_index = (entity_coords.y as usize * layer_w
+                                + entity_coords.x as usize)
+                                * pixel_size;
+                            level_preview_data[image_data_index..(pixel_size + image_data_index)]
+                                .copy_from_slice(&rgba[..pixel_size]);
                         }
                         let preview = Image::new(
                             Extent3d {
