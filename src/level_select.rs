@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use bevy::asset::RenderAssetUsages;
+use bevy::audio::PlaybackMode;
 use bevy::image::{BevyDefault, TextureFormatPixelInfo};
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
@@ -9,9 +10,9 @@ use bevy_ecs_ldtk::prelude::LdtkFields;
 use bevy_ecs_ldtk::LevelIid;
 use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
 
-use crate::camera::handle_move_camera;
+use crate::camera::{camera_position_from_level, handle_move_camera, CameraMoveEvent};
 use crate::level::start_flag::StartFlag;
-use crate::level::{get_ldtk_level_data, CurrentLevel};
+use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
 use crate::player::PlayerMarker;
 use crate::shared::{GameState, UiState, LYRA_RESPAWN_EPSILON};
 
@@ -86,6 +87,7 @@ fn spawn_level_select(
     ldtk_assets: Res<Assets<LdtkProject>>,
     query_ldtk: Query<&LdtkProjectHandle>,
     level_select_ui_query: Query<Entity, With<LevelSelectUiMarker>>,
+    asset_server: Res<AssetServer>,
 ) {
     if level_select_ui_query.get_single().is_ok() {
         return;
@@ -117,6 +119,11 @@ fn spawn_level_select(
                 ..default()
             },
             BackgroundColor(Color::BLACK),
+            AudioPlayer::new(asset_server.load("music/main_menu.wav")),
+            PlaybackSettings {
+                mode: PlaybackMode::Loop,
+                ..default()
+            },
         ))
         .with_children(|parent| {
             parent.spawn(Text::new("Level Select"));
@@ -143,7 +150,7 @@ fn spawn_level_select(
                                 BorderColor(Color::WHITE),
                                 LevelSelectButtonIndex(*index),
                             ))
-                            .with_child((Text::new(format!("{level_id}")),));
+                            .with_child(Text::new(level_id.to_string()));
                     }
                 });
             parent
@@ -189,6 +196,7 @@ pub fn handle_level_selection(
     ldtk_assets: Res<Assets<LdtkProject>>,
     query_ldtk: Query<&LdtkProjectHandle>,
     mut query_player: Query<&mut Transform, (With<PlayerMarker>, Without<StartFlag>)>,
+    mut ev_move_camera: EventWriter<CameraMoveEvent>,
     mut current_level: ResMut<CurrentLevel>,
     mut level_preview_store: ResMut<LevelPreviewStore>,
     mut assets: ResMut<Assets<Image>>,
@@ -203,6 +211,7 @@ pub fn handle_level_selection(
         if index.0 >= ldtk_levels.len() {
             panic!("Selected level index is out of bounds!")
         }
+        // <<<<<<< HEAD
         let level = &ldtk_levels[index.0];
         match *interaction {
             Interaction::Pressed => {
@@ -224,6 +233,14 @@ pub fn handle_level_selection(
                                 player_transform.translation.x = player_x as f32;
                                 player_transform.translation.y =
                                     -player_y as f32 + LYRA_RESPAWN_EPSILON;
+
+                                // Send a camera transition event to tp the camera immediately
+                                let camera_pos = camera_position_from_level(
+                                    level_box_from_level(&ldtk_levels[index.0]),
+                                    player_transform.translation.xy(),
+                                );
+                                ev_move_camera.send(CameraMoveEvent::Instant { to: camera_pos });
+
                                 break 'loop_layers;
                             }
                         }
@@ -271,7 +288,6 @@ pub fn handle_level_selection(
                         let mut level_preview_data = Vec::with_capacity(layer_w * layer_h);
                         let pixel_size = TextureFormat::bevy_default().pixel_size();
                         for tile in layer_data {
-                            let color_scale = 17;
                             for i in 0..pixel_size {
                                 level_preview_data.push(LEVEL_PREVIEW_COLORS[*tile as usize][i]);
                             }
