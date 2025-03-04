@@ -69,10 +69,12 @@ pub fn reset_player_on_level_switch(
 
 /// Kills player upon touching a HURT_BOX
 pub fn kill_player_on_hurt_intersection(
+    mut commands: Commands,
     rapier_context: Query<&RapierContext>,
     q_player: Query<Entity, With<PlayerHurtMarker>>,
     q_hurt: Query<Entity, With<HurtMarker>>,
     mut ev_kill_player: EventWriter<KillPlayerEvent>,
+    asset_server: Res<AssetServer>,
 ) {
     let Ok(rapier) = rapier_context.get_single() else {
         return;
@@ -84,6 +86,10 @@ pub fn kill_player_on_hurt_intersection(
     for hurt in q_hurt.iter() {
         if rapier.intersection_pair(player, hurt) == Some(true) {
             ev_kill_player.send(KillPlayerEvent);
+            commands.entity(player).with_child((
+                AudioPlayer::new(asset_server.load("sfx/death.wav")),
+                PlaybackSettings::DESPAWN,
+            ));
             return;
         }
     }
