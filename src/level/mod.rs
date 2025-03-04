@@ -6,6 +6,7 @@ use sensor::{color_sensors, reset_light_sensors, update_light_sensors, LightSens
 
 use crate::{
     camera::{CameraMoveEvent, CAMERA_ANIMATION_SECS, CAMERA_HEIGHT, CAMERA_WIDTH},
+    level_select::handle_level_selection,
     light::{segments::simulate_light_sources, LightColor},
     player::{LdtkPlayerBundle, PlayerMarker},
     shared::{GameState, ResetLevel},
@@ -47,7 +48,7 @@ impl Plugin for LevelManagementPlugin {
             .add_systems(
                 FixedUpdate,
                 (
-                    switch_level,
+                    switch_level.after(handle_level_selection),
                     update_light_sensors.after(simulate_light_sources),
                 ),
             )
@@ -109,7 +110,7 @@ pub fn get_ldtk_level_data(
 /// handling code will send a LevelSwitch event that will notify other systems to cleanup the
 /// levels.
 #[allow(clippy::too_many_arguments)]
-fn switch_level(
+pub fn switch_level(
     q_player: Query<&Transform, With<PlayerMarker>>,
     mut level_selection: ResMut<LevelSelection>,
     ldtk_projects: Query<&LdtkProjectHandle>,

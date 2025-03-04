@@ -3,6 +3,7 @@ use bevy_ecs_ldtk::ldtk::Type;
 use bevy_ecs_ldtk::LevelIid;
 use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
 
+use crate::camera::handle_move_camera;
 use crate::level::start_flag::StartFlag;
 use crate::level::{get_ldtk_level_data, CurrentLevel};
 use crate::player::PlayerMarker;
@@ -16,18 +17,19 @@ const START_FLAG_IDENT: &str = "Start";
 struct LevelSelectUiMarker;
 
 #[derive(Component)]
-struct LevelSelectButtonIndex(usize);
+pub struct LevelSelectButtonIndex(usize);
 
 impl Plugin for LevelSelectPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
-            spawn_level_select.run_if(in_state(UiState::LevelSelect)),
-        )
-        .add_systems(OnExit(UiState::LevelSelect), despawn_level_select)
-        .add_systems(
-            Update,
-            handle_level_selection.run_if(in_state(UiState::LevelSelect)),
+            FixedUpdate,
+            (
+                spawn_level_select.run_if(in_state(UiState::LevelSelect)),
+                despawn_level_select
+                    .after(handle_move_camera)
+                    .run_if(not(in_state(UiState::LevelSelect))),
+                handle_level_selection.run_if(in_state(UiState::LevelSelect)),
+            ),
         );
     }
 }
@@ -94,13 +96,14 @@ fn despawn_level_select(
     mut level_select_ui_query: Query<Entity, With<LevelSelectUiMarker>>,
 ) {
     let Ok(entity) = level_select_ui_query.get_single_mut() else {
-        panic!("Could not find level select ui!")
+        return;
     };
 
     commands.entity(entity).despawn_recursive();
 }
 
-fn handle_level_selection(
+#[allow(clippy::type_complexity)]
+pub fn handle_level_selection(
     mut interaction_query: Query<
         (&Interaction, &LevelSelectButtonIndex),
         (Changed<Interaction>, With<Button>),
