@@ -1,3 +1,4 @@
+use bevy::audio::PlaybackMode;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::ldtk::Type;
 use bevy_ecs_ldtk::prelude::LdtkFields;
@@ -40,6 +41,7 @@ fn spawn_level_select(
     ldtk_assets: Res<Assets<LdtkProject>>,
     query_ldtk: Query<&LdtkProjectHandle>,
     level_select_ui_query: Query<Entity, With<LevelSelectUiMarker>>,
+    asset_server: Res<AssetServer>,
 ) {
     if level_select_ui_query.get_single().is_ok() {
         return;
@@ -71,6 +73,11 @@ fn spawn_level_select(
                 ..default()
             },
             BackgroundColor(Color::BLACK),
+            AudioPlayer::new(asset_server.load("music/main_menu.wav")),
+            PlaybackSettings {
+                mode: PlaybackMode::Loop,
+                ..default()
+            },
         ))
         .with_children(|parent| {
             parent.spawn(Text::new("Level Select"));
