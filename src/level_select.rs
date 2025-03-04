@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::ldtk::Type;
+use bevy_ecs_ldtk::prelude::LdtkFields;
 use bevy_ecs_ldtk::LevelIid;
 use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
 
@@ -46,7 +47,18 @@ fn spawn_level_select(
     let Ok(levels) = get_ldtk_level_data(ldtk_assets, query_ldtk) else {
         return;
     };
-    let num_levels = levels.len();
+    let mut sorted_levels = Vec::with_capacity(levels.len());
+    for (i, level) in levels.iter().enumerate() {
+        let level_id = level
+            .get_string_field("LevelId")
+            .expect("Levels should always have a level id!");
+        if level_id.is_empty() {
+            panic!("Level id for a level should not be empty!");
+        }
+        sorted_levels.push((level_id, i));
+    }
+    sorted_levels.sort();
+
     commands
         .spawn((
             LevelSelectUiMarker,
@@ -69,7 +81,7 @@ fn spawn_level_select(
                     ..default()
                 })
                 .with_children(|parent| {
-                    for i in 0..num_levels {
+                    for (level_id, index) in sorted_levels.iter() {
                         parent
                             .spawn((
                                 Button,
@@ -83,9 +95,9 @@ fn spawn_level_select(
                                     ..default()
                                 },
                                 BorderColor(Color::WHITE),
-                                LevelSelectButtonIndex(i),
+                                LevelSelectButtonIndex(*index),
                             ))
-                            .with_child((Text::new(format!("{i}")),));
+                            .with_child((Text::new(format!("{level_id}")),));
                     }
                 });
         });
