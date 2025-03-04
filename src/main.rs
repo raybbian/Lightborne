@@ -9,12 +9,13 @@ use config::ConfigPlugin;
 use debug::DebugPlugin;
 use input::{init_cursor_world_coords, update_cursor_world_coords};
 use level::LevelManagementPlugin;
+use level_select::LevelSelectPlugin;
 use light::LightManagementPlugin;
 use lighting::DeferredLightingPlugin;
 use particle::ParticlePlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
-use shared::{GameState, ResetLevel};
+use shared::{GameState, ResetLevel, UiState};
 
 mod animation;
 mod camera;
@@ -22,6 +23,7 @@ mod config;
 mod debug;
 mod input;
 mod level;
+mod level_select;
 mod light;
 mod lighting;
 mod particle;
@@ -61,13 +63,15 @@ fn main() {
         .add_plugins(LightManagementPlugin)
         .add_plugins(ParticlePlugin)
         .add_plugins(PausePlugin)
+        .add_plugins(LevelSelectPlugin)
         .add_plugins(CameraPlugin)
+        .insert_state(GameState::Ui)
+        .insert_state(UiState::LevelSelect)
         .add_plugins(DeferredLightingPlugin)
         .add_plugins(DebugPlugin {
             physics: false,
             ..default()
         })
-        .insert_state(GameState::Playing)
         .add_event::<ResetLevel>()
         .add_systems(Startup, init_cursor_world_coords)
         .add_systems(Update, update_cursor_world_coords)

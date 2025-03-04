@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+pub const LYRA_RESPAWN_EPSILON: f32 = 3.0;
+
 /// Labels used for rapier_2d [`CollisionGroups`]
 pub struct GroupLabel;
 
@@ -23,6 +25,13 @@ pub enum GameState {
     SwitchAnimation,
     KillAnimation,
     Paused,
+    Ui,
+}
+
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum UiState {
+    LevelSelect,
+    None,
 }
 
 #[derive(Event, PartialEq, Eq)]

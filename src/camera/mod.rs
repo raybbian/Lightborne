@@ -9,7 +9,7 @@ use bevy::{
 use bevy_rapier2d::plugin::PhysicsSet;
 
 use crate::{
-    level::{CurrentLevel, LevelSystems},
+    level::{switch_level, CurrentLevel, LevelSystems},
     lighting::AmbientLight2d,
     player::PlayerMarker,
 };
@@ -28,10 +28,14 @@ impl Plugin for CameraPlugin {
                 FixedUpdate,
                 move_camera
                     .after(PhysicsSet::Writeback)
+                    .after(switch_level)
                     .in_set(LevelSystems::Simulation),
             )
             // Has event reader, so place in update
-            .add_systems(Update, handle_move_camera)
+            .add_systems(
+                Update,
+                handle_move_camera.after(move_camera).after(switch_level),
+            )
             .add_systems(Update, handle_transition_camera);
     }
 }

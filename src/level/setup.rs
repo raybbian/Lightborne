@@ -1,4 +1,5 @@
 use crate::config::Config;
+use crate::shared::GameState;
 use bevy::{prelude::*, render::view::RenderLayers};
 use bevy_ecs_ldtk::prelude::*;
 
@@ -18,12 +19,17 @@ impl Plugin for LevelSetupPlugin {
     }
 }
 
-fn setup_level(mut commands: Commands, asset_server: Res<AssetServer>, config: Res<Config>) {
-    commands.insert_resource(LevelSelection::index(config.level_config.level_index));
+pub fn setup_level(
+    mut commands: Commands,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    asset_server: Res<AssetServer>,
+    config: Res<Config>,
+) {
     commands.spawn(LdtkWorldBundle {
         ldtk_handle: asset_server.load(&config.level_config.level_path).into(),
         ..Default::default()
     });
+    next_game_state.set(GameState::Ui);
     commands.spawn((
         Sprite::from_image(asset_server.load("levels/background.png")),
         RenderLayers::layer(1),
