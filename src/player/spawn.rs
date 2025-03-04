@@ -5,7 +5,7 @@ use bevy_rapier2d::prelude::*;
 use crate::{animation::AnimationConfig, lighting::LineLight2d, shared::GroupLabel};
 
 use super::{
-    animation::PlayerAnimationType, light::PlayerLightInventory, movement::PlayerMovement,
+    animation::{PlayerAnimationType, ANIMATION_FRAMES}, light::PlayerLightInventory, movement::PlayerMovement,
     PlayerBundle, PlayerMarker,
 };
 
@@ -61,7 +61,7 @@ pub fn add_player_sensors(
 
     let texture_atlas_layout = texture_atlas_layouts.add(TextureAtlasLayout::from_grid(
         UVec2::new(15, 20),
-        21,
+        ANIMATION_FRAMES as u32,
         1,
         None,
         None,

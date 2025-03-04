@@ -5,6 +5,8 @@ use crate::animation::AnimationConfig;
 
 use super::{movement::PlayerMovement, PlayerMarker};
 
+pub const ANIMATION_FRAMES: usize = 25;
+
 #[derive(Component, PartialEq, Eq, Clone, Copy, Default)]
 pub enum PlayerAnimationType {
     #[default]
@@ -12,10 +14,11 @@ pub enum PlayerAnimationType {
     Walk,
     Crouch,
     Jump,
+    Fall,
 }
 
 // HAIR, LEFT, RIGHT
-const OFFSETS: [[Vec2; 3]; 21] = [
+const OFFSETS: [[Vec2; 3]; ANIMATION_FRAMES] = [
     [vec2(-2.0, 3.0), vec2(-3.0, -6.0), vec2(4.0, -6.0)], // idle 1
     [vec2(-2.0, 4.0), vec2(-3.0, -5.0), vec2(4.0, -5.0)],
     [vec2(-2.0, 4.0), vec2(-3.0, -5.0), vec2(4.0, -5.0)],
@@ -37,6 +40,10 @@ const OFFSETS: [[Vec2; 3]; 21] = [
     [vec2(-2.0, 4.0), vec2(-3.0, -5.0), vec2(3.0, -5.0)],
     [vec2(-1.0, 4.0), vec2(-2.0, -5.0), vec2(3.0, -5.0)],
     [vec2(-2.0, 4.0), vec2(-3.0, -5.0), vec2(3.0, -5.0)],
+    [vec2(-2.0, 4.0), vec2(-3.0, -4.0), vec2(3.0, -4.0)], // fall 1
+    [vec2(-2.0, 4.0), vec2(-4.0, -4.0), vec2(4.0, -4.0)],
+    [vec2(-2.0, 4.0), vec2(-4.0, -3.0), vec2(4.0, -3.0)],
+    [vec2(-2.0, 4.0), vec2(-5.0, -2.0), vec2(5.0, -2.0)],
 ];
 
 impl PlayerAnimationType {
@@ -61,6 +68,7 @@ impl From<PlayerAnimationType> for AnimationConfig {
             PlayerAnimationType::Idle => AnimationConfig::new(0, 2, 6, true),
             PlayerAnimationType::Crouch => AnimationConfig::new(11, 14, 48, false),
             PlayerAnimationType::Jump => AnimationConfig::new(15, 20, 24, false),
+            PlayerAnimationType::Fall => AnimationConfig::new(21, 23, 24, false),
         }
     }
 }
@@ -82,6 +90,8 @@ pub fn set_animation(
 
     let new_anim = if !output.grounded && output.effective_translation.y > 0.0 {
         PlayerAnimationType::Jump
+    } else if !output.grounded {
+        PlayerAnimationType::Fall
     } else if output.grounded && output.effective_translation.x.abs() > 0.05 {
         PlayerAnimationType::Walk
     } else if output.grounded && movement.crouching {
