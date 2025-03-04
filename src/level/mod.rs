@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
 use merge_tile::spawn_merged_tiles;
-use sensor::{color_sensors, reset_light_sensors, update_light_sensors, LightSensorBundle};
+use sensor::{add_sensor_sprites, reset_light_sensors, update_light_sensors, LightSensorBundle};
 
 use crate::{
     camera::{CameraMoveEvent, CAMERA_ANIMATION_SECS, CAMERA_HEIGHT, CAMERA_WIDTH},
@@ -43,7 +43,11 @@ impl Plugin for LevelManagementPlugin {
             .register_ldtk_int_cell_for_layer::<SemiSolidPlatformBundle>("Terrain", 15)
             .add_systems(
                 PreUpdate,
-                (spawn_merged_tiles::<Wall>, init_start_marker, color_sensors)
+                (
+                    spawn_merged_tiles::<Wall>,
+                    init_start_marker,
+                    add_sensor_sprites,
+                )
                     .in_set(LevelSystems::Processing),
             )
             .add_systems(Update, reset_light_sensors.in_set(LevelSystems::Reset))

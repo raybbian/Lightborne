@@ -73,9 +73,27 @@ impl From<&EntityInstance> for LightSensor {
     }
 }
 
-pub fn color_sensors(mut q_buttons: Query<(&mut Sprite, &LightSensor), Added<LightSensor>>) {
-    for (mut sprite, sensor) in q_buttons.iter_mut() {
-        sprite.color = sensor.toggle_color.color.button_color();
+pub fn add_sensor_sprites(
+    mut commands: Commands,
+    q_buttons: Query<(Entity, &LightSensor), Added<LightSensor>>,
+    asset_server: Res<AssetServer>,
+) {
+    if q_buttons.is_empty() {
+        return;
+    }
+
+    let sensor_inner = asset_server.load("sensor/sensor_inner.png");
+    let sensor_outer = asset_server.load("sensor/sensor_outer.png");
+
+    let inner_sprite = Sprite::from_image(sensor_inner);
+    let mut outer_sprite = Sprite::from_image(sensor_outer);
+
+    for (entity, sensor) in q_buttons.iter() {
+        outer_sprite.color = sensor.toggle_color.color.button_color();
+        commands
+            .entity(entity)
+            .insert(inner_sprite.clone())
+            .with_child(outer_sprite.clone());
     }
 }
 
@@ -83,8 +101,8 @@ pub fn color_sensors(mut q_buttons: Query<(&mut Sprite, &LightSensor), Added<Lig
 /// properly.
 #[derive(Bundle, LdtkEntity)]
 pub struct LightSensorBundle {
-    #[sprite_sheet]
-    sprite_sheet: Sprite,
+    // #[sprite_sheet]
+    // sprite_sheet: Sprite,
     #[from_entity_instance]
     physics: FixedEntityBundle,
     #[default]
