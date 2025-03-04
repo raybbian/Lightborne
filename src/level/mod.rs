@@ -6,7 +6,7 @@ use merge_tile::spawn_merged_tiles;
 use sensor::{add_sensor_sprites, reset_light_sensors, update_light_sensors, LightSensorBundle};
 
 use crate::{
-    camera::{CameraMoveEvent, CAMERA_ANIMATION_SECS, CAMERA_HEIGHT, CAMERA_WIDTH},
+    camera::{camera_position_from_level, CameraMoveEvent, CAMERA_ANIMATION_SECS},
     level_select::handle_level_selection,
     light::{segments::simulate_light_sources, LightColor},
     player::{LdtkPlayerBundle, PlayerMarker},
@@ -84,7 +84,7 @@ impl Plugin for LevelManagementPlugin {
 #[derive(Default, Debug, Resource)]
 pub struct CurrentLevel {
     pub level_iid: LevelIid,
-    pub world_box: Rect,
+    pub level_box: Rect,
     pub allowed_colors: Vec<LightColor>,
 }
 
@@ -113,6 +113,15 @@ pub fn get_ldtk_level_data(
     Ok(ldtk_project.json_data().levels.clone())
 }
 
+pub fn level_box_from_level(level: &Level) -> Rect {
+    Rect::new(
+        level.world_x as f32,
+        -level.world_y as f32,
+        (level.world_x + level.px_wid) as f32,
+        (-level.world_y - level.px_hei) as f32,
+    )
+}
+
 /// [`System`] that will run on [`Update`] to check if the Player has moved to another level. If
 /// the player has, then a MoveCameraEvent is sent. After the animation is finished, the Camera
 /// handling code will send a LevelSwitch event that will notify other systems to cleanup the
@@ -136,35 +145,19 @@ pub fn switch_level(
         return;
     };
     for level in ldtk_levels {
-        let world_box = Rect::new(
-            level.world_x as f32,
-            -level.world_y as f32,
-            (level.world_x + level.px_wid) as f32,
-            (-level.world_y - level.px_hei) as f32,
-        );
+        let level_box = level_box_from_level(&level);
 
-        if world_box.contains(player_transform.translation.xy()) {
+        if level_box.contains(player_transform.translation.xy()) {
             if current_level.level_iid.as_str() != level.iid {
                 // relies on camera to reset the state back to switching??
                 if !current_level.level_iid.to_string().is_empty() {
                     next_game_state.set(GameState::SwitchAnimation);
 
-                    let (x_min, x_max) = (
-                        world_box.min.x + CAMERA_WIDTH * 0.5,
-                        world_box.max.x - CAMERA_WIDTH * 0.5,
-                    );
-                    let (y_min, y_max) = (
-                        world_box.min.y + CAMERA_HEIGHT * 0.5,
-                        world_box.max.y - CAMERA_HEIGHT * 0.5,
-                    );
-
-                    let new_pos = Vec2::new(
-                        player_transform.translation.x.max(x_min).min(x_max),
-                        player_transform.translation.y.max(y_min).min(y_max),
-                    );
-
                     ev_move_camera.send(CameraMoveEvent::Animated {
-                        to: new_pos,
+                        to: camera_position_from_level(
+                            level_box,
+                            player_transform.translation.xy(),
+                        ),
                         duration: Duration::from_secs_f32(CAMERA_ANIMATION_SECS),
                         callback: Some(on_level_switch_finish_cb.0),
                         ease_fn: EaseFunction::SineInOut,
@@ -181,7 +174,7 @@ pub fn switch_level(
 
                 *current_level = CurrentLevel {
                     level_iid: LevelIid::new(level.iid.clone()),
-                    world_box,
+                    level_box,
                     allowed_colors,
                 };
                 *level_selection = LevelSelection::iid(current_level.level_iid.clone());

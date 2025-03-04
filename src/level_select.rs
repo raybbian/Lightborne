@@ -5,9 +5,9 @@ use bevy_ecs_ldtk::prelude::LdtkFields;
 use bevy_ecs_ldtk::LevelIid;
 use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
 
-use crate::camera::handle_move_camera;
+use crate::camera::{camera_position_from_level, handle_move_camera, CameraMoveEvent};
 use crate::level::start_flag::StartFlag;
-use crate::level::{get_ldtk_level_data, CurrentLevel};
+use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
 use crate::player::PlayerMarker;
 use crate::shared::{GameState, UiState, LYRA_RESPAWN_EPSILON};
 
@@ -104,7 +104,7 @@ fn spawn_level_select(
                                 BorderColor(Color::WHITE),
                                 LevelSelectButtonIndex(*index),
                             ))
-                            .with_child((Text::new(format!("{level_id}")),));
+                            .with_child(Text::new(level_id));
                     }
                 });
         });
@@ -132,6 +132,7 @@ pub fn handle_level_selection(
     ldtk_assets: Res<Assets<LdtkProject>>,
     query_ldtk: Query<&LdtkProjectHandle>,
     mut query_player: Query<&mut Transform, (With<PlayerMarker>, Without<StartFlag>)>,
+    mut ev_move_camera: EventWriter<CameraMoveEvent>,
     mut current_level: ResMut<CurrentLevel>,
 ) {
     // We expect there to be only one interaction
@@ -162,6 +163,13 @@ pub fn handle_level_selection(
                         };
                         player_transform.translation.x = player_x as f32;
                         player_transform.translation.y = -player_y as f32 + LYRA_RESPAWN_EPSILON;
+
+                        // Send a camera transition event to tp the camera immediately
+                        let camera_pos = camera_position_from_level(
+                            level_box_from_level(&ldtk_levels[index.0]),
+                            player_transform.translation.xy(),
+                        );
+                        ev_move_camera.send(CameraMoveEvent::Instant { to: camera_pos });
                         break 'loop_layers;
                     }
                 }
@@ -170,7 +178,9 @@ pub fn handle_level_selection(
 
         next_game_state.set(GameState::Playing);
         next_ui_state.set(UiState::None);
-        // Set the current level_iid to an empty string so we don't trigger the camera transition (skull emoji)
+        // Set the current level_iid to an empty string so we don't trigger the camera transition.
+        // Please add one skull emoji if you try to get rid of this but add it back anyway
+        // (skull emoji) (skull emoji)
         current_level.level_iid = LevelIid::new("");
     }
 }

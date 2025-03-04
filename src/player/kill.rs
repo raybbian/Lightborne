@@ -5,7 +5,9 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    camera::{CameraTransition, CameraTransitionEvent},
+    camera::{
+        camera_position_from_level, CameraMoveEvent, CameraTransition, CameraTransitionEvent,
+    },
     level::{entity::HurtMarker, start_flag::StartFlag, CurrentLevel},
     shared::{GameState, ResetLevel, LYRA_RESPAWN_EPSILON},
 };
@@ -26,6 +28,7 @@ pub fn reset_player_on_kill(
     mut ev_reset_level: EventReader<ResetLevel>,
     q_start_flag: Query<(&StartFlag, &EntityInstance)>,
     current_level: Res<CurrentLevel>,
+    mut ev_move_camera: EventWriter<CameraMoveEvent>,
 ) {
     // check that we recieved a ResetLevel event asking us to Respawn
     if !ev_reset_level.read().any(|x| *x == ResetLevel::Respawn) {
@@ -47,6 +50,9 @@ pub fn reset_player_on_kill(
                 as f32
                 + LYRA_RESPAWN_EPSILON;
             // add small height so Lyra is not stuck into the floor
+            ev_move_camera.send(CameraMoveEvent::Instant {
+                to: camera_position_from_level(current_level.level_box, transform.translation.xy()),
+            });
             return;
         }
     }

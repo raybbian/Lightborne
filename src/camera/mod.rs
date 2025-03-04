@@ -22,8 +22,6 @@ impl Plugin for CameraPlugin {
         app.add_event::<CameraMoveEvent>()
             .add_event::<CameraTransitionEvent>()
             .add_systems(Startup, setup_camera)
-            // also move the camera on reset
-            .add_systems(Update, move_camera.in_set(LevelSystems::Reset))
             .add_systems(
                 FixedUpdate,
                 move_camera
@@ -166,6 +164,7 @@ pub enum CameraMoveEvent {
     },
 }
 
+#[derive(Debug)]
 pub struct Animation {
     progress: Timer,
     start: Vec3,
@@ -281,28 +280,40 @@ pub fn handle_move_camera(
     }
 }
 
+pub fn camera_position_from_level(level_box: Rect, player_pos: Vec2) -> Vec2 {
+    let (x_min, x_max) = (
+        level_box.min.x + CAMERA_WIDTH * 0.5,
+        level_box.max.x - CAMERA_WIDTH * 0.5,
+    );
+    let (y_min, y_max) = (
+        level_box.min.y + CAMERA_HEIGHT * 0.5,
+        level_box.max.y - CAMERA_HEIGHT * 0.5,
+    );
+
+    let new_pos = Vec2::new(
+        player_pos.x.max(x_min).min(x_max),
+        player_pos.y.max(y_min).min(y_max),
+    );
+    new_pos
+}
+
 /// [`System`] that moves camera to player's position and constrains it to the [`CurrentLevel`]'s `world_box`.
 pub fn move_camera(
     current_level: Res<CurrentLevel>,
     q_player: Query<&Transform, With<PlayerMarker>>,
+    q_camera: Query<&Transform, With<MainCamera>>,
     mut ev_move_camera: EventWriter<CameraMoveEvent>,
 ) {
     let Ok(player_transform) = q_player.get_single() else {
         return;
     };
-    let (x_min, x_max) = (
-        current_level.world_box.min.x + CAMERA_WIDTH * 0.5,
-        current_level.world_box.max.x - CAMERA_WIDTH * 0.5,
-    );
-    let (y_min, y_max) = (
-        current_level.world_box.min.y + CAMERA_HEIGHT * 0.5,
-        current_level.world_box.max.y - CAMERA_HEIGHT * 0.5,
-    );
+    let Ok(camera_transform) = q_camera.get_single() else {
+        return;
+    };
 
-    let new_pos = Vec2::new(
-        player_transform.translation.x.max(x_min).min(x_max),
-        player_transform.translation.y.max(y_min).min(y_max),
-    );
-
-    ev_move_camera.send(CameraMoveEvent::Instant { to: new_pos });
+    let camera_pos =
+        camera_position_from_level(current_level.level_box, player_transform.translation.xy());
+    ev_move_camera.send(CameraMoveEvent::Instant {
+        to: camera_transform.translation.xy().lerp(camera_pos, 0.2),
+    });
 }
