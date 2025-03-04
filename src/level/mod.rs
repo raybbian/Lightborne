@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
+use merge_tile::spawn_merged_tiles;
 use sensor::{color_sensors, reset_light_sensors, update_light_sensors, LightSensorBundle};
 
 use crate::{
@@ -15,10 +16,11 @@ use crystal::CrystalPlugin;
 use entity::{SemiSolidPlatformBundle, SpikeBundle};
 use setup::LevelSetupPlugin;
 use start_flag::{init_start_marker, StartFlagBundle};
-use walls::{spawn_wall_collision, WallBundle};
+use walls::{Wall, WallBundle};
 
 pub mod crystal;
 pub mod entity;
+mod merge_tile;
 pub mod sensor;
 mod setup;
 pub mod start_flag;
@@ -41,7 +43,7 @@ impl Plugin for LevelManagementPlugin {
             .register_ldtk_int_cell_for_layer::<SemiSolidPlatformBundle>("Terrain", 15)
             .add_systems(
                 PreUpdate,
-                (spawn_wall_collision, init_start_marker, color_sensors)
+                (spawn_merged_tiles::<Wall>, init_start_marker, color_sensors)
                     .in_set(LevelSystems::Processing),
             )
             .add_systems(Update, reset_light_sensors.in_set(LevelSystems::Reset))
@@ -49,7 +51,9 @@ impl Plugin for LevelManagementPlugin {
                 FixedUpdate,
                 (
                     switch_level.after(handle_level_selection),
-                    update_light_sensors.after(simulate_light_sources),
+                    update_light_sensors
+                        .after(simulate_light_sources)
+                        .in_set(LevelSystems::Simulation),
                 ),
             )
             .configure_sets(

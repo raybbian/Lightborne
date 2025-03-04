@@ -5,10 +5,12 @@ use itertools::Itertools;
 
 use crate::{
     input::CursorWorldCoords,
+    level::CurrentLevel,
     light::{
         segments::{play_light_beam, PrevLightBeamPlayback},
-        LightBeamSource, LightColor,
+        LightBeamSource, LightColor, LightSourceZMarker,
     },
+    lighting::LineLight2d,
 };
 
 use super::PlayerMarker;
@@ -19,9 +21,9 @@ use super::PlayerMarker;
 pub struct PlayerLightInventory {
     /// set to true when LMB is clicked, set to false when RMB is clicked/LMB is released
     should_shoot: bool,
-    current_color: LightColor,
+    pub current_color: LightColor,
     /// Is true if the color is available
-    sources: EnumMap<LightColor, bool>,
+    pub sources: EnumMap<LightColor, bool>,
 }
 
 impl PlayerLightInventory {
@@ -30,10 +32,10 @@ impl PlayerLightInventory {
             should_shoot: false,
             current_color: colors[0],
             sources: enum_map! {
-                LightColor::Green => colors.contains(&LightColor::Green),
-                LightColor::Blue => colors.contains(&LightColor::Blue),
-                LightColor::Red => colors.contains(&LightColor::Red),
-                LightColor::White => colors.contains(&LightColor::White),
+                LightColor::Green =>true,
+                LightColor::Blue => true,
+                LightColor::Red => true,
+                LightColor::White =>true,
             },
         }
     }
@@ -73,21 +75,23 @@ pub fn despawn_angle_indicator(mut commands: Commands, q_angle: Query<Entity, Wi
 pub fn handle_color_switch(
     keys: Res<ButtonInput<KeyCode>>,
     mut q_inventory: Query<&mut PlayerLightInventory>,
+    current_level: Res<CurrentLevel>,
 ) {
     let Ok(mut inventory) = q_inventory.get_single_mut() else {
         return;
     };
-    if keys.just_pressed(KeyCode::Digit1) {
-        inventory.current_color = LightColor::Green;
-    }
-    if keys.just_pressed(KeyCode::Digit2) {
-        inventory.current_color = LightColor::Red;
-    }
-    if keys.just_pressed(KeyCode::Digit3) {
-        inventory.current_color = LightColor::White;
-    }
-    if keys.just_pressed(KeyCode::Digit4) {
-        inventory.current_color = LightColor::Blue;
+
+    let binds: [(KeyCode, LightColor); 4] = [
+        (KeyCode::Digit1, LightColor::Green),
+        (KeyCode::Digit2, LightColor::Red),
+        (KeyCode::Digit3, LightColor::White),
+        (KeyCode::Digit4, LightColor::Blue),
+    ];
+
+    for (key, color) in binds {
+        if keys.just_pressed(key) && current_level.allowed_colors.contains(&color) {
+            inventory.current_color = color;
+        }
     }
 }
 
@@ -103,10 +107,14 @@ pub fn should_shoot_light<const V: bool>(
 pub fn shoot_light(
     mut commands: Commands,
     mut q_player: Query<(&Transform, &mut PlayerLightInventory), With<PlayerMarker>>,
+    q_light_source_z: Query<&Transform, With<LightSourceZMarker>>,
     q_cursor: Query<&CursorWorldCoords>,
     asset_server: Res<AssetServer>,
 ) {
     let Ok((player_transform, mut player_inventory)) = q_player.get_single_mut() else {
+        return;
+    };
+    let Ok(light_source_z) = q_light_source_z.get_single() else {
         return;
     };
     let Ok(cursor_pos) = q_cursor.get_single() else {
@@ -126,7 +134,8 @@ pub fn shoot_light(
         return;
     }
 
-    let mut source_transform = Transform::from_translation(ray_pos.extend(1.0)); //hardcode hack fix
+    let mut source_transform =
+        Transform::from_translation(ray_pos.extend(light_source_z.translation.z));
     source_transform.rotate_z(ray_dir.to_angle());
     let mut source_sprite = Sprite::from_image(asset_server.load("light/compass.png"));
     source_sprite.color = Color::srgb(2.0, 2.0, 2.0);
@@ -145,6 +154,11 @@ pub fn shoot_light(
         })
         .insert(PrevLightBeamPlayback::from_color(
             player_inventory.current_color,
+        ))
+        .insert(LineLight2d::point(
+            player_inventory.current_color.lighting_color().extend(1.0),
+            30.0,
+            0.0,
         ))
         .insert(source_sprite)
         .insert(source_transform)

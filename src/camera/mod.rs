@@ -10,6 +10,7 @@ use bevy_rapier2d::plugin::PhysicsSet;
 
 use crate::{
     level::{switch_level, CurrentLevel, LevelSystems},
+    lighting::AmbientLight2d,
     player::PlayerMarker,
 };
 
@@ -108,6 +109,9 @@ fn setup_camera(
     commands.spawn((
         Camera2d,
         MainCamera,
+        AmbientLight2d {
+            color: Vec4::new(1.0, 1.0, 1.0, 0.4),
+        },
         Camera {
             hdr: true,
             order: 1,

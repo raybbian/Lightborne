@@ -11,13 +11,18 @@ use crate::{
 };
 
 use super::{
-    light::PlayerLightInventory, movement::PlayerMovement, PlayerHurtMarker, PlayerMarker,
+    light::{AngleMarker, PlayerLightInventory},
+    movement::PlayerMovement,
+    PlayerHurtMarker, PlayerMarker,
 };
 
 /// [`System`] that runs on [`GameState::Respawning`]. Will turn the state back into playing
 /// immediately.
-pub fn reset_player_position(
+pub fn reset_player_on_kill(
+    mut commands: Commands,
+    // angle marker despawn should realistically happen in a diff system?
     mut q_player: Query<&mut Transform, With<PlayerMarker>>,
+    q_angle_marker: Query<Entity, With<AngleMarker>>,
     mut ev_reset_level: EventReader<ResetLevel>,
     q_start_flag: Query<(&StartFlag, &EntityInstance)>,
     current_level: Res<CurrentLevel>,
@@ -29,6 +34,10 @@ pub fn reset_player_position(
     let Ok(mut transform) = q_player.get_single_mut() else {
         return;
     };
+
+    if let Ok(angle_marker) = q_angle_marker.get_single() {
+        commands.entity(angle_marker).despawn_recursive();
+    }
 
     for (flag, instance) in q_start_flag.iter() {
         if current_level.level_iid == flag.level_iid {
@@ -47,22 +56,12 @@ pub fn reset_player_position(
 
 /// Resets the player inventory and movement information on a [`LevelSwitchEvent`]
 pub fn reset_player_on_level_switch(
-    mut q_player: Query<
-        (
-            &mut PlayerMovement,
-            &mut PlayerLightInventory,
-            &mut Transform,
-        ),
-        With<PlayerMarker>,
-    >,
+    mut q_player: Query<(&mut PlayerMovement, &mut PlayerLightInventory), With<PlayerMarker>>,
     current_level: Res<CurrentLevel>,
 ) {
-    let Ok((mut movement, mut inventory, mut transform)) = q_player.get_single_mut() else {
+    let Ok((mut movement, mut inventory)) = q_player.get_single_mut() else {
         return;
     };
-
-    // FIXME: workaround for crouch transform
-    *transform = transform.with_scale(Vec3::ONE);
 
     *movement = PlayerMovement::default();
     *inventory = PlayerLightInventory::colors(&current_level.allowed_colors);

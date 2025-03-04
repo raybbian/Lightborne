@@ -5,9 +5,14 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rapier2d::prelude::*;
 
-use crate::{light::LightColor, lighting::occluder::ColliderBasedOccluder, shared::GroupLabel};
+use crate::{light::LightColor, lighting::Occluder2d, shared::GroupLabel};
 
-use super::{entity::HurtMarker, CurrentLevel, LevelSystems};
+use super::{
+    entity::HurtMarker,
+    merge_tile::{spawn_merged_tiles, MergedTile},
+    sensor::update_light_sensors,
+    CurrentLevel, LevelSystems,
+};
 
 /// [`Plugin`] for managing all things related to [`Crystal`]s. This plugin responds to the
 /// addition and removal of [`Activated`] [`Component`]s and updates the sprite and collider of
@@ -21,9 +26,9 @@ impl Plugin for CrystalPlugin {
             .add_systems(
                 PreUpdate,
                 (
-                    init_crystal_cache_and_ids,
-                    add_crystal_colliders,
+                    init_crystal_cache_tiles,
                     update_crystal_cache,
+                    (spawn_merged_tiles::<Crystal>, init_crystal_cache_groups).chain(),
                 )
                     .in_set(LevelSystems::Processing),
             )
@@ -31,7 +36,9 @@ impl Plugin for CrystalPlugin {
             .add_systems(
                 Update,
                 (
-                    on_crystal_changed.in_set(LevelSystems::Simulation),
+                    on_crystal_changed
+                        .in_set(LevelSystems::Simulation)
+                        .after(update_light_sensors),
                     reset_crystals.in_set(LevelSystems::Reset),
                 ),
             );
@@ -59,7 +66,77 @@ pub struct CrystalColor {
 pub struct Crystal {
     color: CrystalColor,
     init_active: bool,
-    active: bool,
+    pub active: bool,
+}
+
+impl MergedTile for Crystal {
+    type CompareData = (CrystalColor, bool);
+
+    fn bundle(
+        commands: &mut EntityCommands,
+        center: Vec2,
+        half_extent: Vec2,
+        compare_data: &Self::CompareData,
+    ) {
+        let (crystal_color, crystal_active) = compare_data;
+
+        if crystal_color.color == LightColor::Blue {
+            commands.insert(CollisionGroups::new(
+                GroupLabel::TERRAIN,
+                GroupLabel::ALL & !GroupLabel::BLUE_RAY,
+            ));
+        }
+
+        if *crystal_active {
+            commands.insert((
+                Collider::cuboid(half_extent.x, half_extent.y),
+                Occluder2d::new(half_extent.x, half_extent.y),
+            ));
+        }
+
+        commands.insert((
+            RigidBody::Fixed,
+            Transform::from_xyz(center.x, center.y, 0.),
+            CrystalGroup {
+                representative: Crystal {
+                    init_active: compare_data.1,
+                    color: compare_data.0,
+                    active: compare_data.1,
+                },
+                half_extent,
+            },
+            HurtMarker,
+        ));
+    }
+
+    fn compare_data(&self) -> Self::CompareData {
+        (self.color, self.init_active)
+    }
+}
+
+/// [`Bundle`] registered with [`LdktEntityAppExt::register_ldtk_entity`](LdtkEntityAppExt) to spawn
+/// crystals directly from Ldtk.
+#[derive(Bundle, LdtkIntCell)]
+pub struct CrystalBundle {
+    #[from_int_grid_cell]
+    crystal: Crystal,
+    #[from_int_grid_cell]
+    cell: IntGridCell,
+}
+
+impl Default for CrystalBundle {
+    fn default() -> Self {
+        Self {
+            crystal: Crystal::default(),
+            cell: IntGridCell::default(),
+        }
+    }
+}
+
+#[derive(Component)]
+pub struct CrystalGroup {
+    pub representative: Crystal,
+    pub half_extent: Vec2,
 }
 
 /// Identifier [`Component`] used to label the ID of white crystals
@@ -81,7 +158,8 @@ pub struct CrystalIdBundle {
 
 #[derive(Debug, Default, Resource)]
 pub struct CrystalCache {
-    levels: HashMap<LevelIid, HashMap<CrystalColor, Vec<Entity>>>,
+    tiles: HashMap<LevelIid, HashMap<CrystalColor, Vec<Entity>>>,
+    groups: HashMap<LevelIid, HashMap<CrystalColor, Vec<Entity>>>,
 }
 
 fn update_crystal_cache(
@@ -92,16 +170,38 @@ fn update_crystal_cache(
         let LevelEvent::Despawned(iid) = ev else {
             continue;
         };
-        if let Some(mp) = crystal_cache.levels.get_mut(iid) {
+        if let Some(mp) = crystal_cache.tiles.get_mut(iid) {
             mp.clear();
         }
+        if let Some(mp) = crystal_cache.groups.get_mut(iid) {
+            mp.clear();
+        }
+    }
+}
+
+fn init_crystal_cache_groups(
+    q_crystal_groups: Query<(Entity, &Parent, &CrystalGroup), Added<CrystalGroup>>,
+    q_level_iid: Query<&LevelIid>,
+    mut crystal_cache: ResMut<CrystalCache>,
+) {
+    for (entity, parent, crystal_group) in q_crystal_groups.iter() {
+        let Ok(level_iid) = q_level_iid.get(**parent) else {
+            continue;
+        };
+        crystal_cache
+            .groups
+            .entry(level_iid.clone())
+            .or_default()
+            .entry(crystal_group.representative.color)
+            .or_default()
+            .push(entity);
     }
 }
 
 /// System that will initialize all the crystals, storing their entities in the appropriate level
 /// -> crystal color location in the crystal cache.
 #[allow(clippy::type_complexity)]
-fn init_crystal_cache_and_ids(
+fn init_crystal_cache_tiles(
     mut commands: Commands,
     q_crystal_id: Query<(&GridCoords, &Parent, &CrystalId), (Added<CrystalId>, Without<Crystal>)>,
     mut q_crystals: Query<(Entity, &GridCoords, &Parent, &mut Crystal), Added<Crystal>>,
@@ -150,7 +250,7 @@ fn init_crystal_cache_and_ids(
         };
 
         crystal_cache
-            .levels
+            .tiles
             .entry(level_iid.clone())
             .or_default()
             .entry(actual_color)
@@ -198,91 +298,56 @@ impl From<IntGridCell> for Crystal {
     }
 }
 
-/// [`Bundle`] registered with [`LdktEntityAppExt::register_ldtk_entity`](LdtkEntityAppExt) to spawn
-/// crystals directly from Ldtk.
-#[derive(Bundle, LdtkIntCell)]
-pub struct CrystalBundle {
-    #[from_int_grid_cell]
-    crystal: Crystal,
-    #[from_int_grid_cell]
-    cell: IntGridCell,
-    collider_based_occluder: ColliderBasedOccluder,
-    hurt_marker: HurtMarker,
-}
-
-impl Default for CrystalBundle {
-    fn default() -> Self {
-        Self {
-            collider_based_occluder: ColliderBasedOccluder { indent: 2.0 },
-            crystal: Crystal::default(),
-            cell: IntGridCell::default(),
-            hurt_marker: HurtMarker,
-        }
-    }
-}
-
-fn add_crystal_colliders(
-    mut commands: Commands,
-    q_crystals: Query<(Entity, &IntGridCell), Added<Crystal>>,
-) {
-    for (entity, cell) in q_crystals.iter() {
-        if crystal_color(*cell) == LightColor::Blue {
-            let mut collider = commands.entity(entity);
-            collider.insert(CollisionGroups::new(
-                GroupLabel::TERRAIN,
-                GroupLabel::ALL & !GroupLabel::BLUE_RAY,
-            ));
-        }
-        if is_crystal_active(*cell) {
-            let mut collider = commands.entity(entity);
-            collider.insert(Collider::cuboid(4.0, 4.0));
-        }
-    }
-}
-
 /// The horizontal offset between active crystals and inactive crystals in the crystal tilemap
 const CRYSTAL_INDEX_OFFSET: u32 = 5;
 
-/// Switches a crystal from inactive to active. Calling this on an already active crystal will
-/// result in weird behavior.
-fn activate_crystal(
+fn toggle_crystal_group(
     commands: &mut Commands,
-    crystal_entity: Entity,
-    crystal_index: &mut TileTextureIndex,
+    crystal_group_entity: Entity,
+    crystal_group: &mut CrystalGroup,
 ) {
-    commands
-        .entity(crystal_entity)
-        .insert(Collider::cuboid(4.0, 4.0));
-    crystal_index.0 -= CRYSTAL_INDEX_OFFSET;
+    let crystal = &mut crystal_group.representative;
+    if !crystal.active {
+        crystal.active = true;
+        commands.entity(crystal_group_entity).insert((
+            Collider::cuboid(crystal_group.half_extent.x, crystal_group.half_extent.y),
+            Occluder2d::new(crystal_group.half_extent.x, crystal_group.half_extent.y),
+        ));
+    } else {
+        crystal.active = false;
+        commands
+            .entity(crystal_group_entity)
+            .remove::<(Collider, Occluder2d)>();
+    }
 }
 
-/// Switches a crystal from active to inactive. Calling this on an already inactive crystal will
-/// result in weird behavior.
-fn deactivate_crystal(
-    commands: &mut Commands,
-    crystal_entity: Entity,
-    crystal_index: &mut TileTextureIndex,
-) {
-    commands.entity(crystal_entity).remove::<Collider>();
-    crystal_index.0 += CRYSTAL_INDEX_OFFSET;
+fn toggle_crystal(crystal: &mut Crystal, crystal_index: &mut TileTextureIndex) {
+    if !crystal.active {
+        crystal.active = true;
+        crystal_index.0 -= CRYSTAL_INDEX_OFFSET;
+    } else {
+        crystal.active = false;
+        crystal_index.0 += CRYSTAL_INDEX_OFFSET;
+    }
 }
 
 /// [`System`] that listens to [`LevelSwitchEvent`]s to ensure that [`Crystal`] states are reset
 /// when switching between rooms.
 pub fn reset_crystals(
     mut commands: Commands,
-    mut q_crystals: Query<(Entity, &mut Crystal, &mut TileTextureIndex)>,
+    mut q_crystals: Query<(&mut Crystal, &mut TileTextureIndex)>,
+    mut q_crystal_groups: Query<(Entity, &mut CrystalGroup)>,
 ) {
-    for (entity, mut crystal, mut index) in q_crystals.iter_mut() {
-        if crystal.active == crystal.init_active {
-            continue;
+    for (entity, mut crystal_group) in q_crystal_groups.iter_mut() {
+        let crystal = &crystal_group.representative;
+        if crystal.init_active != crystal.active {
+            toggle_crystal_group(&mut commands, entity, &mut crystal_group);
         }
-        if crystal.init_active {
-            activate_crystal(&mut commands, entity, &mut index);
-            crystal.active = true;
-        } else {
-            deactivate_crystal(&mut commands, entity, &mut index);
-            crystal.active = false;
+    }
+
+    for (mut crystal, mut index) in q_crystals.iter_mut() {
+        if crystal.init_active != crystal.active {
+            toggle_crystal(&mut crystal, &mut index);
         }
     }
 }
@@ -298,6 +363,7 @@ pub struct CrystalToggleEvent {
 pub fn on_crystal_changed(
     mut commands: Commands,
     mut q_crystal: Query<(&mut Crystal, &mut TileTextureIndex)>,
+    mut q_crystal_groups: Query<&mut CrystalGroup>,
     mut crystal_toggle_ev: EventReader<CrystalToggleEvent>,
     crystal_cache: Res<CrystalCache>,
     current_level: Res<CurrentLevel>,
@@ -305,25 +371,28 @@ pub fn on_crystal_changed(
     if crystal_toggle_ev.is_empty() {
         return;
     }
-    let Some(color_map) = crystal_cache.levels.get(&current_level.level_iid) else {
+    let Some(crystal_tile_map) = crystal_cache.tiles.get(&current_level.level_iid) else {
+        return;
+    };
+    let Some(crystal_group_map) = crystal_cache.groups.get(&current_level.level_iid) else {
         return;
     };
 
     for CrystalToggleEvent { color } in crystal_toggle_ev.read() {
-        let Some(crystals) = color_map.get(color) else {
-            continue;
+        if let Some(crystals) = crystal_tile_map.get(color) {
+            for crystal_entity in crystals.iter() {
+                let Ok((mut crystal, mut index)) = q_crystal.get_mut(*crystal_entity) else {
+                    continue;
+                };
+                toggle_crystal(&mut crystal, &mut index);
+            }
         };
-        for crystal_entity in crystals.iter() {
-            let Ok((mut crystal, mut index)) = q_crystal.get_mut(*crystal_entity) else {
-                continue;
-            };
-
-            if crystal.active {
-                deactivate_crystal(&mut commands, *crystal_entity, &mut index);
-                crystal.active = false;
-            } else {
-                activate_crystal(&mut commands, *crystal_entity, &mut index);
-                crystal.active = true;
+        if let Some(crystal_groups) = crystal_group_map.get(color) {
+            for crystal_group_entity in crystal_groups.iter() {
+                let Ok(mut crystal_group) = q_crystal_groups.get_mut(*crystal_group_entity) else {
+                    continue;
+                };
+                toggle_crystal_group(&mut commands, *crystal_group_entity, &mut crystal_group);
             }
         }
     }
