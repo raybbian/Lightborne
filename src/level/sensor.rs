@@ -1,6 +1,7 @@
 use bevy::{prelude::*, time::Stopwatch};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
+use enum_map::EnumMap;
 
 use crate::{
     level::crystal::{CrystalColor, CrystalToggleEvent},
@@ -12,20 +13,25 @@ use super::{entity::FixedEntityBundle, LightColor};
 /// [`Component`] added to entities receptive to light. The
 /// [`activation_timer`](LightSensor::activation_timer) should be initialized in the
 /// `From<&EntityInstance>` implemenation for the [`LightSensorBundle`], if not default.
+///
+/// The [`Sprite`] on the entity containing a [`LightSensor`] refers to the center part of the
+/// sprite, which will be colored depending on the light that hits it.
 #[derive(Component, Debug)]
 pub struct LightSensor {
     /// Stores the cumulative time light has been hitting the sensor
     pub cumulative_exposure: Stopwatch,
     /// Stores the amount of light stored in the sensor, from 0 to 1.
     pub meter: f32,
-    /// Number of light beams hitting the sensor
-    pub hit_count: usize,
+    /// Colors of light beams hitting the sensor
+    pub hit_by: EnumMap<LightColor, bool>,
     /// Active state of the sensor
     pub is_active: bool,
     /// The color of the crystals to toggle
     pub toggle_color: CrystalColor,
     /// Meter's rate of change, per fixed timestep tick.
     rate: f32,
+    /// Stored color used to animate the center of the sensor when the light no longer hits it
+    stored_color: Color,
 }
 
 impl LightSensor {
@@ -34,18 +40,29 @@ impl LightSensor {
         LightSensor {
             meter: 0.0,
             cumulative_exposure: Stopwatch::default(),
-            hit_count: 0,
+            hit_by: EnumMap::default(),
             is_active: false,
             toggle_color,
             rate,
+            stored_color: Color::WHITE,
         }
     }
 
     fn reset(&mut self) {
         self.meter = 0.0;
-        self.hit_count = 0;
+        self.hit_by = EnumMap::default();
         self.is_active = false;
         self.cumulative_exposure.reset();
+    }
+
+    fn is_hit(&self) -> bool {
+        self.hit_by.iter().any(|(_, hit_by_color)| *hit_by_color)
+    }
+
+    fn iter_hit_color(&self) -> impl Iterator<Item = LightColor> + '_ {
+        self.hit_by
+            .iter()
+            .filter_map(|(color, hit_by_color)| if *hit_by_color { Some(color) } else { None })
     }
 }
 
@@ -84,16 +101,21 @@ pub fn add_sensor_sprites(
 
     let sensor_inner = asset_server.load("sensor/sensor_inner.png");
     let sensor_outer = asset_server.load("sensor/sensor_outer.png");
+    let sensor_center = asset_server.load("sensor/sensor_center.png");
 
     let inner_sprite = Sprite::from_image(sensor_inner);
     let mut outer_sprite = Sprite::from_image(sensor_outer);
+    let center_sprite = Sprite::from_image(sensor_center);
 
     for (entity, sensor) in q_buttons.iter() {
         outer_sprite.color = sensor.toggle_color.color.button_color();
         commands
             .entity(entity)
-            .insert(inner_sprite.clone())
-            .with_child(outer_sprite.clone());
+            .with_children(|sensor| {
+                sensor.spawn(inner_sprite.clone());
+                sensor.spawn(outer_sprite.clone());
+            })
+            .insert(center_sprite.clone());
     }
 }
 
@@ -119,7 +141,7 @@ pub fn sensor_point_light(entity_instance: &EntityInstance) -> LineLight2d {
         .expect("light_color needs to be an enum field on all buttons")
         .into();
 
-    LineLight2d::point(light_color.lighting_color().extend(0.5), 35.0, 0.008)
+    LineLight2d::point(light_color.lighting_color().extend(0.0), 35.0, 0.008)
 }
 
 /// [`System`] that resets the [`LightSensor`]s when a [`LevelSwitchEvent`] is received.
@@ -137,16 +159,24 @@ pub fn reset_light_sensors(mut q_sensors: Query<&mut LightSensor>) {
 /// implementation across multiple systems to better utilize [`Event`].
 pub fn update_light_sensors(
     mut commands: Commands,
-    mut q_sensors: Query<(Entity, &mut LightSensor)>,
+    mut q_sensors: Query<(Entity, &mut LightSensor, &mut Sprite)>,
     mut ev_crystal_toggle: EventWriter<CrystalToggleEvent>,
     asset_server: Res<AssetServer>,
     time: Res<Time>,
 ) {
-    for (entity, mut sensor) in q_sensors.iter_mut() {
-        let was_hit = sensor.hit_count > 0;
+    for (entity, mut sensor, mut sprite) in q_sensors.iter_mut() {
+        let was_hit = sensor.is_hit();
 
         if was_hit {
             sensor.cumulative_exposure.tick(time.delta());
+
+            // if the sensor was hit, update the stored color for the sensor
+            let mut col = Vec3::ZERO;
+            for color in sensor.iter_hit_color() {
+                col += color.lighting_color() * 0.5;
+            }
+            col += Vec3::splat(0.6);
+            sensor.stored_color = Color::srgb(col.x, col.y, col.z);
         }
 
         let juice = if was_hit { sensor.rate } else { -sensor.rate };
@@ -175,5 +205,7 @@ pub fn update_light_sensors(
             }
             sensor.meter = 0.0;
         }
+
+        sprite.color = Color::WHITE.mix(&sensor.stored_color, sensor.meter);
     }
 }

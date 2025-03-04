@@ -287,7 +287,7 @@ pub fn simulate_light_sources(
                 if remove_intersection {
                     pts[i + 1] = prev_x.unwrap().point;
                     if let Ok(mut sensor) = q_light_sensor.get_mut(prev_x.unwrap().entity) {
-                        sensor.hit_count -= 1;
+                        sensor.hit_by[source.color] = false;
                     }
                     prev_playback.intersections[i] = None;
                     source.time_traveled = prev_x.unwrap().time;
@@ -296,7 +296,7 @@ pub fn simulate_light_sources(
                 if add_intersection {
                     pts[i + 1] = new_x.point;
                     if let Ok(mut sensor) = q_light_sensor.get_mut(new_x.entity) {
-                        sensor.hit_count += 1;
+                        sensor.hit_by[source.color] = true;
                     }
                     prev_playback.intersections[i] = Some(new_x);
                     source.time_traveled = new_x.time;
@@ -324,7 +324,7 @@ pub fn simulate_light_sources(
                 {
                     if let Some(intersection) = intersection {
                         if let Ok(mut sensor) = q_light_sensor.get_mut(intersection.entity) {
-                            sensor.hit_count -= 1;
+                            sensor.hit_by[source.color] = false;
                         }
                     }
                     *intersection = None;
