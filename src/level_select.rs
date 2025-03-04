@@ -104,7 +104,7 @@ fn spawn_level_select(
                                 BorderColor(Color::WHITE),
                                 LevelSelectButtonIndex(*index),
                             ))
-                            .with_child(Text::new(level_id));
+                            .with_child(Text::new(level_id.to_string()));
                     }
                 });
         });

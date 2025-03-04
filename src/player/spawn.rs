@@ -5,7 +5,9 @@ use bevy_rapier2d::prelude::*;
 use crate::{animation::AnimationConfig, lighting::LineLight2d, shared::GroupLabel};
 
 use super::{
-    animation::{PlayerAnimationType, ANIMATION_FRAMES}, light::PlayerLightInventory, movement::PlayerMovement,
+    animation::{PlayerAnimationType, ANIMATION_FRAMES},
+    light::PlayerLightInventory,
+    movement::PlayerMovement,
     PlayerBundle, PlayerMarker,
 };
 
