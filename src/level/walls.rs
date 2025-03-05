@@ -44,6 +44,5 @@ impl MergedTile for Wall {
 
     fn compare_data(&self) -> Self::CompareData {
         // all walls are mergable
-        ()
     }
 }

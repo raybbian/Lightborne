@@ -290,11 +290,10 @@ pub fn camera_position_from_level(level_box: Rect, player_pos: Vec2) -> Vec2 {
         level_box.max.y - CAMERA_HEIGHT * 0.5,
     );
 
-    let new_pos = Vec2::new(
+    Vec2::new(
         player_pos.x.max(x_min).min(x_max),
         player_pos.y.max(y_min).min(y_max),
-    );
-    new_pos
+    )
 }
 
 /// [`System`] that moves camera to player's position and constrains it to the [`CurrentLevel`]'s `world_box`.

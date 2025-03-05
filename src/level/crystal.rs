@@ -116,21 +116,12 @@ impl MergedTile for Crystal {
 
 /// [`Bundle`] registered with [`LdktEntityAppExt::register_ldtk_entity`](LdtkEntityAppExt) to spawn
 /// crystals directly from Ldtk.
-#[derive(Bundle, LdtkIntCell)]
+#[derive(Bundle, LdtkIntCell, Default)]
 pub struct CrystalBundle {
     #[from_int_grid_cell]
     crystal: Crystal,
     #[from_int_grid_cell]
     cell: IntGridCell,
-}
-
-impl Default for CrystalBundle {
-    fn default() -> Self {
-        Self {
-            crystal: Crystal::default(),
-            cell: IntGridCell::default(),
-        }
-    }
 }
 
 #[derive(Component)]

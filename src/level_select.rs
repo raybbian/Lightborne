@@ -186,6 +186,7 @@ fn despawn_level_select(
 }
 
 #[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)]
 pub fn handle_level_selection(
     mut interaction_query: Query<
         (&Interaction, &LevelSelectButtonIndex),
