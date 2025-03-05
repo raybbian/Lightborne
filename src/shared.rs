@@ -28,10 +28,11 @@ pub enum GameState {
     Ui,
 }
 
-#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
+#[source(GameState = GameState::Ui)]
 pub enum UiState {
+    #[default]
     LevelSelect,
-    None,
 }
 
 #[derive(Event, PartialEq, Eq)]

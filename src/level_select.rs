@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use bevy::asset::RenderAssetUsages;
 use bevy::audio::PlaybackMode;
 use bevy::image::{BevyDefault, TextureFormatPixelInfo};
+use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use bevy_ecs_ldtk::ldtk::{FieldValue, Type};
@@ -35,7 +36,7 @@ const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
     [30, 61, 23, 255],    // intgrid 6
     [192, 203, 220, 255], // intgrid 7
     [55, 58, 62, 255],    // intgrid 8
-    [80, 183, 56, 255],   // intgrid 9
+    [80, 150, 230, 255],  // intgrid 9
     [43, 85, 136, 255],   // intgrid 10
     [0, 0, 0, 255],       // intgrid 11
     [0, 0, 0, 255],       // intgrid 12
@@ -61,7 +62,7 @@ struct LevelSelectUiMarker;
 pub struct LevelPreviewMarker;
 
 #[derive(Resource)]
-pub struct LevelPreviewStore(HashMap<String, Handle<Image>>);
+pub struct LevelPreviewStore(HashMap<String, (Vec2, Handle<Image>)>);
 
 #[derive(Component)]
 pub struct LevelSelectButtonIndex(usize);
@@ -69,6 +70,10 @@ pub struct LevelSelectButtonIndex(usize);
 impl Plugin for LevelSelectPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(LevelPreviewStore(HashMap::new()))
+            .add_systems(
+                PostUpdate,
+                switch_to_level_select.run_if(input_just_pressed(KeyCode::KeyL)),
+            )
             .add_systems(
                 FixedUpdate,
                 (
@@ -80,6 +85,14 @@ impl Plugin for LevelSelectPlugin {
                 ),
             );
     }
+}
+
+fn switch_to_level_select(
+    mut next_ui_state: ResMut<NextState<UiState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+) {
+    next_game_state.set(GameState::Ui);
+    next_ui_state.set(UiState::LevelSelect);
 }
 
 fn spawn_level_select(
@@ -107,6 +120,11 @@ fn spawn_level_select(
     }
     sorted_levels.sort();
 
+    let font = TextFont {
+        font: asset_server.load("fonts/Munro.ttf"),
+        ..default()
+    };
+
     commands
         .spawn((
             LevelSelectUiMarker,
@@ -116,6 +134,8 @@ fn spawn_level_select(
                 justify_content: JustifyContent::SpaceBetween,
                 display: Display::Flex,
                 flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+                padding: UiRect::all(Val::Px(24.0)),
                 ..default()
             },
             BackgroundColor(Color::BLACK),
@@ -126,11 +146,16 @@ fn spawn_level_select(
             },
         ))
         .with_children(|parent| {
-            parent.spawn(Text::new("Level Select"));
+            parent.spawn((Text::new("Level Select"), font.clone().with_font_size(36.)));
             parent
                 .spawn(Node {
                     width: Val::Percent(100.),
+                    padding: UiRect::all(Val::Px(16.0)),
                     height: Val::Auto,
+                    flex_direction: FlexDirection::Row,
+                    flex_wrap: FlexWrap::Wrap,
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
                     ..default()
                 })
                 .with_children(|parent| {
@@ -139,10 +164,11 @@ fn spawn_level_select(
                             .spawn((
                                 Button,
                                 Node {
-                                    width: Val::Percent(4.),
-                                    height: Val::Auto,
-                                    border: UiRect::all(Val::Percent(0.2)),
-                                    margin: UiRect::all(Val::Percent(0.5)),
+                                    width: Val::Px(96.0),
+                                    height: Val::Px(96.0),
+                                    padding: UiRect::all(Val::Px(8.0)),
+                                    margin: UiRect::all(Val::Px(4.0)),
+                                    border: UiRect::all(Val::Px(2.0)),
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
                                     ..default()
@@ -150,7 +176,10 @@ fn spawn_level_select(
                                 BorderColor(Color::WHITE),
                                 LevelSelectButtonIndex(*index),
                             ))
-                            .with_child(Text::new(level_id.to_string()));
+                            .with_child((
+                                Text::new(level_id.to_string()),
+                                font.clone().with_font_size(24.),
+                            ));
                     }
                 });
             parent
@@ -162,14 +191,7 @@ fn spawn_level_select(
                     ..default()
                 },))
                 .with_children(|parent| {
-                    parent.spawn((
-                        Node {
-                            width: Val::Percent(30.),
-                            height: Val::Auto,
-                            ..default()
-                        },
-                        LevelPreviewMarker,
-                    ));
+                    parent.spawn((LevelPreviewMarker, Node::default()));
                 });
         });
 }
@@ -193,7 +215,6 @@ pub fn handle_level_selection(
         (Changed<Interaction>, With<Button>),
     >,
     mut next_game_state: ResMut<NextState<GameState>>,
-    mut next_ui_state: ResMut<NextState<UiState>>,
     ldtk_assets: Res<Assets<LdtkProject>>,
     query_ldtk: Query<&LdtkProjectHandle>,
     mut query_player: Query<&mut Transform, (With<PlayerMarker>, Without<StartFlag>)>,
@@ -204,15 +225,13 @@ pub fn handle_level_selection(
     mut query_level_preview: Query<(Entity, Option<&mut ImageNode>), With<LevelPreviewMarker>>,
     mut commands: Commands,
 ) {
-    // We expect there to be only one interaction
-    if let Some((interaction, index)) = (&mut interaction_query).into_iter().next() {
-        let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_assets, query_ldtk) else {
-            return;
-        };
+    let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_assets, query_ldtk) else {
+        return;
+    };
+    'loop_interactions: for (interaction, index) in interaction_query.iter_mut() {
         if index.0 >= ldtk_levels.len() {
             panic!("Selected level index is out of bounds!")
         }
-        // <<<<<<< HEAD
         let level = &ldtk_levels[index.0];
         match *interaction {
             Interaction::Pressed => {
@@ -249,16 +268,16 @@ pub fn handle_level_selection(
                 }
 
                 next_game_state.set(GameState::Playing);
-                next_ui_state.set(UiState::None);
                 // Set the current level_iid to an empty string so we don't trigger the camera transition (skull emoji)
                 current_level.level_iid = LevelIid::new("");
+                break 'loop_interactions;
             }
             Interaction::Hovered => {
                 let level_id = level
                     .get_string_field("LevelId")
                     .expect("Levels should always have a level id!");
-                let level_preview = match level_preview_store.0.get(level_id) {
-                    Some(handle) => handle.clone(),
+                let (level_dims, level_preview) = match level_preview_store.0.get(level_id) {
+                    Some(level_preview) => level_preview.clone(),
                     None => {
                         let level_layers =
                             level.layer_instances.as_ref().expect("Layers not found!");
@@ -329,13 +348,14 @@ pub fn handle_level_selection(
                             TextureDimension::D2,
                             level_preview_data,
                             TextureFormat::bevy_default(),
-                            RenderAssetUsages::RENDER_WORLD,
+                            RenderAssetUsages::RENDER_WORLD | RenderAssetUsages::MAIN_WORLD,
                         );
                         let new_handle = assets.add(preview);
+                        let level_dims = Vec2::new(layer_w as f32, layer_h as f32);
                         level_preview_store
                             .0
-                            .insert(level_id.into(), new_handle.clone());
-                        new_handle
+                            .insert(level_id.into(), (level_dims, new_handle.clone()));
+                        (level_dims, new_handle)
                     }
                 };
                 let Ok((level_preview_entity, level_preview_image_node)) =
@@ -347,7 +367,16 @@ pub fn handle_level_selection(
                     level_preview_image_node.image = level_preview;
                 } else {
                     let image_node = ImageNode::new(level_preview);
-                    commands.entity(level_preview_entity).insert(image_node);
+                    commands.entity(level_preview_entity).insert((
+                        image_node,
+                        Node {
+                            width: Val::Percent(60.),
+                            height: Val::Auto,
+                            max_height: Val::Percent(50.),
+                            aspect_ratio: Some(level_dims.x / level_dims.y),
+                            ..default()
+                        },
+                    ));
                 }
             }
             _ => {}
