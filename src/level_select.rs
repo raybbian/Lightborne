@@ -105,7 +105,10 @@ fn spawn_level_select(
     if level_select_ui_query.get_single().is_ok() {
         return;
     }
-    let Ok(levels) = get_ldtk_level_data(ldtk_assets, query_ldtk) else {
+    let Ok(ldtk_handle) = query_ldtk.get_single() else {
+        return;
+    };
+    let Ok(levels) = get_ldtk_level_data(ldtk_assets.into_inner(), ldtk_handle) else {
         return;
     };
     let mut sorted_levels = Vec::with_capacity(levels.len());
@@ -225,7 +228,10 @@ pub fn handle_level_selection(
     mut query_level_preview: Query<(Entity, Option<&mut ImageNode>), With<LevelPreviewMarker>>,
     mut commands: Commands,
 ) {
-    let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_assets, query_ldtk) else {
+    let Ok(ldtk_handle) = query_ldtk.get_single() else {
+        return;
+    };
+    let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_assets.into_inner(), ldtk_handle) else {
         return;
     };
     'loop_interactions: for (interaction, index) in interaction_query.iter_mut() {

@@ -87,7 +87,7 @@ pub fn calculate_line_light_2d_bounds(
     for (entity, light) in q_light_changed.iter() {
         let aabb = Aabb {
             center: Vec3::ZERO.into(),
-            half_extents: Vec2::splat(light.half_length + light.radius)
+            half_extents: Vec2::new(light.half_length + light.radius, light.radius)
                 .extend(0.0)
                 .into(),
         };

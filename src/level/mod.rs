@@ -99,18 +99,14 @@ pub enum LevelSystems {
     Reset,
 }
 
-// TODO: do not use levels.clone() here!
-pub fn get_ldtk_level_data(
-    ldtk_assets: Res<Assets<LdtkProject>>,
-    query_ldtk: Query<&LdtkProjectHandle>,
-) -> Result<Vec<Level>, String> {
-    let Ok(ldtk_handle) = query_ldtk.get_single() else {
-        return Err("Could not find LDTK project handle!".into());
-    };
+pub fn get_ldtk_level_data<'ldtk>(
+    ldtk_assets: &'ldtk Assets<LdtkProject>,
+    ldtk_handle: &LdtkProjectHandle,
+) -> Result<&'ldtk Vec<Level>, String> {
     let Some(ldtk_project) = ldtk_assets.get(ldtk_handle) else {
         return Err("Failed to get LdtkProject asset!".into());
     };
-    Ok(ldtk_project.json_data().levels.clone())
+    Ok(&ldtk_project.json_data().levels)
 }
 
 pub fn level_box_from_level(level: &Level) -> Rect {
@@ -141,11 +137,14 @@ pub fn switch_level(
     let Ok(player_transform) = q_player.get_single() else {
         return;
     };
-    let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_project_assets, ldtk_projects) else {
+    let Ok(ldtk_handle) = ldtk_projects.get_single() else {
+        return;
+    };
+    let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_project_assets.into_inner(), ldtk_handle) else {
         return;
     };
     for level in ldtk_levels {
-        let level_box = level_box_from_level(&level);
+        let level_box = level_box_from_level(level);
 
         if level_box.contains(player_transform.translation.xy()) {
             if current_level.level_iid.as_str() != level.iid {
