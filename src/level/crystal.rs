@@ -26,9 +26,13 @@ impl Plugin for CrystalPlugin {
             .add_systems(
                 PreUpdate,
                 (
-                    init_crystal_cache_tiles,
                     update_crystal_cache,
-                    (spawn_merged_tiles::<Crystal>, init_crystal_cache_groups).chain(),
+                    (
+                        init_crystal_cache_tiles,
+                        spawn_merged_tiles::<Crystal>,
+                        init_crystal_cache_groups,
+                    )
+                        .chain(),
                 )
                     .in_set(LevelSystems::Processing),
             )
