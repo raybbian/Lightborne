@@ -66,6 +66,7 @@ fn main() {
         .add_plugins(LevelSelectPlugin)
         .add_plugins(CameraPlugin)
         .insert_state(GameState::Ui)
+        .add_sub_state::<UiState>()
         .insert_state(UiState::LevelSelect)
         .add_plugins(DeferredLightingPlugin)
         .add_plugins(DebugPlugin {
