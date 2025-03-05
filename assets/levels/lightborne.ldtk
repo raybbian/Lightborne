@@ -16285,7 +16285,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#FF0044",
-							"iid": "c99d0020-e920-11ef-ad55-bbb5f6b76040",
+							"iid": "5986ad30-e920-11ef-ba18-cba222efeb99",
 							"width": 16,
 							"height": 19,
 							"defUid": 106,
@@ -16293,6 +16293,43 @@
 							"fieldInstances": [],
 							"__worldX": 36,
 							"__worldY": 152
+						},
+						{
+							"__identifier": "MovingPlatform",
+							"__grid": [7,18],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#0099DB",
+							"iid": "3ba26490-e920-11ef-aad4-03d77b60eed7",
+							"width": 24,
+							"height": 8,
+							"defUid": 1320,
+							"px": [56,144],
+							"fieldInstances": [
+								{ "__identifier": "path", "__type": "Array<Point>", "__value": [ { "cx": 20, "cy": 18 }, { "cx": 20, "cy": 16 }, { "cx": 33, "cy": 14 } ], "__tile": null, "defUid": 1321, "realEditorValues": [ {
+									"id": "V_String",
+									"params": ["20,18"]
+								}, {
+									"id": "V_String",
+									"params": ["20,16"]
+								}, {
+									"id": "V_String",
+									"params": ["33,14"]
+								} ] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 10, "__tile": null, "defUid": 1322, "realEditorValues": [] },
+								{ "__identifier": "InitialState", "__type": "LocalEnum.InitialState", "__value": "Play", "__tile": null, "defUid": 1324, "realEditorValues": [] },
+								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [{
+									"id": "V_Bool",
+									"params": [ false ]
+								}] },
+								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
+								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
+								{ "__identifier": "can_reactivate", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1328, "realEditorValues": [] },
+								{ "__identifier": "path_curve_points", "__type": "Array<Bool>", "__value": [], "__tile": null, "defUid": 1329, "realEditorValues": [] }
+							],
+							"__worldX": 56,
+							"__worldY": 144
 						}
 					]
 				},

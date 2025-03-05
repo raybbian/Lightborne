@@ -2,9 +2,9 @@ use bevy::{prelude::*, time::Stopwatch};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::level::{crystal::{CrystalColor, CrystalToggleEvent}, platform::ChangePlatformState};
+use crate::level::{crystal::{CrystalColor, CrystalToggleEvent}, platform::ChangePlatformStateEvent};
 
-use super::{entity::FixedEntityBundle, LightColor};
+use super::{entity::FixedEntityBundle, platform::PlatformState, LightColor};
 
 /// [`Component`] added to entities receptive to light. The
 /// [`activation_timer`](LightSensor::activation_timer) should be initialized in the
@@ -115,7 +115,7 @@ pub fn update_light_sensors(
     mut commands: Commands,
     mut q_sensors: Query<(Entity, &mut LightSensor)>,
     mut ev_crystal_toggle: EventWriter<CrystalToggleEvent>,
-    mut platform_change: EventWriter<ChangePlatformState>,
+    mut platform_change: EventWriter<ChangePlatformStateEvent>,
     asset_server: Res<AssetServer>,
     time: Res<Time>,
 ) {
@@ -134,12 +134,14 @@ pub fn update_light_sensors(
                 color: sensor.toggle_color,
             });
             if was_hit {
-                platform_change.send(ChangePlatformState::Play {
-                    id: sensor.platform_id
+                platform_change.send(ChangePlatformStateEvent {
+                    new_state: PlatformState::Play,
+                    id: sensor.platform_id,
                 });
             } else {
-                platform_change.send(ChangePlatformState::Pause {
-                    id: sensor.platform_id
+                platform_change.send(ChangePlatformStateEvent {
+                    new_state: PlatformState::Pause,
+                    id: sensor.platform_id,
                 });
             }
             commands.entity(entity).with_child((
