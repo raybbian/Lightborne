@@ -108,7 +108,7 @@ impl LightColor {
 
     pub fn lighting_color(&self) -> Vec3 {
         match self {
-            LightColor::Red => Vec3::new(0.8, 0.2, 0.1),
+            LightColor::Red => Vec3::new(0.7, 0.2, 0.8), // now purple
             LightColor::Green => Vec3::new(0.0, 0.9, 0.5),
             LightColor::White => Vec3::new(0.8, 0.8, 0.5),
             LightColor::Blue => Vec3::new(0.1, 0.2, 0.8),
@@ -117,7 +117,7 @@ impl LightColor {
 
     pub fn light_beam_color(&self) -> Color {
         match self {
-            LightColor::Red => Color::srgb(4.0, 1.5, 1.0),
+            LightColor::Red => Color::srgb(1.5, 0.5, 3.0), // more purple
             LightColor::Green => Color::srgb(1.0, 4.0, 3.0),
             LightColor::White => Color::srgb(2.0, 2.0, 2.0),
             LightColor::Blue => Color::srgb(1.0, 2.0, 4.0),
@@ -126,9 +126,9 @@ impl LightColor {
 
     pub fn indicator_color(&self) -> Color {
         match self {
-            LightColor::Red => Color::srgb(1.0, 0.375, 0.25),
-            LightColor::Green => Color::srgb(0.25, 1.0, 0.75),
-            LightColor::White => Color::srgb(0.5, 0.5, 0.5),
+            LightColor::Red => Color::srgb(0.7, 0.3, 1.0), // now purple
+            LightColor::Green => Color::srgb(0.25, 0.9, 0.75),
+            LightColor::White => Color::srgb(1.0, 1.0, 1.0),
             LightColor::Blue => Color::srgb(0.25, 0.5, 1.0),
         }
     }
@@ -139,10 +139,10 @@ impl LightColor {
 
     pub fn button_color(&self) -> Color {
         match self {
-            LightColor::Red => Color::srgb(1.0, 0.5608, 0.8314),
-            LightColor::Green => Color::srgb(0.6157, 0.9922, 0.5804),
+            LightColor::Red => Color::srgb(1.5, 0.7, 1.0), // pink
+            LightColor::Green => Color::srgb(1.0, 0.0, 0.0), // red
             LightColor::White => Color::srgb(0.9, 0.9, 0.9),
-            LightColor::Blue => Color::srgb(0.5608, 0.8824, 1.0),
+            LightColor::Blue => Color::srgb(0.6, 1.1, 1.9),
         }
     }
 }

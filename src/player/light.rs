@@ -143,7 +143,7 @@ pub fn shoot_light(
     outer_source_sprite.color = player_inventory
         .current_color
         .light_beam_color()
-        .mix(&Color::BLACK, 0.2);
+        .mix(&Color::BLACK, 0.4);
 
     commands
         .spawn(LightBeamSource {
