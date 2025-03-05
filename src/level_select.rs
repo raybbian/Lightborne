@@ -30,10 +30,10 @@ const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
     [0, 0, 0, 255],       // intgrid 0
     [41, 54, 78, 255],    // intgrid 1
     [117, 158, 202, 255], // intgrid 2
-    [255, 0, 68, 255],    // intgrid 3
-    [71, 1, 19, 255],     // intgrid 4
-    [99, 199, 77, 255],   // intgrid 5
-    [30, 61, 23, 255],    // intgrid 6
+    [255, 143, 212, 255], // intgrid 3
+    [128, 0, 64, 255],    // intgrid 4
+    [255, 0, 0, 255],     // intgrid 5
+    [80, 20, 15, 255],    // intgrid 6
     [192, 203, 220, 255], // intgrid 7
     [55, 58, 62, 255],    // intgrid 8
     [80, 150, 230, 255],  // intgrid 9
@@ -48,7 +48,7 @@ const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
 fn sensor_color_to_rgba(sensor_color: &str) -> [u8; 4] {
     match sensor_color {
         "Red" => [255, 143, 212, 255],
-        "Green" => [157, 253, 148, 255],
+        "Green" => [255, 0, 0, 255],
         "White" => [229, 229, 229, 255],
         "Blue" => [143, 225, 255, 255],
         _ => [0, 0, 0, 255],
