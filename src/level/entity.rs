@@ -3,6 +3,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
+    particle::dust::DustSurface,
     player::{movement::PlayerMovement, PlayerMarker},
     shared::GroupLabel,
 };
@@ -11,11 +12,22 @@ use crate::{
 pub struct SemiSolid;
 
 /// Bundle for Semi-Solid Platforms
-#[derive(Default, Bundle, LdtkIntCell)]
+#[derive(Bundle, LdtkIntCell)]
 pub struct SemiSolidPlatformBundle {
     #[from_int_grid_cell]
     fixed_entity_bundle: FixedEntityBundle,
     semi_solid: SemiSolid,
+    dust_surface: DustSurface,
+}
+
+impl Default for SemiSolidPlatformBundle {
+    fn default() -> Self {
+        Self {
+            fixed_entity_bundle: FixedEntityBundle::default(),
+            semi_solid: SemiSolid::default(),
+            dust_surface: DustSurface::Wood,
+        }
+    }
 }
 
 pub fn adjust_semisolid_colliders(mut q_semisolid: Query<&mut Transform, Added<SemiSolid>>) {

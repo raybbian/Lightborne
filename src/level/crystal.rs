@@ -5,7 +5,9 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rapier2d::prelude::*;
 
-use crate::{light::LightColor, lighting::Occluder2d, shared::GroupLabel};
+use crate::{
+    light::LightColor, lighting::Occluder2d, particle::dust::DustSurface, shared::GroupLabel,
+};
 
 use super::{
     entity::HurtMarker,
@@ -68,7 +70,7 @@ pub struct CrystalColor {
 /// Marker [`Component`] used to query for crystals, currently does not contain any information.
 #[derive(Default, Component)]
 pub struct Crystal {
-    color: CrystalColor,
+    pub color: CrystalColor,
     init_active: bool,
     pub active: bool,
 }
@@ -120,7 +122,7 @@ impl MergedTile for Crystal {
 
 /// [`Bundle`] registered with [`LdktEntityAppExt::register_ldtk_entity`](LdtkEntityAppExt) to spawn
 /// crystals directly from Ldtk.
-#[derive(Bundle, LdtkIntCell, Default)]
+#[derive(Bundle, LdtkIntCell)]
 pub struct CrystalBundle {
     #[from_int_grid_cell]
     crystal: Crystal,
