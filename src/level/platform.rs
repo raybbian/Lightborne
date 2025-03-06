@@ -341,7 +341,7 @@ pub fn move_platforms(
     //get entities that are near or intersecting player
     let entity_above_player = cast_player_ray_shape(&rapier_context, &player_transform, 0.0, 5.5, 12.0, 0.0, Vec2::new(0.0, 1.0), GroupLabel::PLATFORM | GroupLabel::TERRAIN);
     let entity_below_player = cast_player_ray_shape(&rapier_context, &player_transform, 0.0, -10.0, 16.0, 0.75, Vec2::new(0.0, -1.0), GroupLabel::PLATFORM);
-    let entity_left_of_player = cast_player_ray_shape(&rapier_context, &player_transform, -8.0, -1.5, 0.0, 14.0, Vec2::new(-1.0, 0.0), GroupLabel::TERRAIN | GroupLabel::PLATFORM);
+    let entity_left_of_player = cast_player_ray_shape(&rapier_context, &player_transform, -8.0, -1.5, 0.0, 14.0, Vec2::new(-1.0, 0.0), GroupLabel::TERRAIN | GroupLabel::PLATFORM); // Check Y-Offset again
     let entity_right_of_player = cast_player_ray_shape(&rapier_context, &player_transform, 8.0, -1.5, 0.0, 14.0, Vec2::new(1.0, 0.0), GroupLabel::TERRAIN | GroupLabel::PLATFORM);
     let nearby_entities = (entity_above_player, entity_below_player, entity_left_of_player, entity_right_of_player);
 
