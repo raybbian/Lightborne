@@ -73,6 +73,20 @@ impl From<PlayerAnimationType> for AnimationConfig {
     }
 }
 
+pub fn flip_player_direction(
+    mut q_player: Query<(&mut Sprite, &KinematicCharacterControllerOutput), With<PlayerMarker>>,
+) {
+    let Ok((mut player_sprite, player_controller_output)) = q_player.get_single_mut() else {
+        return;
+    };
+    const PLAYER_FACING_EPSILON: f32 = 0.01;
+    if player_controller_output.desired_translation.x < -PLAYER_FACING_EPSILON {
+        player_sprite.flip_x = true;
+    } else if player_controller_output.desired_translation.x > PLAYER_FACING_EPSILON {
+        player_sprite.flip_x = false;
+    }
+}
+
 pub fn set_animation(
     mut q_player: Query<
         (

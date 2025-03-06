@@ -1,4 +1,4 @@
-use animation::{set_animation, PlayerAnimationType};
+use animation::{flip_player_direction, set_animation, PlayerAnimationType};
 use bevy::{
     input::common_conditions::{input_just_pressed, input_just_released},
     prelude::*,
@@ -138,9 +138,12 @@ impl Plugin for PlayerManagementPlugin {
             )
             .add_systems(
                 FixedUpdate,
-                (set_animation, update_player_strand_offsets)
-                    .chain()
-                    .in_set(LevelSystems::Simulation),
+                (
+                    flip_player_direction,
+                    (set_animation, update_player_strand_offsets)
+                        .chain()
+                        .in_set(LevelSystems::Simulation),
+                ),
             );
     }
 }
