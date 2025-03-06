@@ -111,12 +111,7 @@ pub fn add_crystal_shard_sprites(
                 }),
                 ..default()
             },
-            AnimationConfig::new(
-                start_index,
-                start_index + CRYSTAL_SHARD_FRAMES - 1,
-                12,
-                true,
-            ),
+            AnimationConfig::new(start_index, start_index + CRYSTAL_SHARD_FRAMES - 1, 6, true),
         ));
     }
 }
