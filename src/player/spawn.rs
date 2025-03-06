@@ -21,7 +21,7 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
         controller: KinematicCharacterController {
             filter_groups: Some(CollisionGroups::new(
                 GroupLabel::PLAYER_COLLIDER,
-                GroupLabel::TERRAIN,
+                GroupLabel::TERRAIN | GroupLabel::PLATFORM,
             )),
             offset: CharacterLength::Absolute(1.0),
             ..default()
@@ -32,7 +32,7 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
             Rot::default(),
             Collider::cuboid(6.0, 7.0),
         )]),
-        collision_groups: CollisionGroups::new(GroupLabel::PLAYER_COLLIDER, GroupLabel::TERRAIN),
+        collision_groups: CollisionGroups::new(GroupLabel::PLAYER_COLLIDER, GroupLabel::TERRAIN | GroupLabel::PLATFORM),
         player_movement: PlayerMovement::default(),
         player_state: PlayerState::Idle,
         friction: Friction {
@@ -70,7 +70,7 @@ pub fn add_player_sensors(mut commands: Commands, q_player: Query<Entity, Added<
             .insert(PlayerHurtMarker)
             .insert(CollisionGroups::new(
                 GroupLabel::PLAYER_SENSOR,
-                GroupLabel::HURT_BOX | GroupLabel::TERRAIN,
+                GroupLabel::HURT_BOX | GroupLabel::TERRAIN | GroupLabel::PLATFORM,
             ))
             .insert(PointLight {
                 intensity: 100_000.0,

@@ -240,6 +240,7 @@ fn add_crystal_colliders(
         if is_crystal_active(*cell) {
             let mut collider = commands.entity(entity);
             collider.insert(Collider::cuboid(4.0, 4.0));
+            collider.insert(CollisionGroups::new(GroupLabel::TERRAIN, GroupLabel::ALL));
         }
     }
 }
