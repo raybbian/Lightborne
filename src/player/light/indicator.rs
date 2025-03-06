@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use enum_map::{enum_map, EnumMap};
 
-use crate::{level::LevelSystems, light::LightColor};
+use crate::{level::LevelSystems, light::LightColor, player::PlayerMarker};
 
-use super::{light::PlayerLightInventory, PlayerMarker};
+use super::PlayerLightInventory;
 
 pub struct LightIndicatorPlugin;
 

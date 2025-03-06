@@ -2,7 +2,6 @@ use animation::{flip_player_direction, set_animation, PlayerAnimationType};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
-use indicator::LightIndicatorPlugin;
 use match_player::{
     post_update_match_player_pixel, pre_update_match_player_pixel, update_match_player_z,
 };
@@ -16,7 +15,6 @@ use movement::{PlayerMovement, PlayerMovementPlugin};
 use spawn::{add_player_sensors, init_player_bundle};
 
 mod animation;
-mod indicator;
 pub mod kill;
 pub mod light;
 pub mod match_player;
@@ -32,7 +30,6 @@ impl Plugin for PlayerManagementPlugin {
         app.add_plugins(PlayerLightPlugin)
             .add_plugins(PlayerMovementPlugin)
             .add_plugins(PlayerKillPlugin)
-            .add_plugins(LightIndicatorPlugin)
             .add_plugins(PlayerStrandPlugin)
             .add_systems(
                 PreUpdate,

@@ -5,6 +5,7 @@ use bevy::{
 use bevy_rapier2d::plugin::RapierContext;
 use enum_map::{enum_map, EnumMap};
 use itertools::Itertools;
+use ui::LightUiPlugin;
 
 use crate::{
     input::{update_cursor_world_coords, CursorWorldCoords},
@@ -15,6 +16,10 @@ use crate::{
     },
     lighting::LineLight2d,
 };
+use indicator::LightIndicatorPlugin;
+
+mod indicator;
+mod ui;
 
 use super::PlayerMarker;
 
@@ -22,24 +27,26 @@ pub struct PlayerLightPlugin;
 
 impl Plugin for PlayerLightPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (
-                handle_color_switch,
-                should_shoot_light::<true>.run_if(input_just_pressed(MouseButton::Left)),
-                should_shoot_light::<false>.run_if(input_just_pressed(MouseButton::Right)),
-                preview_light_path,
-                spawn_angle_indicator.run_if(input_just_pressed(MouseButton::Left)),
-                despawn_angle_indicator.run_if(
-                    input_just_released(MouseButton::Left)
-                        .or(input_just_pressed(MouseButton::Right)),
-                ),
-                shoot_light.run_if(input_just_released(MouseButton::Left)),
-            )
-                .chain()
-                .in_set(LevelSystems::Simulation)
-                .after(update_cursor_world_coords),
-        );
+        app.add_plugins(LightIndicatorPlugin)
+            .add_plugins(LightUiPlugin)
+            .add_systems(
+                Update,
+                (
+                    handle_color_switch,
+                    should_shoot_light::<true>.run_if(input_just_pressed(MouseButton::Left)),
+                    should_shoot_light::<false>.run_if(input_just_pressed(MouseButton::Right)),
+                    preview_light_path,
+                    spawn_angle_indicator.run_if(input_just_pressed(MouseButton::Left)),
+                    despawn_angle_indicator.run_if(
+                        input_just_released(MouseButton::Left)
+                            .or(input_just_pressed(MouseButton::Right)),
+                    ),
+                    shoot_light.run_if(input_just_released(MouseButton::Left)),
+                )
+                    .chain()
+                    .in_set(LevelSystems::Simulation)
+                    .after(update_cursor_world_coords),
+            );
     }
 }
 

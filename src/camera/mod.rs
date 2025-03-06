@@ -67,7 +67,7 @@ pub const TRANSITION_CAMERA_LAYER: RenderLayers = RenderLayers::layer(5);
 ///
 /// Notes:
 /// - Spawns the camera with [`OrthographicProjection`] with fixed scaling at 320x180
-fn setup_camera(
+pub fn setup_camera(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
