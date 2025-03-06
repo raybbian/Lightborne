@@ -77,7 +77,7 @@ impl Plugin for Occluder2dPipelinePlugin {
 /// Add to line lights and occluders to mark which occluders should occlude which line lights.
 /// An occluder will only occlude a line light if (line light's occluder mask) & (occluder
 /// occluder mask) is not zero.
-#[derive(Component, ExtractComponent, Clone, Copy)]
+#[derive(Component, ExtractComponent, Clone, Copy, PartialEq, Eq)]
 pub struct Occluder2dGroups(pub u32);
 
 impl Occluder2dGroups {

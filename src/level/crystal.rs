@@ -38,13 +38,11 @@ impl Plugin for CrystalPlugin {
             )
             .add_systems(
                 FixedUpdate,
-                (
-                    on_crystal_changed
-                        .in_set(LevelSystems::Simulation)
-                        .after(update_light_sensors),
-                    reset_crystals.in_set(LevelSystems::Reset),
-                ),
-            );
+                on_crystal_changed
+                    .in_set(LevelSystems::Simulation)
+                    .after(update_light_sensors),
+            )
+            .add_systems(Update, reset_crystals.in_set(LevelSystems::Reset));
 
         for i in 3..=10 {
             app.register_ldtk_int_cell_for_layer::<CrystalBundle>("Terrain", i);

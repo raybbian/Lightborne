@@ -224,40 +224,45 @@ pub fn queue_deferred_lighting(
                 (*pl_e, *pl_me),
             );
 
-            // filter occluders
-            let mut occluders: Vec<(Entity, MainEntity)> = vec![];
-            for (ocl_e, ocl_me) in visible_entities.iter::<With<Occluder2d>>() {
-                let Ok((occluder_bounds, occluder_group)) = q_occluder.get(*ocl_e) else {
-                    continue;
-                };
-                let occluder_group = occluder_group
-                    .copied()
-                    .unwrap_or(Occluder2dGroups::default());
-                if occluder_group.0 & light_group.0 == 0 {
-                    continue;
-                }
-                if !occluder_bounds.visible_from_line_light(light_bounds) {
-                    continue;
-                }
-                occluders.push((*ocl_e, *ocl_me));
-            }
+            let mut is_occluded = false;
 
-            // Render occluder shadows
-            for (ocl_e, ocl_me) in occluders.iter() {
-                add_phase_item(
-                    occluder_pipeline.shadow_pipeline_id,
-                    render_occluder,
-                    (*ocl_e, *ocl_me),
-                );
-            }
+            if light_group != Occluder2dGroups::NONE {
+                // filter occluders
+                let mut occluders: Vec<(Entity, MainEntity)> = vec![];
+                for (ocl_e, ocl_me) in visible_entities.iter::<With<Occluder2d>>() {
+                    let Ok((occluder_bounds, occluder_group)) = q_occluder.get(*ocl_e) else {
+                        continue;
+                    };
+                    let occluder_group = occluder_group
+                        .copied()
+                        .unwrap_or(Occluder2dGroups::default());
+                    if occluder_group.0 & light_group.0 == 0 {
+                        continue;
+                    }
+                    if !occluder_bounds.visible_from_line_light(light_bounds) {
+                        continue;
+                    }
+                    occluders.push((*ocl_e, *ocl_me));
+                    is_occluded = true;
+                }
 
-            // Cutout occluder bodies
-            for (ocl_e, ocl_me) in occluders.iter() {
-                add_phase_item(
-                    occluder_pipeline.cutout_pipeline_id,
-                    render_occluder,
-                    (*ocl_e, *ocl_me),
-                );
+                // Render occluder shadows
+                for (ocl_e, ocl_me) in occluders.iter() {
+                    add_phase_item(
+                        occluder_pipeline.shadow_pipeline_id,
+                        render_occluder,
+                        (*ocl_e, *ocl_me),
+                    );
+                }
+
+                // Cutout occluder bodies
+                for (ocl_e, ocl_me) in occluders.iter() {
+                    add_phase_item(
+                        occluder_pipeline.cutout_pipeline_id,
+                        render_occluder,
+                        (*ocl_e, *ocl_me),
+                    );
+                }
             }
 
             // Render the actual light now
@@ -267,12 +272,14 @@ pub fn queue_deferred_lighting(
                 (*pl_e, *pl_me),
             );
 
-            // Reset the occluder
-            add_phase_item(
-                occluder_pipeline.reset_pipeline_id,
-                reset_stencil_buffer,
-                (*pl_e, *pl_me),
-            );
+            if is_occluded {
+                // Reset the occluder
+                add_phase_item(
+                    occluder_pipeline.reset_pipeline_id,
+                    reset_stencil_buffer,
+                    (*pl_e, *pl_me),
+                );
+            }
         }
     }
 }

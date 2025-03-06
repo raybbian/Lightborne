@@ -17,7 +17,7 @@ impl Plugin for ParticlePlugin {
             .insert_resource(DustSpawnStopwatch::default())
             .add_systems(Startup, setup)
             .add_systems(
-                FixedUpdate,
+                Update,
                 (
                     update_particles,
                     update_particle_emitters,

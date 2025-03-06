@@ -98,7 +98,7 @@ impl Plugin for PlayerManagementPlugin {
                     .after(update_cursor_world_coords),
             )
             .add_systems(
-                FixedUpdate,
+                Update,
                 (
                     reset_player_on_kill.before(move_camera),
                     // LMAO yeah so to reset the hair to a natural state i just simulate it many times
