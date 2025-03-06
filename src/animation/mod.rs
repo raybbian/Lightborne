@@ -12,9 +12,10 @@ impl Plugin for SpriteAnimationPlugin {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct AnimationConfig {
     pub cur_index: usize,
+    pub finished: bool,
     first_index: usize,
     last_index: usize,
     fps: u8,
@@ -26,6 +27,7 @@ impl AnimationConfig {
     pub fn new(first: usize, last: usize, fps: u8, repeat: bool) -> Self {
         Self {
             cur_index: first,
+            finished: false,
             first_index: first,
             last_index: last,
             fps,
@@ -60,6 +62,8 @@ fn play_animations(time: Res<Time>, mut query: Query<(&mut AnimationConfig, &mut
             if config.repeat {
                 atlas.index = config.first_index;
                 config.timer = AnimationConfig::timer_from_fps(config.fps);
+            } else {
+                config.finished = true;
             }
         } else {
             atlas.index += 1;
