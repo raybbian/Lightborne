@@ -41,6 +41,7 @@ fn main() {
                         title: "Lightborne".into(),
                         name: Some("lightborne".into()),
                         present_mode: PresentMode::AutoNoVsync,
+                        canvas: Some("#bevy-container".into()),
                         fit_canvas_to_parent: true,
                         prevent_default_event_handling: false,
                         ..default()
