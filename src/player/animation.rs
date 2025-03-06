@@ -105,11 +105,7 @@ pub fn flip_player_direction(
 
     if buttons.pressed(MouseButton::Left) && player_light_inventory.can_shoot() {
         let to_cursor = cursor_coords.pos - player_transform.translation().xy();
-        if to_cursor.x < 0.0 {
-            player_sprite.flip_x = true;
-        } else {
-            player_sprite.flip_x = false;
-        }
+        player_sprite.flip_x = to_cursor.x < 0.0;
         return;
     }
 
@@ -154,8 +150,7 @@ pub fn set_animation(
     if new_anim != *animation {
         // don't switch the animation out of falling if it isn't finished
         // there is probably a better way to do this :'(
-        let should_cancel_animation =
-            !(*animation == PlayerAnimationType::Land && !config.finished);
+        let should_cancel_animation = *animation != PlayerAnimationType::Land || config.finished;
 
         if should_cancel_animation {
             *animation = new_anim;
