@@ -102,6 +102,14 @@ impl From<&EntityInstance> for FixedEntityBundle {
                     GroupLabel::LIGHT_RAY | GroupLabel::WHITE_RAY | GroupLabel::BLUE_RAY,
                 ),
             },
+            "CrystalShard" => FixedEntityBundle {
+                collider: Collider::cuboid(6., 6.),
+                rigid_body: RigidBody::Fixed,
+                collision_groups: CollisionGroups::new(
+                    GroupLabel::CRYSTAL_SHARD,
+                    GroupLabel::PLAYER_SENSOR,
+                ),
+            },
             _ => unreachable!(),
         }
     }

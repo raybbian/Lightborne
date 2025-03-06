@@ -4,11 +4,11 @@ use bevy_rapier2d::prelude::*;
 use enum_map::EnumMap;
 
 use crate::{
-    level::crystal::{CrystalColor, CrystalToggleEvent},
+    level::crystal::{CrystalIdent, CrystalToggleEvent},
     lighting::LineLight2d,
 };
 
-use super::{entity::FixedEntityBundle, LightColor};
+use super::{crystal::CrystalColor, entity::FixedEntityBundle, LightColor};
 
 /// [`Component`] added to entities receptive to light. The
 /// [`activation_timer`](LightSensor::activation_timer) should be initialized in the
@@ -27,7 +27,7 @@ pub struct LightSensor {
     /// Active state of the sensor
     pub is_active: bool,
     /// The color of the crystals to toggle
-    pub toggle_color: CrystalColor,
+    pub toggle_ident: CrystalIdent,
     /// Meter's rate of change, per fixed timestep tick.
     rate: f32,
     /// Stored color used to animate the center of the sensor when the light no longer hits it
@@ -35,14 +35,14 @@ pub struct LightSensor {
 }
 
 impl LightSensor {
-    fn new(toggle_color: CrystalColor, millis: i32) -> Self {
+    fn new(toggle_ident: CrystalIdent, millis: i32) -> Self {
         let rate = 1.0 / (millis as f32) * (1000.0 / 64.0);
         LightSensor {
             meter: 0.0,
             cumulative_exposure: Stopwatch::default(),
             hit_by: EnumMap::default(),
             is_active: false,
-            toggle_color,
+            toggle_ident,
             rate,
             stored_color: Color::WHITE,
         }
@@ -68,34 +68,34 @@ impl LightSensor {
 
 impl From<&EntityInstance> for LightSensor {
     fn from(entity_instance: &EntityInstance) -> Self {
-        let light_color: LightColor = entity_instance
-            .get_enum_field("light_color")
-            .expect("light_color needs to be an enum field on all buttons")
+        let toggle_color: CrystalColor = entity_instance
+            .get_enum_field("toggle_color")
+            .expect("toggle_color needs to be an enum field on all sensors")
             .into();
 
         let id = entity_instance
             .get_int_field("id")
-            .expect("id needs to be an int field on all buttons");
+            .expect("id needs to be an int field on all sensors");
 
         let millis = *entity_instance
             .get_int_field("activation_time")
             .expect("activation_time needs to be a float field on all sensors");
 
-        let sensor_color = CrystalColor {
-            color: light_color,
+        let toggle_ident = CrystalIdent {
+            color: toggle_color,
             id: *id,
         };
 
-        LightSensor::new(sensor_color, millis)
+        LightSensor::new(toggle_ident, millis)
     }
 }
 
 pub fn add_sensor_sprites(
     mut commands: Commands,
-    q_buttons: Query<(Entity, &LightSensor), Added<LightSensor>>,
+    q_sensors: Query<(Entity, &LightSensor), Added<LightSensor>>,
     asset_server: Res<AssetServer>,
 ) {
-    if q_buttons.is_empty() {
+    if q_sensors.is_empty() {
         return;
     }
 
@@ -107,8 +107,8 @@ pub fn add_sensor_sprites(
     let mut outer_sprite = Sprite::from_image(sensor_outer);
     let center_sprite = Sprite::from_image(sensor_center);
 
-    for (entity, sensor) in q_buttons.iter() {
-        outer_sprite.color = sensor.toggle_color.color.button_color();
+    for (entity, sensor) in q_sensors.iter() {
+        outer_sprite.color = sensor.toggle_ident.color.button_color();
         commands
             .entity(entity)
             .with_children(|sensor| {
@@ -136,12 +136,20 @@ pub struct LightSensorBundle {
 }
 
 pub fn sensor_point_light(entity_instance: &EntityInstance) -> LineLight2d {
-    let light_color: LightColor = entity_instance
-        .get_enum_field("light_color")
-        .expect("light_color needs to be an enum field on all buttons")
+    let toggle_color: CrystalColor = entity_instance
+        .get_enum_field("toggle_color")
+        .expect("toggle_color needs to be an enum field on all sensors")
         .into();
 
-    LineLight2d::point(light_color.lighting_color().extend(0.0), 35.0, 0.008)
+    LineLight2d::point(
+        toggle_color
+            .button_color()
+            .to_linear()
+            .to_vec3()
+            .extend(0.5),
+        35.0,
+        0.008,
+    )
 }
 
 /// [`System`] that resets the [`LightSensor`]s when a [`LevelSwitchEvent`] is received.
@@ -184,7 +192,7 @@ pub fn update_light_sensors(
 
         let mut send_toggle = || {
             ev_crystal_toggle.send(CrystalToggleEvent {
-                color: sensor.toggle_color,
+                color: sensor.toggle_ident,
             });
             commands.entity(entity).with_child((
                 AudioPlayer::new(asset_server.load("sfx/button.wav")),

@@ -2,8 +2,10 @@ use std::time::Duration;
 
 use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
+use enum_map::{enum_map, EnumMap};
 use merge_tile::spawn_merged_tiles;
 use sensor::{add_sensor_sprites, reset_light_sensors, update_light_sensors, LightSensorBundle};
+use shard::CrystalShardPlugin;
 
 use crate::{
     camera::{camera_position_from_level, CameraMoveEvent, CAMERA_ANIMATION_SECS},
@@ -23,6 +25,7 @@ pub mod entity;
 mod merge_tile;
 pub mod sensor;
 mod setup;
+mod shard;
 pub mod start_flag;
 mod walls;
 
@@ -34,6 +37,7 @@ impl Plugin for LevelManagementPlugin {
         app.add_plugins(LdtkPlugin)
             .add_plugins(LevelSetupPlugin)
             .add_plugins(CrystalPlugin)
+            .add_plugins(CrystalShardPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
             .register_ldtk_entity::<LightSensorBundle>("Sensor")
@@ -85,7 +89,7 @@ impl Plugin for LevelManagementPlugin {
 pub struct CurrentLevel {
     pub level_iid: LevelIid,
     pub level_box: Rect,
-    pub allowed_colors: Vec<LightColor>,
+    pub allowed_colors: EnumMap<LightColor, bool>,
 }
 
 /// [`SystemSet`] used to distinguish different types of systems
@@ -171,10 +175,14 @@ pub fn switch_level(
                     .map(|color_str| color_str.into())
                     .collect::<Vec<LightColor>>();
 
+                let allowed_colors_map = enum_map! {
+                    val => allowed_colors.contains(&val),
+                };
+
                 *current_level = CurrentLevel {
                     level_iid: LevelIid::new(level.iid.clone()),
                     level_box,
-                    allowed_colors,
+                    allowed_colors: allowed_colors_map,
                 };
                 *level_selection = LevelSelection::iid(current_level.level_iid.clone());
             }

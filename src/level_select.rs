@@ -23,7 +23,7 @@ const START_FLAG_IDENT: &str = "Start";
 const TERRAIN_LAYER_IDENT: &str = "Terrain";
 const ENTITY_LAYER_IDENT: &str = "Entities";
 const SENSOR_ENTITY_IDENT: &str = "Sensor";
-const SENSOR_COLOR_IDENT: &str = "light_color";
+const SENSOR_COLOR_IDENT: &str = "toggle_color";
 
 // [R, G, B, A] colors for level preview
 const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
@@ -47,8 +47,8 @@ const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
 
 fn sensor_color_to_rgba(sensor_color: &str) -> [u8; 4] {
     match sensor_color {
-        "Red" => [255, 143, 212, 255],
-        "Green" => [255, 0, 0, 255],
+        "Pink" => [255, 143, 212, 255],
+        "Red" => [255, 0, 0, 255],
         "White" => [229, 229, 229, 255],
         "Blue" => [143, 225, 255, 255],
         _ => [0, 0, 0, 255],

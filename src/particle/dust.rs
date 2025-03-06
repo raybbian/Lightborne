@@ -47,7 +47,7 @@ impl DustSurface {
             ],
         };
         let color = if let Self::Crystal(color) = self {
-            color.color.button_color()
+            color.button_color()
         } else {
             Color::default()
         };
@@ -119,7 +119,7 @@ pub fn add_crystal_dust(
     for (entity, crystal) in crystals.iter() {
         commands
             .entity(entity)
-            .insert(DustSurface::Crystal(crystal.representative.color));
+            .insert(DustSurface::Crystal(crystal.representative.ident.color));
     }
 }
 

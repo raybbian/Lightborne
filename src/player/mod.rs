@@ -32,11 +32,11 @@ use light::{
     should_shoot_light, spawn_angle_indicator, PlayerLightInventory,
 };
 use movement::{crouch_player, move_player, queue_jump, PlayerMovement};
-use spawn::{add_player_sensors, init_player_bundle, PlayerHurtMarker};
+use spawn::{add_player_sensors, init_player_bundle};
 
 mod animation;
 mod indicator;
-mod kill;
+pub mod kill;
 pub mod light;
 pub mod match_player;
 pub mod movement;
@@ -151,6 +151,10 @@ impl Plugin for PlayerManagementPlugin {
 /// [`Component`] to signal our own code to finish the initialization of the player (adding sensors, etc)
 #[derive(Component, Default)]
 pub struct PlayerMarker;
+
+/// Attached to player hurtbox
+#[derive(Default, Component)]
+pub struct PlayerHurtMarker;
 
 /// [`Bundle`] that will be initialized with [`init_player_bundle`] and inserted to the player
 /// [`Entity`] by Ldtk.

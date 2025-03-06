@@ -69,7 +69,7 @@ pub struct LightSegmentZBundle {
 pub enum LightColor {
     #[default]
     Green,
-    Red,
+    Purple,
     White,
     Blue,
 }
@@ -89,7 +89,7 @@ impl From<LightColor> for LightMaterial {
 impl From<&String> for LightColor {
     fn from(value: &String) -> Self {
         match value.as_str() {
-            "Red" => LightColor::Red,
+            "Purple" => LightColor::Purple,
             "Green" => LightColor::Green,
             "White" => LightColor::White,
             "Blue" => LightColor::Blue,
@@ -102,14 +102,14 @@ impl LightColor {
     /// The number of bounces off of terrain each [`LightColor`] can make.
     pub fn num_bounces(&self) -> usize {
         match self {
-            LightColor::Red => 2,
+            LightColor::Purple => 2,
             _ => 1,
         }
     }
 
     pub fn lighting_color(&self) -> Vec3 {
         match self {
-            LightColor::Red => Vec3::new(0.7, 0.2, 0.8), // now purple
+            LightColor::Purple => Vec3::new(0.7, 0.2, 0.8),
             LightColor::Green => Vec3::new(0.0, 0.9, 0.5),
             LightColor::White => Vec3::new(0.8, 0.8, 0.5),
             LightColor::Blue => Vec3::new(0.1, 0.2, 0.8),
@@ -118,7 +118,7 @@ impl LightColor {
 
     pub fn light_beam_color(&self) -> Color {
         match self {
-            LightColor::Red => Color::srgb(1.5, 0.5, 3.0), // more purple
+            LightColor::Purple => Color::srgb(1.5, 0.5, 3.0),
             LightColor::Green => Color::srgb(1.0, 4.0, 3.0),
             LightColor::White => Color::srgb(2.0, 2.0, 2.0),
             LightColor::Blue => Color::srgb(1.0, 2.0, 4.0),
@@ -127,7 +127,7 @@ impl LightColor {
 
     pub fn indicator_color(&self) -> Color {
         match self {
-            LightColor::Red => Color::srgb(0.7, 0.3, 1.0), // now purple
+            LightColor::Purple => Color::srgb(0.7, 0.3, 1.0),
             LightColor::Green => Color::srgb(0.25, 0.9, 0.75),
             LightColor::White => Color::srgb(1.0, 1.0, 1.0),
             LightColor::Blue => Color::srgb(0.25, 0.5, 1.0),
@@ -136,15 +136,6 @@ impl LightColor {
 
     pub fn indicator_dimmed_color(&self) -> Color {
         self.indicator_color().with_alpha(0.15)
-    }
-
-    pub fn button_color(&self) -> Color {
-        match self {
-            LightColor::Red => Color::srgb(1.5, 0.7, 1.0), // pink
-            LightColor::Green => Color::srgb(1.0, 0.0, 0.0), // red
-            LightColor::White => Color::srgb(0.9, 0.9, 0.9),
-            LightColor::Blue => Color::srgb(0.6, 1.1, 1.9),
-        }
     }
 }
 

@@ -27,14 +27,14 @@ pub struct PlayerLightInventory {
 }
 
 impl PlayerLightInventory {
-    pub fn colors(colors: &[LightColor]) -> Self {
+    pub fn new() -> Self {
         PlayerLightInventory {
             should_shoot: false,
-            current_color: colors[0],
+            current_color: LightColor::Green,
             sources: enum_map! {
                 LightColor::Green =>true,
                 LightColor::Blue => true,
-                LightColor::Red => true,
+                LightColor::Purple => true,
                 LightColor::White =>true,
             },
         }
@@ -83,13 +83,13 @@ pub fn handle_color_switch(
 
     let binds: [(KeyCode, LightColor); 4] = [
         (KeyCode::Digit1, LightColor::Green),
-        (KeyCode::Digit2, LightColor::Red),
+        (KeyCode::Digit2, LightColor::Purple),
         (KeyCode::Digit3, LightColor::White),
         (KeyCode::Digit4, LightColor::Blue),
     ];
 
     for (key, color) in binds {
-        if keys.just_pressed(key) && current_level.allowed_colors.contains(&color) {
+        if keys.just_pressed(key) && current_level.allowed_colors[color] {
             inventory.current_color = color;
         }
     }

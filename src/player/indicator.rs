@@ -28,13 +28,13 @@ impl FromWorld for LightIndicatorData {
             mesh: mesh_handle,
             material_map: enum_map! {
                 LightColor::Green => materials.add(LightColor::Green.indicator_color()).into(),
-                LightColor::Red => materials.add(LightColor::Red.indicator_color()).into(),
+                LightColor::Purple => materials.add(LightColor::Purple.indicator_color()).into(),
                 LightColor::White => materials.add(LightColor::White.indicator_color()).into(),
                 LightColor::Blue => materials.add(LightColor::Blue.indicator_color()).into(),
             },
             dimmed_material_map: enum_map! {
                 LightColor::Green => materials.add(LightColor::Green.indicator_dimmed_color()).into(),
-                LightColor::Red => materials.add(LightColor::Red.indicator_dimmed_color()).into(),
+                LightColor::Purple => materials.add(LightColor::Purple.indicator_dimmed_color()).into(),
                 LightColor::White => materials.add(LightColor::White.indicator_dimmed_color()).into(),
                 LightColor::Blue => materials.add(LightColor::Blue.indicator_dimmed_color()).into(),
             },
