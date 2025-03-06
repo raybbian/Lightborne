@@ -36,8 +36,11 @@ impl Plugin for LightManagementPlugin {
                 FixedUpdate,
                 (simulate_light_sources, tick_light_sources).in_set(LevelSystems::Simulation),
             )
-            .add_systems(Update, insert_line_lights)
-            .add_systems(Update, cleanup_light_sources.in_set(LevelSystems::Reset));
+            .add_systems(FixedUpdate, insert_line_lights)
+            .add_systems(
+                FixedUpdate,
+                cleanup_light_sources.in_set(LevelSystems::Reset),
+            );
     }
 }
 

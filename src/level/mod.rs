@@ -50,7 +50,7 @@ impl Plugin for LevelManagementPlugin {
                 )
                     .in_set(LevelSystems::Processing),
             )
-            .add_systems(Update, reset_light_sensors.in_set(LevelSystems::Reset))
+            .add_systems(FixedUpdate, reset_light_sensors.in_set(LevelSystems::Reset))
             .add_systems(
                 FixedUpdate,
                 (

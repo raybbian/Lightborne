@@ -29,7 +29,6 @@ impl Plugin for CameraPlugin {
                     .after(switch_level)
                     .in_set(LevelSystems::Simulation),
             )
-            // Has event reader, so place in update
             .add_systems(
                 Update,
                 handle_move_camera.after(move_camera).after(switch_level),

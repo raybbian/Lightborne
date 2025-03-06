@@ -5,9 +5,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rapier2d::prelude::*;
 
-use crate::{
-    light::LightColor, lighting::Occluder2d, particle::dust::DustSurface, shared::GroupLabel,
-};
+use crate::{light::LightColor, lighting::Occluder2d, shared::GroupLabel};
 
 use super::{
     entity::HurtMarker,
@@ -38,9 +36,8 @@ impl Plugin for CrystalPlugin {
                 )
                     .in_set(LevelSystems::Processing),
             )
-            // Has event reader, so must be on update
             .add_systems(
-                Update,
+                FixedUpdate,
                 (
                     on_crystal_changed
                         .in_set(LevelSystems::Simulation)

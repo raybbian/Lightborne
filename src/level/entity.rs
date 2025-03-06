@@ -24,7 +24,7 @@ impl Default for SemiSolidPlatformBundle {
     fn default() -> Self {
         Self {
             fixed_entity_bundle: FixedEntityBundle::default(),
-            semi_solid: SemiSolid::default(),
+            semi_solid: SemiSolid,
             dust_surface: DustSurface::Wood,
         }
     }
@@ -32,9 +32,7 @@ impl Default for SemiSolidPlatformBundle {
 
 pub fn adjust_semisolid_colliders(mut q_semisolid: Query<&mut Transform, Added<SemiSolid>>) {
     for mut transform in q_semisolid.iter_mut() {
-        // if transform.translation.y % 8. == 0. {
         transform.translation.y += 3.;
-        // }
     }
 }
 

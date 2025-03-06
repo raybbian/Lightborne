@@ -84,11 +84,11 @@ impl Occluder2dGroups {
     pub const NONE: Self = Self(0);
     pub const ALL: Self = Self(!0);
 
-    pub fn group(layer: u32) -> Self {
+    pub fn _group(layer: u32) -> Self {
         Self(1 << layer)
     }
 
-    pub fn from_groups(layers: &[u32]) -> Self {
+    pub fn _from_groups(layers: &[u32]) -> Self {
         let mut mask = 0;
         for i in layers {
             mask |= 1 << i;
@@ -104,7 +104,7 @@ impl Default for Occluder2dGroups {
 }
 
 #[derive(Component)]
-#[require(Transform, Visibility)]
+#[require(Transform, Visibility, Occluder2dGroups)]
 pub struct Occluder2d {
     pub half_size: Vec2,
 }

@@ -98,13 +98,11 @@ impl Plugin for PlayerManagementPlugin {
                     .after(update_cursor_world_coords),
             )
             .add_systems(
-                Update,
+                FixedUpdate,
                 (
                     reset_player_on_kill.before(move_camera),
-                    // LMAO yeah so to reset the hair to a natural state i just simulate it 3 times
-                    update_strand,
-                    update_strand,
-                    update_strand,
+                    // LMAO yeah so to reset the hair to a natural state i just simulate it many times
+                    (update_strand, update_strand, update_strand, update_strand),
                 )
                     .chain()
                     .in_set(LevelSystems::Reset),
@@ -123,7 +121,7 @@ impl Plugin for PlayerManagementPlugin {
                 (kill_player_on_hurt_intersection, set_semisolid).in_set(LevelSystems::Simulation),
             )
             .add_systems(
-                Update,
+                FixedUpdate,
                 start_kill_animation.run_if(on_event::<KillPlayerEvent>),
             )
             .add_systems(
