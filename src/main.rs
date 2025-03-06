@@ -70,7 +70,8 @@ fn main() {
         .insert_state(UiState::LevelSelect)
         .add_plugins(DeferredLightingPlugin)
         .add_plugins(DebugPlugin {
-            physics: false,
+            // physics: true,
+            // ambiguity: true,
             ..default()
         })
         .add_event::<ResetLevel>()

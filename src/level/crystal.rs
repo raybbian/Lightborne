@@ -26,12 +26,16 @@ impl Plugin for CrystalPlugin {
             .add_systems(
                 PreUpdate,
                 (
-                    update_crystal_cache,
+                    invalidate_crystal_cache,
                     (
                         init_crystal_cache_tiles,
                         spawn_merged_tiles::<Crystal>,
                         init_crystal_cache_groups,
                     )
+                        // init_cache systems only touch their own level, which means that the
+                        // invalidations and initializations done should never overlap because a
+                        // level never despawns then spawns on the same frame
+                        .ambiguous_with(invalidate_crystal_cache)
                         .chain(),
                 )
                     .in_set(LevelSystems::Processing),
@@ -185,7 +189,7 @@ pub struct CrystalCache {
     groups: HashMap<LevelIid, HashMap<CrystalIdent, Vec<Entity>>>,
 }
 
-fn update_crystal_cache(
+fn invalidate_crystal_cache(
     mut ev_level: EventReader<LevelEvent>,
     mut crystal_cache: ResMut<CrystalCache>,
 ) {

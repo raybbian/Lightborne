@@ -5,10 +5,30 @@ use enum_map::EnumMap;
 
 use crate::{
     level::crystal::{CrystalIdent, CrystalToggleEvent},
+    light::segments::simulate_light_sources,
     lighting::LineLight2d,
 };
 
-use super::{crystal::CrystalColor, entity::FixedEntityBundle, LightColor};
+use super::{crystal::CrystalColor, entity::FixedEntityBundle, LevelSystems, LightColor};
+
+pub struct LightSensorPlugin;
+
+impl Plugin for LightSensorPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_ldtk_entity::<LightSensorBundle>("Sensor")
+            .add_systems(
+                PreUpdate,
+                add_sensor_sprites.in_set(LevelSystems::Processing),
+            )
+            .add_systems(Update, reset_light_sensors.in_set(LevelSystems::Reset))
+            .add_systems(
+                FixedUpdate,
+                update_light_sensors
+                    .after(simulate_light_sources)
+                    .in_set(LevelSystems::Simulation),
+            );
+    }
+}
 
 /// [`Component`] added to entities receptive to light. The
 /// [`activation_timer`](LightSensor::activation_timer) should be initialized in the

@@ -1,11 +1,14 @@
-use bevy::prelude::*;
+use bevy::{
+    input::common_conditions::{input_just_pressed, input_just_released},
+    prelude::*,
+};
 use bevy_rapier2d::plugin::RapierContext;
 use enum_map::{enum_map, EnumMap};
 use itertools::Itertools;
 
 use crate::{
-    input::CursorWorldCoords,
-    level::CurrentLevel,
+    input::{update_cursor_world_coords, CursorWorldCoords},
+    level::{CurrentLevel, LevelSystems},
     light::{
         segments::{play_light_beam, PrevLightBeamPlayback},
         LightBeamSource, LightColor, LightSourceZMarker,
@@ -14,6 +17,31 @@ use crate::{
 };
 
 use super::PlayerMarker;
+
+pub struct PlayerLightPlugin;
+
+impl Plugin for PlayerLightPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            (
+                handle_color_switch,
+                should_shoot_light::<true>.run_if(input_just_pressed(MouseButton::Left)),
+                should_shoot_light::<false>.run_if(input_just_pressed(MouseButton::Right)),
+                preview_light_path,
+                spawn_angle_indicator.run_if(input_just_pressed(MouseButton::Left)),
+                despawn_angle_indicator.run_if(
+                    input_just_released(MouseButton::Left)
+                        .or(input_just_pressed(MouseButton::Right)),
+                ),
+                shoot_light.run_if(input_just_released(MouseButton::Left)),
+            )
+                .chain()
+                .in_set(LevelSystems::Simulation)
+                .after(update_cursor_world_coords),
+        );
+    }
+}
 
 /// A [`Component`] used to track Lyra's current shooting color as well as the number of beams of
 /// that color remaining.

@@ -1,9 +1,22 @@
 use bevy::prelude::*;
 use enum_map::{enum_map, EnumMap};
 
-use crate::light::LightColor;
+use crate::{level::LevelSystems, light::LightColor};
 
 use super::{light::PlayerLightInventory, PlayerMarker};
+
+pub struct LightIndicatorPlugin;
+
+impl Plugin for LightIndicatorPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<LightIndicatorData>()
+            .add_systems(
+                PreUpdate,
+                add_light_indicator.in_set(LevelSystems::Processing),
+            )
+            .add_systems(FixedUpdate, update_light_indicator);
+    }
+}
 
 /// A resource that stored handles to the [`Mesh2d`] and [`MeshMaterial2d`] used in the rendering
 /// of [`LightSegment`](super::segments::LightSegmentBundle)s.
@@ -27,16 +40,10 @@ impl FromWorld for LightIndicatorData {
         LightIndicatorData {
             mesh: mesh_handle,
             material_map: enum_map! {
-                LightColor::Green => materials.add(LightColor::Green.indicator_color()).into(),
-                LightColor::Purple => materials.add(LightColor::Purple.indicator_color()).into(),
-                LightColor::White => materials.add(LightColor::White.indicator_color()).into(),
-                LightColor::Blue => materials.add(LightColor::Blue.indicator_color()).into(),
+                val => materials.add(val.indicator_color()).into(),
             },
             dimmed_material_map: enum_map! {
-                LightColor::Green => materials.add(LightColor::Green.indicator_dimmed_color()).into(),
-                LightColor::Purple => materials.add(LightColor::Purple.indicator_dimmed_color()).into(),
-                LightColor::White => materials.add(LightColor::White.indicator_dimmed_color()).into(),
-                LightColor::Blue => materials.add(LightColor::Blue.indicator_dimmed_color()).into(),
+                val => materials.add(val.indicator_dimmed_color()).into(),
             },
         }
     }

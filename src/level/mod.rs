@@ -4,18 +4,19 @@ use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
 use enum_map::{enum_map, EnumMap};
 use merge_tile::spawn_merged_tiles;
-use sensor::{add_sensor_sprites, reset_light_sensors, update_light_sensors, LightSensorBundle};
+use semisolid::SemiSolidPlugin;
+use sensor::LightSensorPlugin;
 use shard::CrystalShardPlugin;
 
 use crate::{
     camera::{camera_position_from_level, CameraMoveEvent, CAMERA_ANIMATION_SECS},
     level_select::handle_level_selection,
-    light::{segments::simulate_light_sources, LightColor},
+    light::LightColor,
     player::{LdtkPlayerBundle, PlayerMarker},
     shared::{GameState, ResetLevel},
 };
 use crystal::CrystalPlugin;
-use entity::{SemiSolidPlatformBundle, SpikeBundle};
+use entity::SpikeBundle;
 use setup::LevelSetupPlugin;
 use start_flag::{init_start_marker, StartFlagBundle};
 use walls::{Wall, WallBundle};
@@ -23,6 +24,7 @@ use walls::{Wall, WallBundle};
 pub mod crystal;
 pub mod entity;
 mod merge_tile;
+mod semisolid;
 pub mod sensor;
 mod setup;
 mod shard;
@@ -38,40 +40,33 @@ impl Plugin for LevelManagementPlugin {
             .add_plugins(LevelSetupPlugin)
             .add_plugins(CrystalPlugin)
             .add_plugins(CrystalShardPlugin)
+            .add_plugins(LightSensorPlugin)
+            .add_plugins(SemiSolidPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
-            .register_ldtk_entity::<LightSensorBundle>("Sensor")
             .register_ldtk_entity::<StartFlagBundle>("Start")
             .register_ldtk_int_cell_for_layer::<WallBundle>("Terrain", 1)
             .register_ldtk_int_cell_for_layer::<SpikeBundle>("Terrain", 2)
-            .register_ldtk_int_cell_for_layer::<SemiSolidPlatformBundle>("Terrain", 15)
             .add_systems(
                 PreUpdate,
-                (
-                    spawn_merged_tiles::<Wall>,
-                    init_start_marker,
-                    add_sensor_sprites,
-                )
-                    .in_set(LevelSystems::Processing),
+                (spawn_merged_tiles::<Wall>, init_start_marker).in_set(LevelSystems::Processing),
             )
-            .add_systems(Update, reset_light_sensors.in_set(LevelSystems::Reset))
-            .add_systems(
-                FixedUpdate,
-                (
-                    switch_level.after(handle_level_selection),
-                    update_light_sensors
-                        .after(simulate_light_sources)
-                        .in_set(LevelSystems::Simulation),
-                ),
-            )
+            .add_systems(FixedUpdate, switch_level.after(handle_level_selection))
             .configure_sets(
                 PreUpdate,
                 LevelSystems::Processing.after(process_ldtk_levels),
             )
-            .configure_sets(Update, LevelSystems::Reset.run_if(on_event::<ResetLevel>))
+            .configure_sets(
+                Update,
+                LevelSystems::Reset
+                    .run_if(on_event::<ResetLevel>)
+                    .before(LevelSystems::Simulation),
+            )
             .configure_sets(
                 FixedUpdate,
-                LevelSystems::Reset.run_if(on_event::<ResetLevel>),
+                LevelSystems::Reset
+                    .run_if(on_event::<ResetLevel>)
+                    .before(LevelSystems::Simulation),
             )
             .configure_sets(
                 Update,

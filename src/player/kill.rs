@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::{ecs::system::SystemId, prelude::*};
+use bevy::{ecs::system::SystemId, input::common_conditions::input_just_pressed, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
@@ -8,7 +8,7 @@ use crate::{
     camera::{
         camera_position_from_level, CameraMoveEvent, CameraTransition, CameraTransitionEvent,
     },
-    level::{entity::HurtMarker, start_flag::StartFlag, CurrentLevel},
+    level::{entity::HurtMarker, start_flag::StartFlag, CurrentLevel, LevelSystems},
     shared::{GameState, ResetLevel, LYRA_RESPAWN_EPSILON},
 };
 
@@ -17,6 +17,38 @@ use super::{
     movement::PlayerMovement,
     PlayerHurtMarker, PlayerMarker,
 };
+
+pub struct PlayerKillPlugin;
+
+impl Plugin for PlayerKillPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<KillAnimationCallbacks>()
+            .add_event::<KillPlayerEvent>()
+            .add_systems(Update, reset_player_on_kill.in_set(LevelSystems::Reset))
+            .add_systems(
+                Update,
+                (
+                    quick_reset
+                        .run_if(input_just_pressed(KeyCode::KeyR))
+                        .run_if(in_state(GameState::Playing)),
+                    reset_player_on_level_switch.in_set(LevelSystems::Reset),
+                ),
+            )
+            .add_systems(
+                FixedUpdate,
+                kill_player_on_hurt_intersection.in_set(LevelSystems::Simulation),
+            )
+            .add_systems(
+                FixedUpdate,
+                start_kill_animation.run_if(on_event::<KillPlayerEvent>),
+            );
+    }
+}
+
+/// [`System`] that will kill the player on press of the R key
+pub fn quick_reset(mut ev_kill_player: EventWriter<KillPlayerEvent>) {
+    ev_kill_player.send(KillPlayerEvent);
+}
 
 /// [`System`] that runs on [`GameState::Respawning`]. Will turn the state back into playing
 /// immediately.

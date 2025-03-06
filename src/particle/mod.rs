@@ -19,13 +19,12 @@ impl Plugin for ParticlePlugin {
             .add_systems(
                 Update,
                 (
-                    update_particles,
+                    (delete_particles, update_particles).chain(),
                     update_particle_emitters,
                     add_crystal_shine,
                     spawn_player_walking_dust,
                     adjust_crystal_shine_lights,
                     add_crystal_dust,
-                    delete_particles,
                 )
                     .in_set(LevelSystems::Simulation),
             );

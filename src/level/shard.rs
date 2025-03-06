@@ -3,7 +3,10 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 use enum_map::EnumMap;
 
-use crate::{animation::AnimationConfig, light::LightColor, player::PlayerHurtMarker};
+use crate::{
+    animation::AnimationConfig, light::LightColor, lighting::LineLight2d, player::PlayerHurtMarker,
+    shared::ResetLevel,
+};
 
 use super::{entity::FixedEntityBundle, CurrentLevel, LevelSystems};
 
@@ -17,7 +20,14 @@ impl Plugin for CrystalShardPlugin {
                 PreUpdate,
                 add_crystal_shard_sprites.in_set(LevelSystems::Processing),
             )
-            .add_systems(Update, reset_shards.in_set(LevelSystems::Reset))
+            .add_systems(
+                Update,
+                (
+                    reset_shard_visibility,
+                    (reset_shard_effects_on_kill, reset_shard_effects_cache).chain(),
+                )
+                    .in_set(LevelSystems::Reset),
+            )
             .add_systems(
                 FixedUpdate,
                 on_player_intersect_shard.in_set(LevelSystems::Simulation),
@@ -47,8 +57,19 @@ pub struct CrystalShardBundle {
     shard: CrystalShard,
     #[from_entity_instance]
     physics: FixedEntityBundle,
+    #[with(crystal_shard_light)]
+    light: LineLight2d,
     #[default]
     sensor: Sensor,
+}
+
+pub fn crystal_shard_light(entity_instance: &EntityInstance) -> LineLight2d {
+    let light_color: LightColor = entity_instance
+        .get_enum_field("light_color")
+        .expect("All crystal shards should have a light_color enum field")
+        .into();
+
+    LineLight2d::point(light_color.lighting_color().extend(1.0), 40.0, 0.01)
 }
 
 #[derive(Resource, Default)]
@@ -100,20 +121,30 @@ pub fn add_crystal_shard_sprites(
     }
 }
 
-pub fn reset_shards(
-    mut q_shards: Query<&mut Visibility, With<CrystalShard>>,
-    mut current_level: ResMut<CurrentLevel>,
-    mut shard_mods: ResMut<CrystalShardMods>,
-) {
+pub fn reset_shard_visibility(mut q_shards: Query<&mut Visibility, With<CrystalShard>>) {
     for mut visibility in q_shards.iter_mut() {
         *visibility = Visibility::Visible;
     }
+}
+pub fn reset_shard_effects_cache(mut shard_mods: ResMut<CrystalShardMods>) {
+    for (_, is_temporary) in shard_mods.0.iter_mut() {
+        *is_temporary = false;
+    }
+}
+
+pub fn reset_shard_effects_on_kill(
+    mut current_level: ResMut<CurrentLevel>,
+    mut shard_mods: ResMut<CrystalShardMods>,
+    mut ev_reset_level: EventReader<ResetLevel>,
+) {
+    if !ev_reset_level.read().any(|ev| *ev == ResetLevel::Respawn) {
+        return;
+    }
+
     for (color, is_temporary) in shard_mods.0.iter_mut() {
         if *is_temporary {
             current_level.allowed_colors[color] = false;
         }
-        // undo all temporary modifications on a level switch
-        *is_temporary = false;
     }
 }
 

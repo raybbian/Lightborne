@@ -1,5 +1,7 @@
-use bevy::prelude::*;
+use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_rapier2d::prelude::*;
+
+use crate::level::LevelSystems;
 
 use super::PlayerMarker;
 
@@ -20,6 +22,32 @@ const PLAYER_JUMP_VEL: f32 = 2.2;
 const PLAYER_MOVE_VEL: f32 = 0.6;
 /// The y velocity subtracted from the player due to gravity.
 const PLAYER_GRAVITY: f32 = 0.15;
+
+pub struct PlayerMovementPlugin;
+
+impl Plugin for PlayerMovementPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            FixedUpdate,
+            move_player
+                .before(PhysicsSet::SyncBackend)
+                .in_set(LevelSystems::Simulation),
+        )
+        .add_systems(
+            Update,
+            queue_jump
+                .run_if(input_just_pressed(KeyCode::Space))
+                .before(move_player)
+                .in_set(LevelSystems::Simulation),
+        )
+        .add_systems(
+            Update,
+            crouch_player
+                .before(move_player)
+                .in_set(LevelSystems::Simulation),
+        );
+    }
+}
 
 /// [`Component`] that stores information about the player's movement state.
 #[derive(Component, Default)]
