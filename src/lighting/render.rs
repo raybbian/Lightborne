@@ -1,132 +1,382 @@
+use std::ops::Range;
+
 use bevy::{
-    asset::RenderAssetUsages,
-    image::ImageSampler,
+    ecs::{
+        entity::EntityHashSet,
+        query::{QueryItem, ROQueryItem},
+        system::SystemParamItem,
+    },
+    math::FloatOrd,
     prelude::*,
-    render::render_resource::{Extent3d, TextureDimension, TextureFormat, TextureUsages},
+    render::{
+        render_graph::{NodeRunError, RenderGraphContext, RenderLabel, ViewNode},
+        render_phase::{
+            CachedRenderPipelinePhaseItem, DrawFunctionId, DrawFunctions, PhaseItem,
+            PhaseItemExtraIndex, RenderCommand, RenderCommandResult, SetItemPipeline,
+            SortedPhaseItem, TrackedRenderPass, ViewSortedRenderPhases,
+        },
+        render_resource::{
+            binding_types::{sampler, texture_2d},
+            *,
+        },
+        renderer::{RenderContext, RenderDevice},
+        sync_world::{MainEntity, RenderEntity},
+        view::{RenderVisibleEntities, ViewTarget},
+        Extract,
+    },
+    sprite::SetMesh2dViewBindGroup,
 };
 
-use super::material::{
-    BackgroundMaterial, BlurMaterial, CombineFramesMaterial, FrameMaskMaterial, FrameMaskUniforms,
-    GradientLightMaterial,
+use super::{
+    ambient_light::{AmbientLight2dPipeline, SetAmbientLight2dBindGroup},
+    line_light::{
+        DrawLineLight2d, ExtractLineLight2d, LineLight2dBounds, LineLight2dPipeline,
+        SetLineLight2dBindGroup,
+    },
+    occluder::{
+        DrawOccluder2d, ExtractOccluder2d, Occluder2dBounds, Occluder2dGroups, Occluder2dPipeline,
+        OccluderCountTexture, SetOccluder2dBindGroup,
+    },
+    AmbientLight2d, LineLight2d, Occluder2d,
 };
+
+/// Deferred Lighting [`SortedPhaseItem`]s.
+pub struct DeferredLighting2d {
+    /// The key, which determines which can be batched.
+    pub sort_key: FloatOrd,
+    /// An entity from which data will be fetched, including the mesh if
+    /// applicable.
+    pub entity: (Entity, MainEntity),
+    /// The identifier of the render pipeline.
+    pub pipeline: CachedRenderPipelineId,
+    /// The function used to draw.
+    pub draw_function: DrawFunctionId,
+    /// The ranges of instances.
+    pub batch_range: Range<u32>,
+    /// An extra index, which is either a dynamic offset or an index in the
+    /// indirect parameters list.
+    pub extra_index: PhaseItemExtraIndex,
+}
+
+impl PhaseItem for DeferredLighting2d {
+    #[inline]
+    fn entity(&self) -> Entity {
+        self.entity.0
+    }
+    fn main_entity(&self) -> MainEntity {
+        self.entity.1
+    }
+    #[inline]
+    fn draw_function(&self) -> DrawFunctionId {
+        self.draw_function
+    }
+    #[inline]
+    fn batch_range(&self) -> &Range<u32> {
+        &self.batch_range
+    }
+    #[inline]
+    fn batch_range_mut(&mut self) -> &mut Range<u32> {
+        &mut self.batch_range
+    }
+    fn extra_index(&self) -> PhaseItemExtraIndex {
+        self.extra_index
+    }
+    fn batch_range_and_extra_index_mut(&mut self) -> (&mut Range<u32>, &mut PhaseItemExtraIndex) {
+        (&mut self.batch_range, &mut self.extra_index)
+    }
+}
+
+impl SortedPhaseItem for DeferredLighting2d {
+    type SortKey = FloatOrd;
+
+    fn sort_key(&self) -> Self::SortKey {
+        self.sort_key
+    }
+}
+
+impl CachedRenderPipelinePhaseItem for DeferredLighting2d {
+    #[inline]
+    fn cached_pipeline(&self) -> CachedRenderPipelineId {
+        self.pipeline
+    }
+}
 
 #[derive(Resource)]
-pub struct LightingRenderData {
-    pub gradient_mesh: Handle<Mesh>,
-    pub gradient_material: Handle<GradientLightMaterial>,
-
-    pub combine_frames_mesh: Handle<Mesh>,
-    pub combine_frames_material: Handle<CombineFramesMaterial>,
-
-    pub blur_mesh: Handle<Mesh>,
-    pub blur_material: Handle<BlurMaterial>,
-
-    pub background_mesh: Handle<Mesh>,
-    pub background_material: Handle<BackgroundMaterial>,
-
-    pub combined_frames_image: Handle<Image>,
-    pub frames_image: Handle<Image>,
-    pub blurred_image: Handle<Image>,
-
-    pub default_occluder_mesh: Handle<Mesh>,
-
-    pub frame_mask_materials: [Handle<FrameMaskMaterial>; 16],
+pub struct PostProcessRes {
+    sampler: Sampler,
+    pub layout: BindGroupLayout,
 }
 
-fn new_render_image(width: u32, height: u32) -> Image {
-    let mut image = Image::new_fill(
-        Extent3d {
-            width,
-            height,
-            ..default()
-        },
-        TextureDimension::D2,
-        &[0, 0, 0, 0],
-        TextureFormat::Bgra8UnormSrgb,
-        RenderAssetUsages::default(),
-    );
-    image.texture_descriptor.usage =
-        TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST | TextureUsages::RENDER_ATTACHMENT;
-    image.sampler = ImageSampler::nearest();
-    image
-}
-
-impl FromWorld for LightingRenderData {
+impl FromWorld for PostProcessRes {
     fn from_world(world: &mut World) -> Self {
-        let mut meshes = world.resource_mut::<Assets<Mesh>>();
+        let render_device = world.resource::<RenderDevice>();
+        let layout = render_device.create_bind_group_layout(
+            "post_process_layout",
+            &BindGroupLayoutEntries::sequential(
+                ShaderStages::FRAGMENT,
+                (
+                    texture_2d(TextureSampleType::Float { filterable: true }),
+                    sampler(SamplerBindingType::NonFiltering),
+                ),
+            ),
+        );
+        let sampler = render_device.create_sampler(&SamplerDescriptor::default());
+        Self { sampler, layout }
+    }
+}
 
-        let gradient_mesh = meshes.add(Mesh::from(Rectangle::new(320. * 4., 180. * 4.)));
-        let combine_frames_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.)));
-        let blur_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.)));
-        let background_mesh = meshes.add(Mesh::from(Rectangle::new(320., 180.)));
-        let default_occluder_mesh = meshes.add(Mesh::from(Rectangle::new(1., 1.)));
-
-        let mut images = world.resource_mut::<Assets<Image>>();
-
-        let combined_frames_image = images.add(new_render_image(320, 180));
-        let blurred_image = images.add(new_render_image(320, 180));
-        let frames_image = images.add(new_render_image(320 * 4, 180 * 4));
-
-        let mut materials = world.resource_mut::<Assets<GradientLightMaterial>>();
-
-        let gradient_material = materials.add(GradientLightMaterial {
-            light_points: [Vec4::splat(10000000.0); 16], // Position (normalized to screen space)
-            light_radiuses: [Vec4::splat(0.0); 16],      // Light radius in pixels
-            mesh_transform: Vec4::new(320., 180., 0., 0.),
-        });
-
-        let mut materials = world.resource_mut::<Assets<CombineFramesMaterial>>();
-
-        let combine_frames_material = materials.add(CombineFramesMaterial {
-            image: frames_image.clone(),
-            light_colors: [Vec4::new(0., 1.0, 0., 1.0); 16],
-        });
-
-        let mut materials = world.resource_mut::<Assets<FrameMaskMaterial>>();
-        let frame_mask_materials = (0..16)
-            .map(|i| {
-                materials.add(FrameMaskMaterial {
-                    frame_info: FrameMaskUniforms {
-                        frame_count_x: 4,
-                        frame_count_y: 4,
-                        frame_index: i,
-                        _wasm_padding: 0.0,
-                    },
-                    color: Vec4::new(1. - (i as f32 / 16.0), 0.0, i as f32 / 16.0, 1.0),
-                })
-            })
-            .collect::<Vec<_>>();
-
-        let mut materials = world.resource_mut::<Assets<BlurMaterial>>();
-        let blur_material = materials.add(BlurMaterial {
-            image: combined_frames_image.clone(),
-            _wasm_padding: Vec2::ZERO,
-        });
-
-        let background_image: Handle<Image> = world
-            .resource::<AssetServer>()
-            .load("levels/background.png");
-
-        let mut materials = world.resource_mut::<Assets<BackgroundMaterial>>();
-        let background_material = materials.add(BackgroundMaterial {
-            light_image: blurred_image.clone(),
-            background_image,
-        });
-
-        LightingRenderData {
-            gradient_material,
-            combine_frames_material,
-            gradient_mesh,
-            combine_frames_mesh,
-            combined_frames_image,
-            frames_image,
-            frame_mask_materials: frame_mask_materials.try_into().unwrap(),
-            blur_mesh,
-            blur_material,
-            blurred_image,
-            background_material,
-            background_mesh,
-            default_occluder_mesh,
+pub fn extract_deferred_lighting_2d_camera_phases(
+    mut phases: ResMut<ViewSortedRenderPhases<DeferredLighting2d>>,
+    cameras_2d: Extract<Query<(RenderEntity, &Camera), With<Camera2d>>>,
+    mut live_entities: Local<EntityHashSet>,
+) {
+    live_entities.clear();
+    for (entity, camera) in &cameras_2d {
+        if !camera.is_active {
+            continue;
         }
+        phases.insert_or_clear(entity);
+        live_entities.insert(entity);
+    }
+    // Clear out all dead views.
+    phases.retain(|camera_entity, _| live_entities.contains(camera_entity));
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn queue_deferred_lighting(
+    deferred_lighting_draw_functions: Res<DrawFunctions<DeferredLighting2d>>,
+    occluder_pipeline: Res<Occluder2dPipeline>,
+    line_light_pipeline: Res<LineLight2dPipeline>,
+    ambient_light_pipeline: Res<AmbientLight2dPipeline>,
+    q_line_lights: Query<(&LineLight2dBounds, Option<&Occluder2dGroups>), With<ExtractLineLight2d>>,
+    q_occluder: Query<(&Occluder2dBounds, Option<&Occluder2dGroups>), With<ExtractOccluder2d>>,
+    mut deferred_lighting_phases: ResMut<ViewSortedRenderPhases<DeferredLighting2d>>,
+    views: Query<(Entity, &MainEntity, &RenderVisibleEntities), With<AmbientLight2d>>,
+) {
+    // TODO: ignore invisible entities
+
+    for (view_e, view_me, visible_entities) in views.iter() {
+        let Some(phase) = deferred_lighting_phases.get_mut(&view_e) else {
+            continue;
+        };
+
+        let prepare_deferred_lighting = deferred_lighting_draw_functions
+            .read()
+            .id::<PrepareDeferredLighting>();
+        let render_ambient_light = deferred_lighting_draw_functions
+            .read()
+            .id::<RenderAmbientLight2d>();
+        let render_occluder = deferred_lighting_draw_functions
+            .read()
+            .id::<RenderOccluder>();
+        let prepare_line_light = deferred_lighting_draw_functions
+            .read()
+            .id::<PrepareLineLight2d>();
+        let render_line_light = deferred_lighting_draw_functions
+            .read()
+            .id::<RenderLineLight2d>();
+        let reset_stencil_buffer = deferred_lighting_draw_functions
+            .read()
+            .id::<ResetOccluderStencil>();
+
+        let mut sort_key = 0.0;
+
+        let mut add_phase_item = |pipeline: CachedRenderPipelineId,
+                                  draw_function: DrawFunctionId,
+                                  entity: (Entity, MainEntity)| {
+            phase.add(DeferredLighting2d {
+                pipeline,
+                draw_function,
+                entity,
+                batch_range: 0..1,
+                sort_key: FloatOrd(sort_key),
+                extra_index: PhaseItemExtraIndex::NONE,
+            });
+            sort_key += 1.0;
+        };
+
+        // Set bind group 0 - post process uniform
+        // Set bind group 1 - view uniform
+        add_phase_item(
+            ambient_light_pipeline.pipeline_id,
+            prepare_deferred_lighting,
+            (view_e, *view_me),
+        );
+
+        // Draw ambient light
+        add_phase_item(
+            ambient_light_pipeline.pipeline_id,
+            render_ambient_light,
+            (view_e, *view_me),
+        );
+
+        // Start rendering lights
+        for (pl_e, pl_me) in visible_entities.iter::<With<LineLight2d>>() {
+            let Ok((light_bounds, light_group)) = q_line_lights.get(*pl_e) else {
+                continue;
+            };
+            let light_group = light_group.copied().unwrap_or(Occluder2dGroups::default());
+
+            // Set bind group 2 - line light uniform
+            add_phase_item(
+                line_light_pipeline.pipeline_id,
+                prepare_line_light,
+                (*pl_e, *pl_me),
+            );
+
+            // filter occluders
+            let mut occluders: Vec<(Entity, MainEntity)> = vec![];
+            for (ocl_e, ocl_me) in visible_entities.iter::<With<Occluder2d>>() {
+                let Ok((occluder_bounds, occluder_group)) = q_occluder.get(*ocl_e) else {
+                    continue;
+                };
+                let occluder_group = occluder_group
+                    .copied()
+                    .unwrap_or(Occluder2dGroups::default());
+                if occluder_group.0 & light_group.0 == 0 {
+                    continue;
+                }
+                if !occluder_bounds.visible_from_line_light(light_bounds) {
+                    continue;
+                }
+                occluders.push((*ocl_e, *ocl_me));
+            }
+
+            // Render occluder shadows
+            for (ocl_e, ocl_me) in occluders.iter() {
+                add_phase_item(
+                    occluder_pipeline.shadow_pipeline_id,
+                    render_occluder,
+                    (*ocl_e, *ocl_me),
+                );
+            }
+
+            // Cutout occluder bodies
+            for (ocl_e, ocl_me) in occluders.iter() {
+                add_phase_item(
+                    occluder_pipeline.cutout_pipeline_id,
+                    render_occluder,
+                    (*ocl_e, *ocl_me),
+                );
+            }
+
+            // Render the actual light now
+            add_phase_item(
+                line_light_pipeline.pipeline_id,
+                render_line_light,
+                (*pl_e, *pl_me),
+            );
+
+            // Reset the occluder
+            add_phase_item(
+                occluder_pipeline.reset_pipeline_id,
+                reset_stencil_buffer,
+                (*pl_e, *pl_me),
+            );
+        }
+    }
+}
+
+pub type PrepareDeferredLighting = (
+    // SetPostProcessBindGroup<0>,
+    SetMesh2dViewBindGroup<1>,
+);
+
+pub type RenderAmbientLight2d = (SetItemPipeline, SetAmbientLight2dBindGroup<2>, DrawTriangle);
+
+pub type PrepareLineLight2d = SetLineLight2dBindGroup<2>;
+
+pub type RenderOccluder = (
+    SetItemPipeline,
+    // SetLineLight2dBindGroup<2>,
+    SetOccluder2dBindGroup<3>,
+    DrawOccluder2d,
+);
+
+pub type RenderLineLight2d = (SetItemPipeline, SetLineLight2dBindGroup<2>, DrawLineLight2d);
+
+pub type ResetOccluderStencil = (SetItemPipeline, DrawTriangle);
+
+pub struct DrawTriangle;
+impl<P: PhaseItem> RenderCommand<P> for DrawTriangle {
+    type Param = ();
+    type ViewQuery = ();
+    type ItemQuery = ();
+
+    fn render<'w>(
+        _item: &P,
+        _view: ROQueryItem<'w, Self::ViewQuery>,
+        _entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        _param: SystemParamItem<'w, '_, Self::Param>,
+        pass: &mut TrackedRenderPass<'w>,
+    ) -> RenderCommandResult {
+        pass.draw(0..3, 0..1);
+
+        RenderCommandResult::Success
+    }
+}
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
+pub struct DeferredLightingLabel;
+
+#[derive(Default)]
+pub struct DeferredLightingNode;
+
+impl ViewNode for DeferredLightingNode {
+    type ViewQuery = (
+        &'static ViewTarget,
+        &'static OccluderCountTexture,
+        &'static AmbientLight2d,
+    );
+
+    fn run<'w>(
+        &self,
+        graph: &mut RenderGraphContext,
+        render_context: &mut RenderContext<'w>,
+        (view_target, occluder_count_texture, _ambient_lighting): QueryItem<'w, Self::ViewQuery>,
+        world: &'w World,
+    ) -> Result<(), NodeRunError> {
+        let lighting_phases = world.resource::<ViewSortedRenderPhases<DeferredLighting2d>>();
+        let view_entity = graph.view_entity();
+        let Some(lighting_phase) = lighting_phases.get(&view_entity) else {
+            return Ok(());
+        };
+
+        let post_process_res = world.resource::<PostProcessRes>();
+        let post_process = view_target.post_process_write();
+        let post_process_group = render_context.render_device().create_bind_group(
+            "post_process_group",
+            &post_process_res.layout,
+            &BindGroupEntries::sequential((post_process.source, &post_process_res.sampler)),
+        );
+
+        let mut render_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
+            label: Some("deferred_lighting_pass"),
+            color_attachments: &[Some(RenderPassColorAttachment {
+                view: post_process.destination,
+                resolve_target: None,
+                ops: Operations::default(),
+            })],
+            depth_stencil_attachment: Some(RenderPassDepthStencilAttachment {
+                view: occluder_count_texture.0.view(),
+                depth_ops: None,
+                stencil_ops: Some(Operations {
+                    load: LoadOp::Clear(0),
+                    store: StoreOp::Discard,
+                }),
+            }),
+            timestamp_writes: None,
+            occlusion_query_set: None,
+        });
+
+        render_pass.set_bind_group(0, &post_process_group, &[]);
+
+        if !lighting_phase.items.is_empty() {
+            if let Err(err) = lighting_phase.render(&mut render_pass, world, view_entity) {
+                error!("Error encountered while rendering the 2d deferred lighting phase {err:?}")
+            }
+        }
+
+        Ok(())
     }
 }

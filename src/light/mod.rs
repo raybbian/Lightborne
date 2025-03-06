@@ -2,15 +2,16 @@ use bevy::{
     prelude::*,
     sprite::{AlphaMode2d, Material2dPlugin},
 };
+use bevy_ecs_ldtk::prelude::*;
 
 use enum_map::Enum;
 use render::{LightMaterial, LightRenderData};
 use segments::{
-    cleanup_light_sources, simulate_light_sources, tick_light_sources, LightSegmentCache,
-    PrevLightBeamPlayback,
+    cleanup_light_sources, insert_line_lights, simulate_light_sources, tick_light_sources,
+    LightSegmentCache, PrevLightBeamPlayback,
 };
 
-use crate::{level::LevelSystems, shared::ResetLevel};
+use crate::level::LevelSystems;
 
 mod render;
 pub mod segments;
@@ -29,12 +30,37 @@ impl Plugin for LightManagementPlugin {
         app.add_plugins(Material2dPlugin::<LightMaterial>::default())
             .init_resource::<LightRenderData>()
             .init_resource::<LightSegmentCache>()
+            .register_ldtk_entity::<LightSegmentZBundle>("LightSegmentZMarker")
+            .register_ldtk_entity::<LightSourceZBundle>("LightSourceZMarker")
             .add_systems(
                 FixedUpdate,
                 (simulate_light_sources, tick_light_sources).in_set(LevelSystems::Simulation),
             )
-            .add_systems(Update, cleanup_light_sources.run_if(on_event::<ResetLevel>));
+            .add_systems(Update, insert_line_lights)
+            .add_systems(Update, cleanup_light_sources.in_set(LevelSystems::Reset));
     }
+}
+
+#[derive(Default, Component)]
+pub struct LightSourceZMarker;
+
+#[derive(Bundle, LdtkEntity)]
+pub struct LightSourceZBundle {
+    #[default]
+    marker: LightSourceZMarker,
+    #[worldly]
+    worldly: Worldly,
+}
+
+#[derive(Default, Component)]
+pub struct LightSegmentZMarker;
+
+#[derive(Bundle, LdtkEntity)]
+pub struct LightSegmentZBundle {
+    #[default]
+    marker: LightSegmentZMarker,
+    #[worldly]
+    worldly: Worldly,
 }
 
 /// [`Enum`] for each of the light colors.
@@ -82,28 +108,41 @@ impl LightColor {
 
     pub fn lighting_color(&self) -> Vec3 {
         match self {
-            LightColor::Red => Vec3::new(1.0, 0.1, 0.1),
-            LightColor::Green => Vec3::new(0.0, 1.0, 0.0),
+            LightColor::Red => Vec3::new(0.7, 0.2, 0.8), // now purple
+            LightColor::Green => Vec3::new(0.0, 0.9, 0.5),
             LightColor::White => Vec3::new(0.8, 0.8, 0.5),
-            LightColor::Blue => Vec3::new(0.0, 0.0, 1.0),
+            LightColor::Blue => Vec3::new(0.1, 0.2, 0.8),
         }
     }
 
     pub fn light_beam_color(&self) -> Color {
         match self {
-            LightColor::Red => Color::srgb(5.0, 0.0, 3.0),
-            LightColor::Green => Color::srgb(3.0, 5.0, 0.0),
+            LightColor::Red => Color::srgb(1.5, 0.5, 3.0), // more purple
+            LightColor::Green => Color::srgb(1.0, 4.0, 3.0),
             LightColor::White => Color::srgb(2.0, 2.0, 2.0),
             LightColor::Blue => Color::srgb(1.0, 2.0, 4.0),
         }
     }
 
+    pub fn indicator_color(&self) -> Color {
+        match self {
+            LightColor::Red => Color::srgb(0.7, 0.3, 1.0), // now purple
+            LightColor::Green => Color::srgb(0.25, 0.9, 0.75),
+            LightColor::White => Color::srgb(1.0, 1.0, 1.0),
+            LightColor::Blue => Color::srgb(0.25, 0.5, 1.0),
+        }
+    }
+
+    pub fn indicator_dimmed_color(&self) -> Color {
+        self.indicator_color().with_alpha(0.15)
+    }
+
     pub fn button_color(&self) -> Color {
         match self {
-            LightColor::Red => Color::srgb(1.0, 0.5608, 0.8314),
-            LightColor::Green => Color::srgb(0.6157, 0.9922, 0.5804),
+            LightColor::Red => Color::srgb(1.5, 0.7, 1.0), // pink
+            LightColor::Green => Color::srgb(1.0, 0.0, 0.0), // red
             LightColor::White => Color::srgb(0.9, 0.9, 0.9),
-            LightColor::Blue => Color::srgb(0.5608, 0.8824, 1.0),
+            LightColor::Blue => Color::srgb(0.6, 1.1, 1.9),
         }
     }
 }

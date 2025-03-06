@@ -1,3 +1,4 @@
+use animation::SpriteAnimationPlugin;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy::{asset::AssetMetaCheck, diagnostic::LogDiagnosticsPlugin};
@@ -8,19 +9,24 @@ use config::ConfigPlugin;
 use debug::DebugPlugin;
 use input::{init_cursor_world_coords, update_cursor_world_coords};
 use level::LevelManagementPlugin;
+use level_select::LevelSelectPlugin;
 use light::LightManagementPlugin;
-use lighting::LightingPlugin;
+use lighting::DeferredLightingPlugin;
+use particle::ParticlePlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
-use shared::{GameState, ResetLevel};
+use shared::{GameState, ResetLevel, UiState};
 
+mod animation;
 mod camera;
 mod config;
 mod debug;
 mod input;
 mod level;
+mod level_select;
 mod light;
 mod lighting;
+mod particle;
 mod pause;
 mod player;
 mod shared;
@@ -47,17 +53,26 @@ fn main() {
                     ..default()
                 }),
         )
+        .add_plugins(bevy_mod_debugdump::CommandLineArgs)
         .add_plugins(ConfigPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(8.0).in_fixed_schedule())
+        .add_plugins(SpriteAnimationPlugin)
         .add_plugins(PlayerManagementPlugin)
         .add_plugins(LevelManagementPlugin)
         .add_plugins(LightManagementPlugin)
+        .add_plugins(ParticlePlugin)
         .add_plugins(PausePlugin)
+        .add_plugins(LevelSelectPlugin)
         .add_plugins(CameraPlugin)
-        .add_plugins(LightingPlugin)
-        .add_plugins(DebugPlugin::default())
-        .insert_state(GameState::Playing)
+        .insert_state(GameState::Ui)
+        .add_sub_state::<UiState>()
+        .insert_state(UiState::LevelSelect)
+        .add_plugins(DeferredLightingPlugin)
+        .add_plugins(DebugPlugin {
+            physics: false,
+            ..default()
+        })
         .add_event::<ResetLevel>()
         .add_systems(Startup, init_cursor_world_coords)
         .add_systems(Update, update_cursor_world_coords)

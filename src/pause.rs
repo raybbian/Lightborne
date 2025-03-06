@@ -1,4 +1,4 @@
-use bevy::{input::common_conditions::input_just_pressed, prelude::*};
+use bevy::{input::common_conditions::input_just_pressed, prelude::*, ui::widget::NodeImageMode};
 
 use crate::shared::GameState;
 
@@ -6,8 +6,9 @@ pub struct PausePlugin;
 
 impl Plugin for PausePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Paused), spawn_pause)
-            .add_systems(OnExit(GameState::Paused), despawn_pause)
+        app.add_systems(Startup, spawn_pause)
+            .add_systems(OnEnter(GameState::Paused), show_pause::<true>)
+            .add_systems(OnExit(GameState::Paused), show_pause::<false>)
             .add_systems(
                 Update,
                 toggle_pause.run_if(input_just_pressed(KeyCode::Escape)),
@@ -24,30 +25,36 @@ fn spawn_pause(mut commands: Commands, asset_server: Res<AssetServer>) {
             Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
                 ..default()
             },
-            BackgroundColor(Color::linear_rgba(0., 0., 0., 0.7)),
+            Visibility::Hidden,
             PauseMarker,
         ))
         .with_child((
-            ImageNode::from(asset_server.load("ui/pause_menu.png")),
-            Transform::from_scale(Vec3::new(5.0, 5.0, 1.0)),
+            ImageNode::from(asset_server.load("ui/m2_pause.png")).with_mode(NodeImageMode::Stretch),
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                ..default()
+            },
         ));
 }
 
-fn despawn_pause(mut commands: Commands, query: Query<Entity, With<PauseMarker>>) {
-    let Ok(entity) = query.get_single() else {
+fn show_pause<const SHOW: bool>(mut query: Query<&mut Visibility, With<PauseMarker>>) {
+    let Ok(mut pause_visibility) = query.get_single_mut() else {
         return;
     };
-    commands.entity(entity).despawn_recursive();
+    *pause_visibility = if SHOW {
+        Visibility::Visible
+    } else {
+        Visibility::Hidden
+    };
 }
 
 fn toggle_pause(state: Res<State<GameState>>, mut next_state: ResMut<NextState<GameState>>) {
     next_state.set(match state.get() {
-        GameState::Switching => state.get().clone(),
         GameState::Paused => GameState::Playing,
         GameState::Playing => GameState::Paused,
+        _ => state.get().clone(),
     })
 }
