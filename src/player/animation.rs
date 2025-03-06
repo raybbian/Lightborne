@@ -1,9 +1,9 @@
 use bevy::{math::vec2, prelude::*};
 use bevy_rapier2d::prelude::*;
 
-use crate::animation::AnimationConfig;
+use crate::{animation::AnimationConfig, input::CursorWorldCoords};
 
-use super::{movement::PlayerMovement, PlayerMarker};
+use super::{light::PlayerLightInventory, movement::PlayerMovement, PlayerMarker};
 
 pub const ANIMATION_FRAMES: usize = 31;
 
@@ -82,11 +82,37 @@ impl From<PlayerAnimationType> for AnimationConfig {
 }
 
 pub fn flip_player_direction(
-    mut q_player: Query<(&mut Sprite, &KinematicCharacterControllerOutput), With<PlayerMarker>>,
+    mut q_player: Query<
+        (
+            &mut Sprite,
+            &KinematicCharacterControllerOutput,
+            &GlobalTransform,
+            &PlayerLightInventory,
+        ),
+        With<PlayerMarker>,
+    >,
+    buttons: Res<ButtonInput<MouseButton>>,
+    q_cursor: Query<&CursorWorldCoords>,
 ) {
-    let Ok((mut player_sprite, player_controller_output)) = q_player.get_single_mut() else {
+    let Ok((mut player_sprite, player_controller_output, player_transform, player_light_inventory)) =
+        q_player.get_single_mut()
+    else {
         return;
     };
+    let Ok(cursor_coords) = q_cursor.get_single() else {
+        return;
+    };
+
+    if buttons.pressed(MouseButton::Left) && player_light_inventory.can_shoot() {
+        let to_cursor = cursor_coords.pos - player_transform.translation().xy();
+        if to_cursor.x < 0.0 {
+            player_sprite.flip_x = true;
+        } else {
+            player_sprite.flip_x = false;
+        }
+        return;
+    }
+
     const PLAYER_FACING_EPSILON: f32 = 0.01;
     if player_controller_output.desired_translation.x < -PLAYER_FACING_EPSILON {
         player_sprite.flip_x = true;

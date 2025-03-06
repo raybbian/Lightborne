@@ -67,6 +67,10 @@ impl PlayerLightInventory {
             },
         }
     }
+
+    pub fn can_shoot(&self) -> bool {
+        self.should_shoot && self.sources[self.current_color]
+    }
 }
 
 #[derive(Component)]
@@ -148,10 +152,7 @@ pub fn shoot_light(
     let Ok(cursor_pos) = q_cursor.get_single() else {
         return;
     };
-    if !player_inventory.should_shoot {
-        return;
-    }
-    if !player_inventory.sources[player_inventory.current_color] {
+    if !player_inventory.can_shoot() {
         return;
     }
 
@@ -218,10 +219,7 @@ pub fn preview_light_path(
     let Ok(cursor_pos) = q_cursor.get_single() else {
         return;
     };
-    if !inventory.should_shoot {
-        return;
-    }
-    if !inventory.sources[inventory.current_color] {
+    if !inventory.can_shoot() {
         return;
     }
 

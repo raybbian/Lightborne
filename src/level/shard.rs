@@ -69,7 +69,7 @@ pub fn crystal_shard_light(entity_instance: &EntityInstance) -> LineLight2d {
         .expect("All crystal shards should have a light_color enum field")
         .into();
 
-    LineLight2d::point(light_color.lighting_color().extend(1.0), 40.0, 0.01)
+    LineLight2d::point(light_color.lighting_color().extend(1.0), 60.0, 0.015)
 }
 
 #[derive(Resource, Default)]
