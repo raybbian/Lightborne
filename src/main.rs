@@ -16,6 +16,7 @@ use particle::ParticlePlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
 use shared::{AnimationState, GameState, ResetLevel, UiState};
+use sound::SoundPlugin;
 
 mod animation;
 mod camera;
@@ -30,6 +31,7 @@ mod particle;
 mod pause;
 mod player;
 mod shared;
+mod sound;
 
 fn main() {
     App::new()
@@ -62,6 +64,7 @@ fn main() {
         .add_plugins(PlayerManagementPlugin)
         .add_plugins(LevelManagementPlugin)
         .add_plugins(LightManagementPlugin)
+        .add_plugins(SoundPlugin)
         .add_plugins(ParticlePlugin)
         .add_plugins(PausePlugin)
         .add_plugins(LevelSelectPlugin)

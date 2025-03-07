@@ -18,6 +18,7 @@ use crate::{
         InputLocked, PlayerHurtMarker, PlayerMarker,
     },
     shared::{AnimationState, GameState, ResetLevel},
+    sound::{BgmMarker, Fade, FadeSettings, BGM_VOLUME},
 };
 
 use super::{entity::FixedEntityBundle, CurrentLevel, LevelSystems};
@@ -219,6 +220,9 @@ impl FromWorld for ShardAnimationCallbacks {
     }
 }
 
+const SHARD_FADE_DURATION: Duration = Duration::from_millis(500);
+const SHARD_FADE_VOLUME: f32 = 0.1;
+
 #[allow(clippy::too_many_arguments)]
 pub fn start_shard_animation(
     mut commands: Commands,
@@ -232,6 +236,10 @@ pub fn start_shard_animation(
     mut shard_anim_cbs: ResMut<ShardAnimationCallbacks>,
     current_level: Res<CurrentLevel>,
     asset_server: Res<AssetServer>,
+    q_bgm: Query<
+        (&AudioSink, Entity, Option<&FadeSettings>),
+        (With<BgmMarker>, Without<PlayerMarker>),
+    >,
 ) {
     if ev_shard_animation.is_empty() {
         return;
@@ -251,6 +259,18 @@ pub fn start_shard_animation(
         AudioPlayer::new(asset_server.load("sfx/shard_acquire.wav")),
         PlaybackSettings::DESPAWN,
     ));
+
+    for (sink, bgm, fade_settings) in q_bgm.iter() {
+        // FIXME: If the entity has FadeSettings::Despawn fade just let it despawn
+        if fade_settings.is_some_and(|settings| *settings == FadeSettings::Despawn) {
+            continue;
+        }
+        commands.entity(bgm).insert(Fade::new(
+            SHARD_FADE_DURATION,
+            sink.volume(),
+            SHARD_FADE_VOLUME,
+        ));
+    }
 
     const SHARD_ANIMATION_CAMERA_SCALE: f32 = 0.75;
 
@@ -368,6 +388,7 @@ pub fn on_shard_text_read_finish(
     mut q_player: Query<(&GlobalTransform, &mut PlayerLightInventory), With<PlayerMarker>>,
     q_shard_text: Query<Entity, With<ShardUiMarker>>,
     shard_anim_cbs: Res<ShardAnimationCallbacks>,
+    q_bgm: Query<Entity, (With<BgmMarker>, Without<ShardUiMarker>)>,
 ) {
     let (player_transform, mut player_light_inventory) = q_player
         .get_single_mut()
@@ -403,6 +424,14 @@ pub fn on_shard_text_read_finish(
             callback: None,
         },
     });
+
+    for bgm in q_bgm.iter() {
+        commands.entity(bgm).insert(Fade::new(
+            SHARD_FADE_DURATION,
+            SHARD_FADE_VOLUME,
+            BGM_VOLUME,
+        ));
+    }
 }
 
 pub fn on_shard_zoom_back_finish(

@@ -17,6 +17,7 @@ use crate::{
     light::LightColor,
     player::{LdtkPlayerBundle, PlayerMarker},
     shared::{AnimationState, GameState, ResetLevel},
+    sound::{BgmTrack, ChangeBgmEvent},
 };
 use crystal::CrystalPlugin;
 use entity::SpikeBundle;
@@ -56,7 +57,15 @@ impl Plugin for LevelManagementPlugin {
                 PreUpdate,
                 (spawn_merged_tiles::<Wall>, init_start_marker).in_set(LevelSystems::Processing),
             )
-            .add_systems(FixedUpdate, switch_level.after(handle_level_selection))
+            .add_systems(
+                FixedUpdate,
+                (
+                    switch_level,
+                    set_bgm_from_current_level.in_set(LevelSystems::Simulation),
+                )
+                    .chain()
+                    .after(handle_level_selection),
+            )
             .configure_sets(
                 PreUpdate,
                 LevelSystems::Processing.after(process_ldtk_levels),
@@ -211,4 +220,40 @@ pub fn on_finish_level_switch(
 ) {
     next_game_state.set(GameState::Playing);
     ev_reset_level.send(ResetLevel::Switching);
+}
+
+// FIXME: temp code with lots of copied stuff to impl audio changing
+pub fn set_bgm_from_current_level(
+    current_level: Res<CurrentLevel>,
+    mut ev_change_bgm: EventWriter<ChangeBgmEvent>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+) {
+    let Ok(ldtk_handle) = ldtk_projects.get_single() else {
+        return;
+    };
+    let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_project_assets.into_inner(), ldtk_handle) else {
+        return;
+    };
+    let cur_id = ldtk_levels.iter().find_map(|level| {
+        let level_id = level
+            .get_string_field("LevelId")
+            .expect("Levels should always have a level id!");
+        if level_id.is_empty() {
+            panic!("Level id for a level should not be empty!");
+        }
+        if level.iid == current_level.level_iid.as_str() {
+            return Some(level_id);
+        }
+        None
+    });
+
+    let new_bgm = match cur_id {
+        Some(val) if &val[0..1] == "2" || &val[0..1] == "1" => BgmTrack::MustntStop,
+        Some(val) if &val[0..1] == "3" => BgmTrack::Cutscene1Draft,
+        Some(val) if &val[0..1] == "4" => BgmTrack::LightInTheDark,
+        _ => BgmTrack::None,
+    };
+
+    ev_change_bgm.send(ChangeBgmEvent(new_bgm));
 }

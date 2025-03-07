@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use bevy::asset::RenderAssetUsages;
-use bevy::audio::PlaybackMode;
 use bevy::image::{BevyDefault, TextureFormatPixelInfo};
 use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
@@ -18,6 +17,7 @@ use crate::level::start_flag::StartFlag;
 use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
 use crate::player::PlayerMarker;
 use crate::shared::{GameState, UiState, LYRA_RESPAWN_EPSILON};
+use crate::sound::{BgmTrack, ChangeBgmEvent};
 
 pub struct LevelSelectPlugin;
 
@@ -103,6 +103,7 @@ fn spawn_level_select(
     query_ldtk: Query<&LdtkProjectHandle>,
     level_select_ui_query: Query<Entity, With<LevelSelectUiMarker>>,
     asset_server: Res<AssetServer>,
+    mut ev_change_bgm: EventWriter<ChangeBgmEvent>,
 ) {
     if level_select_ui_query.get_single().is_ok() {
         return;
@@ -134,6 +135,8 @@ fn spawn_level_select(
         ..default()
     };
 
+    ev_change_bgm.send(ChangeBgmEvent(BgmTrack::LevelSelect));
+
     commands
         .spawn((
             LevelSelectUiMarker,
@@ -148,11 +151,6 @@ fn spawn_level_select(
                 ..default()
             },
             BackgroundColor(Color::BLACK),
-            AudioPlayer::new(asset_server.load("music/main_menu.wav")),
-            PlaybackSettings {
-                mode: PlaybackMode::Loop,
-                ..default()
-            },
         ))
         .with_children(|parent| {
             parent.spawn((Text::new("Level Select"), font.clone().with_font_size(36.)));
