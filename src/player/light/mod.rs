@@ -24,7 +24,7 @@ use indicator::LightIndicatorPlugin;
 mod indicator;
 mod ui;
 
-use super::PlayerMarker;
+use super::{not_input_locked, PlayerMarker};
 
 pub struct PlayerLightPlugin;
 
@@ -47,6 +47,7 @@ impl Plugin for PlayerLightPlugin {
                     shoot_light.run_if(input_just_released(MouseButton::Left)),
                 )
                     .chain()
+                    .run_if(not_input_locked)
                     .in_set(LevelSystems::Simulation)
                     .after(update_cursor_world_coords),
             );
@@ -106,18 +107,16 @@ pub fn spawn_angle_indicator(
 }
 
 pub fn despawn_angle_indicator(mut commands: Commands, q_angle: Query<Entity, With<AngleMarker>>) {
-    let Ok(angle) = q_angle.get_single() else {
-        return;
-    };
-
-    commands.entity(angle).despawn_recursive();
+    for angle in q_angle.iter() {
+        commands.entity(angle).despawn_recursive();
+    }
 }
 
 /// [`System`] to handle the keyboard presses corresponding to color switches.
 pub fn handle_color_switch(
     keys: Res<ButtonInput<KeyCode>>,
     mut ev_scroll: EventReader<MouseWheel>,
-    mut q_inventory: Query<&mut PlayerLightInventory>,
+    mut q_inventory: Query<&mut PlayerLightInventory, With<PlayerMarker>>,
     current_level: Res<CurrentLevel>,
 ) {
     let Ok(mut inventory) = q_inventory.get_single_mut() else {

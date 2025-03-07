@@ -15,7 +15,7 @@ use lighting::DeferredLightingPlugin;
 use particle::ParticlePlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
-use shared::{GameState, ResetLevel, UiState};
+use shared::{AnimationState, GameState, ResetLevel, UiState};
 
 mod animation;
 mod camera;
@@ -68,6 +68,7 @@ fn main() {
         .add_plugins(CameraPlugin)
         .insert_state(GameState::Ui)
         .add_sub_state::<UiState>()
+        .add_sub_state::<AnimationState>()
         .insert_state(UiState::LevelSelect)
         .add_plugins(DeferredLightingPlugin)
         .add_plugins(DebugPlugin {

@@ -11,7 +11,9 @@ use bevy_ecs_ldtk::prelude::LdtkFields;
 use bevy_ecs_ldtk::LevelIid;
 use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
 
-use crate::camera::{camera_position_from_level, handle_move_camera, CameraMoveEvent};
+use crate::camera::{
+    camera_position_from_level, handle_move_camera, CameraControlType, CameraMoveEvent,
+};
 use crate::level::start_flag::StartFlag;
 use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
 use crate::player::PlayerMarker;
@@ -265,7 +267,10 @@ pub fn handle_level_selection(
                                     level_box_from_level(&ldtk_levels[index.0]),
                                     player_transform.translation.xy(),
                                 );
-                                ev_move_camera.send(CameraMoveEvent::Instant { to: camera_pos });
+                                ev_move_camera.send(CameraMoveEvent {
+                                    to: camera_pos,
+                                    variant: CameraControlType::Instant,
+                                });
 
                                 break 'loop_layers;
                             }

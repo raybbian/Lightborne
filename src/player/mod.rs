@@ -48,6 +48,16 @@ impl Plugin for PlayerManagementPlugin {
     }
 }
 
+/// Add to player to prevent movement/other inputs
+#[derive(Component)]
+pub struct InputLocked;
+
+pub fn not_input_locked(q_player: Query<Option<&InputLocked>, With<PlayerMarker>>) -> bool {
+    !q_player
+        .get_single()
+        .is_ok_and(|input_locked| input_locked.is_some())
+}
+
 /// [`Component`] to signal our own code to finish the initialization of the player (adding sensors, etc)
 #[derive(Component, Default)]
 pub struct PlayerMarker;

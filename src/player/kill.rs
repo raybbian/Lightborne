@@ -6,10 +6,14 @@ use bevy_rapier2d::prelude::*;
 
 use crate::{
     camera::{
-        camera_position_from_level, CameraMoveEvent, CameraTransition, CameraTransitionEvent,
+        camera_position_from_level, CameraControlType, CameraMoveEvent, CameraTransition,
+        CameraTransitionEvent,
     },
-    level::{entity::HurtMarker, start_flag::StartFlag, CurrentLevel, LevelSystems},
-    shared::{GameState, ResetLevel, LYRA_RESPAWN_EPSILON},
+    level::{
+        entity::HurtMarker, shard::reset_shard_effects_on_kill, start_flag::StartFlag,
+        CurrentLevel, LevelSystems,
+    },
+    shared::{AnimationState, GameState, ResetLevel, LYRA_RESPAWN_EPSILON},
 };
 
 use super::{
@@ -31,7 +35,11 @@ impl Plugin for PlayerKillPlugin {
                     quick_reset
                         .run_if(input_just_pressed(KeyCode::KeyR))
                         .run_if(in_state(GameState::Playing)),
-                    reset_player_on_level_switch.in_set(LevelSystems::Reset),
+                    // reset player will try to preserve the current color, the calculations for
+                    // which depend on proper values for the current level's allowed colors
+                    reset_player_on_level_switch
+                        .after(reset_shard_effects_on_kill)
+                        .in_set(LevelSystems::Reset),
                 ),
             )
             .add_systems(
@@ -82,8 +90,9 @@ pub fn reset_player_on_kill(
                 as f32
                 + LYRA_RESPAWN_EPSILON;
             // add small height so Lyra is not stuck into the floor
-            ev_move_camera.send(CameraMoveEvent::Instant {
+            ev_move_camera.send(CameraMoveEvent {
                 to: camera_position_from_level(current_level.level_box, transform.translation.xy()),
+                variant: CameraControlType::Instant,
             });
             return;
         }
@@ -169,8 +178,9 @@ pub fn start_kill_animation(
     callbacks: Res<KillAnimationCallbacks>,
     cur_game_state: Res<State<GameState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_anim_state: ResMut<NextState<AnimationState>>,
 ) {
-    if *cur_game_state.get() == GameState::KillAnimation {
+    if *cur_game_state.get() == GameState::Animating {
         return;
     }
     ev_transition_camera.send(CameraTransitionEvent {
@@ -179,7 +189,8 @@ pub fn start_kill_animation(
         callback: Some(callbacks.cb1),
         effect: CameraTransition::SlideToBlack,
     });
-    next_game_state.set(GameState::KillAnimation);
+    next_game_state.set(GameState::Animating);
+    next_anim_state.set(AnimationState::AnimateRespawn);
 }
 
 pub fn after_slide_to_black(

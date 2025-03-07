@@ -23,10 +23,18 @@ impl GroupLabel {
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameState {
     Playing,
-    SwitchAnimation,
-    KillAnimation,
+    Animating,
     Paused,
     Ui,
+}
+
+#[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
+#[source(GameState = GameState::Animating)]
+pub enum AnimationState {
+    #[default]
+    AnimateSwitch,
+    AnimateRespawn,
+    AnimateShard,
 }
 
 #[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]

@@ -9,11 +9,13 @@ use sensor::LightSensorPlugin;
 use shard::CrystalShardPlugin;
 
 use crate::{
-    camera::{camera_position_from_level, CameraMoveEvent, CAMERA_ANIMATION_SECS},
+    camera::{
+        camera_position_from_level, CameraControlType, CameraMoveEvent, CAMERA_ANIMATION_SECS,
+    },
     level_select::handle_level_selection,
     light::LightColor,
     player::{LdtkPlayerBundle, PlayerMarker},
-    shared::{GameState, ResetLevel},
+    shared::{AnimationState, GameState, ResetLevel},
 };
 use crystal::CrystalPlugin;
 use entity::SpikeBundle;
@@ -27,7 +29,7 @@ mod merge_tile;
 mod semisolid;
 pub mod sensor;
 mod setup;
-mod shard;
+pub mod shard;
 pub mod start_flag;
 mod walls;
 
@@ -70,11 +72,15 @@ impl Plugin for LevelManagementPlugin {
             )
             .configure_sets(
                 Update,
-                LevelSystems::Simulation.run_if(in_state(GameState::Playing)),
+                LevelSystems::Simulation.run_if(
+                    in_state(GameState::Playing).or(in_state(AnimationState::AnimateShard)),
+                ),
             )
             .configure_sets(
                 FixedUpdate,
-                LevelSystems::Simulation.run_if(in_state(GameState::Playing)),
+                LevelSystems::Simulation.run_if(
+                    in_state(GameState::Playing).or(in_state(AnimationState::AnimateShard)),
+                ),
             );
     }
 }
@@ -90,7 +96,7 @@ pub struct CurrentLevel {
 /// [`SystemSet`] used to distinguish different types of systems
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum LevelSystems {
-    /// Systems used to simulate game logic in [`Update`]
+    /// Systems used to simulate game logic
     Simulation,
     /// Systems used to process Ldtk Entities after they spawn in [`PreUpdate`]
     Processing,
@@ -128,6 +134,7 @@ pub fn switch_level(
     ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_anim_state: ResMut<NextState<AnimationState>>,
     mut current_level: ResMut<CurrentLevel>,
     on_level_switch_finish_cb: Local<OnFinishLevelSwitchCallback>,
     mut ev_move_camera: EventWriter<CameraMoveEvent>,
@@ -149,16 +156,19 @@ pub fn switch_level(
             if current_level.level_iid.as_str() != level.iid {
                 // relies on camera to reset the state back to switching??
                 if !current_level.level_iid.to_string().is_empty() {
-                    next_game_state.set(GameState::SwitchAnimation);
+                    next_game_state.set(GameState::Animating);
+                    next_anim_state.set(AnimationState::AnimateSwitch);
 
-                    ev_move_camera.send(CameraMoveEvent::Animated {
+                    ev_move_camera.send(CameraMoveEvent {
                         to: camera_position_from_level(
                             level_box,
                             player_transform.translation.xy(),
                         ),
-                        duration: Duration::from_secs_f32(CAMERA_ANIMATION_SECS),
-                        callback: Some(on_level_switch_finish_cb.0),
-                        ease_fn: EaseFunction::SineInOut,
+                        variant: CameraControlType::Animated {
+                            duration: Duration::from_secs_f32(CAMERA_ANIMATION_SECS),
+                            callback: Some(on_level_switch_finish_cb.0),
+                            ease_fn: EaseFunction::SineInOut,
+                        },
                     });
                 } else {
                     ev_level_switch.send(ResetLevel::Switching);
