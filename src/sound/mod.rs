@@ -49,8 +49,7 @@ pub enum BgmTrack {
     None,
 }
 
-// FIXME: need to normalize tracks
-pub const BGM_VOLUME: f32 = 0.7;
+pub const BGM_VOLUME: f32 = 0.8;
 
 /// Fades out all other bgm tracks, and spawns the selected track
 #[derive(Event)]
