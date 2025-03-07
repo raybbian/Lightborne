@@ -95,13 +95,23 @@ pub fn reset_player_on_kill(
 /// Resets the player inventory and movement information on a [`LevelSwitchEvent`]
 pub fn reset_player_on_level_switch(
     mut q_player: Query<(&mut PlayerMovement, &mut PlayerLightInventory), With<PlayerMarker>>,
+    current_level: Res<CurrentLevel>,
 ) {
     let Ok((mut movement, mut inventory)) = q_player.get_single_mut() else {
         return;
     };
 
+    let old_color = inventory.current_color;
+
     *movement = PlayerMovement::default();
     *inventory = PlayerLightInventory::new();
+
+    // if the new level has the current color as an allowed color, preserve it
+    if let Some(color) = old_color {
+        if current_level.allowed_colors[color] {
+            inventory.current_color = old_color;
+        }
+    }
 }
 
 /// Kills player upon touching a HURT_BOX

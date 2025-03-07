@@ -1,5 +1,8 @@
 use bevy::{
-    input::common_conditions::{input_just_pressed, input_just_released},
+    input::{
+        common_conditions::{input_just_pressed, input_just_released},
+        mouse::MouseWheel,
+    },
     prelude::*,
 };
 use bevy_rapier2d::plugin::RapierContext;
@@ -113,6 +116,7 @@ pub fn despawn_angle_indicator(mut commands: Commands, q_angle: Query<Entity, Wi
 /// [`System`] to handle the keyboard presses corresponding to color switches.
 pub fn handle_color_switch(
     keys: Res<ButtonInput<KeyCode>>,
+    mut ev_scroll: EventReader<MouseWheel>,
     mut q_inventory: Query<&mut PlayerLightInventory>,
     current_level: Res<CurrentLevel>,
 ) {
@@ -120,14 +124,41 @@ pub fn handle_color_switch(
         return;
     };
 
-    let binds: [(KeyCode, LightColor); 4] = [
+    static COLOR_BINDS: [(KeyCode, LightColor); 4] = [
         (KeyCode::Digit1, LightColor::Green),
         (KeyCode::Digit2, LightColor::Purple),
         (KeyCode::Digit3, LightColor::White),
         (KeyCode::Digit4, LightColor::Blue),
     ];
 
-    for (key, color) in binds {
+    let mut cur_index = match inventory.current_color {
+        None => -1,
+        Some(LightColor::Green) => 0,
+        Some(LightColor::Purple) => 1,
+        Some(LightColor::White) => 2,
+        Some(LightColor::Blue) => 3,
+    };
+
+    for scroll in ev_scroll.read() {
+        let sign = scroll.y.signum() as i32 * -1;
+        let mut new_index = cur_index + sign;
+
+        // suspicious algorithm to cycle through available colors with the scroll wheel
+        // basically skips disallowed colors until you find the next one
+        let mut count = 0;
+        while !current_level.allowed_colors[COLOR_BINDS[new_index.rem_euclid(4) as usize].1]
+            && count < COLOR_BINDS.len()
+        {
+            new_index += sign;
+            count += 1;
+        }
+        cur_index = new_index;
+        if current_level.allowed_colors[COLOR_BINDS[new_index.rem_euclid(4) as usize].1] {
+            inventory.current_color = Some(COLOR_BINDS[cur_index.rem_euclid(4) as usize].1);
+        }
+    }
+
+    for (key, color) in COLOR_BINDS {
         if keys.just_pressed(key) && current_level.allowed_colors[color] {
             inventory.current_color = Some(color);
         }
