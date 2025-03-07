@@ -36,7 +36,7 @@ impl Plugin for PlayerMovementPlugin {
         .add_systems(
             Update,
             queue_jump
-                .run_if(input_just_pressed(KeyCode::Space))
+                .run_if(input_just_pressed(KeyCode::Space).or(input_just_pressed(KeyCode::KeyW)))
                 .before(move_player)
                 .in_set(LevelSystems::Simulation),
         )
@@ -115,7 +115,10 @@ pub fn move_player(
     // grounded in the past COYOTE_TIME_TICKS
     if player.should_jump_ticks_remaining > 0 && player.coyote_time_ticks_remaining > 0 {
         player.jump_boost_ticks_remaining = JUMP_BOOST_TICKS;
-    } else if !keys.pressed(KeyCode::Space) && player.velocity.y > 0. {
+    } else if !keys.pressed(KeyCode::Space)
+        && !keys.pressed(KeyCode::KeyW)
+        && player.velocity.y > 0.
+    {
         // Jump was cut
         player.velocity.y = PLAYER_GRAVITY;
         player.jump_boost_ticks_remaining = 0;
