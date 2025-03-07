@@ -87,10 +87,17 @@ pub fn update_light_indicator(
         return;
     };
 
-    let material = match inventory.sources[inventory.current_color] {
-        false => light_data.dimmed_material_map[inventory.current_color].clone(),
-        true => light_data.material_map[inventory.current_color].clone(),
+    match inventory.current_color {
+        None => commands.entity(indicator).insert(Visibility::Hidden),
+        Some(_) => commands.entity(indicator).insert(Visibility::Visible),
     };
 
-    commands.entity(indicator).insert(material);
+    if let Some(color) = inventory.current_color {
+        let material = match inventory.sources[color] {
+            false => light_data.dimmed_material_map[color].clone(),
+            true => light_data.material_map[color].clone(),
+        };
+
+        commands.entity(indicator).insert(material);
+    }
 }

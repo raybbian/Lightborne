@@ -56,7 +56,7 @@ impl Plugin for PlayerLightPlugin {
 pub struct PlayerLightInventory {
     /// set to true when LMB is clicked, set to false when RMB is clicked/LMB is released
     should_shoot: bool,
-    pub current_color: LightColor,
+    pub current_color: Option<LightColor>,
     /// Is true if the color is available
     pub sources: EnumMap<LightColor, bool>,
 }
@@ -65,7 +65,7 @@ impl PlayerLightInventory {
     pub fn new() -> Self {
         PlayerLightInventory {
             should_shoot: false,
-            current_color: LightColor::Green,
+            current_color: None,
             sources: enum_map! {
                 LightColor::Green =>true,
                 LightColor::Blue => true,
@@ -76,7 +76,7 @@ impl PlayerLightInventory {
     }
 
     pub fn can_shoot(&self) -> bool {
-        self.should_shoot && self.sources[self.current_color]
+        self.should_shoot && self.current_color.is_some_and(|color| self.sources[color])
     }
 }
 
@@ -129,7 +129,7 @@ pub fn handle_color_switch(
 
     for (key, color) in binds {
         if keys.just_pressed(key) && current_level.allowed_colors[color] {
-            inventory.current_color = color;
+            inventory.current_color = Some(color);
         }
     }
 }
@@ -170,29 +170,26 @@ pub fn shoot_light(
         return;
     }
 
+    let shoot_color = player_inventory.current_color.unwrap();
+
     let mut source_transform =
         Transform::from_translation(ray_pos.extend(light_source_z.translation.z));
     source_transform.rotate_z(ray_dir.to_angle());
     let mut source_sprite = Sprite::from_image(asset_server.load("light/compass.png"));
     source_sprite.color = Color::srgb(2.0, 2.0, 2.0);
     let mut outer_source_sprite = Sprite::from_image(asset_server.load("light/compass-gold.png"));
-    outer_source_sprite.color = player_inventory
-        .current_color
-        .light_beam_color()
-        .mix(&Color::BLACK, 0.4);
+    outer_source_sprite.color = shoot_color.light_beam_color().mix(&Color::BLACK, 0.4);
 
     commands
         .spawn(LightBeamSource {
             start_pos: ray_pos,
             start_dir: ray_dir,
             time_traveled: 0.0,
-            color: player_inventory.current_color,
+            color: shoot_color,
         })
-        .insert(PrevLightBeamPlayback::from_color(
-            player_inventory.current_color,
-        ))
+        .insert(PrevLightBeamPlayback::from_color(shoot_color))
         .insert(LineLight2d::point(
-            player_inventory.current_color.lighting_color().extend(1.0),
+            shoot_color.lighting_color().extend(1.0),
             30.0,
             0.0,
         ))
@@ -203,7 +200,7 @@ pub fn shoot_light(
     // Bevy's Mut or ResMut doesn't let you borrow multiple fields of a struct, so sometimes you
     // need to "reborrow" it to turn it into &mut. See https://bevy-cheatbook.github.io/pitfalls/split-borrows.html
     let player_inventory = &mut *player_inventory;
-    player_inventory.sources[player_inventory.current_color] = false;
+    player_inventory.sources[shoot_color] = false;
     player_inventory.should_shoot = false;
 }
 
@@ -230,6 +227,8 @@ pub fn preview_light_path(
         return;
     }
 
+    let shoot_color = inventory.current_color.unwrap();
+
     let ray_pos = transform.translation.truncate();
     let ray_dir = (cursor_pos.pos - ray_pos).normalize_or_zero();
 
@@ -237,11 +236,11 @@ pub fn preview_light_path(
         start_pos: ray_pos,
         start_dir: ray_dir,
         time_traveled: 10000.0, // LOL
-        color: inventory.current_color,
+        color: shoot_color,
     };
     let playback = play_light_beam(rapier_context.into_inner(), &dummy_source);
 
     for (a, b) in playback.iter_points(&dummy_source).tuple_windows() {
-        gizmos.line_2d(a, b, inventory.current_color.light_beam_color().darker(0.3));
+        gizmos.line_2d(a, b, shoot_color.light_beam_color().darker(0.3));
     }
 }
