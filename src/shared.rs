@@ -17,6 +17,7 @@ impl GroupLabel {
     pub const STRAND: Group = Group::GROUP_8;
     pub const BLUE_RAY: Group = Group::GROUP_9;
     pub const CRYSTAL_SHARD: Group = Group::GROUP_10;
+    pub const PLATFORM: Group = Group::GROUP_11;
     pub const ALL: Group = Group::from_bits_truncate(!0);
 }
 
