@@ -26294,9 +26294,9 @@
 					"params": ["Blue"]
 				} ] },
 				{ "__identifier": "LevelName", "__type": "String", "__value": "", "__tile": null, "defUid": 1365, "realEditorValues": [] },
-				{ "__identifier": "LevelId", "__type": "String", "__value": "End", "__tile": null, "defUid": 1366, "realEditorValues": [{
+				{ "__identifier": "LevelId", "__type": "String", "__value": ".End", "__tile": null, "defUid": 1366, "realEditorValues": [{
 					"id": "V_String",
-					"params": ["End"]
+					"params": [".End"]
 				}] }
 			],
 			"layerInstances": [
