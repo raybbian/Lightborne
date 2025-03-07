@@ -57,7 +57,7 @@ pub struct LightSensor {
 }
 
 impl LightSensor {
-    fn new(toggle_color: CrystalColor, millis: i32, platform_id: i32) -> Self {
+    fn new(toggle_ident: CrystalIdent, millis: i32, platform_id: i32) -> Self {
         let rate = 1.0 / (millis as f32) * (1000.0 / 64.0);
         LightSensor {
             meter: 0.0,
@@ -114,7 +114,7 @@ impl From<&EntityInstance> for LightSensor {
             Err(_) => -1
         };
 
-        LightSensor::new(sensor_color, millis, platform_id)
+        LightSensor::new(toggle_ident, millis, platform_id)
     }
 }
 
