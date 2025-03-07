@@ -121,6 +121,10 @@ fn spawn_level_select(
         if level_id.is_empty() {
             panic!("Level id for a level should not be empty!");
         }
+        // FIXME: ignore all levels prefixed with .
+        if &level_id[0..1] == "." {
+            continue;
+        }
         sorted_levels.push((level_id, i));
     }
     sorted_levels.sort();

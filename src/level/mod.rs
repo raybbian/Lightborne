@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
+use egg::EggPlugin;
 use enum_map::{enum_map, EnumMap};
 use merge_tile::spawn_merged_tiles;
 use semisolid::SemiSolidPlugin;
@@ -24,6 +25,7 @@ use start_flag::{init_start_marker, StartFlagBundle};
 use walls::{Wall, WallBundle};
 
 pub mod crystal;
+mod egg;
 pub mod entity;
 mod merge_tile;
 mod semisolid;
@@ -44,6 +46,7 @@ impl Plugin for LevelManagementPlugin {
             .add_plugins(CrystalShardPlugin)
             .add_plugins(LightSensorPlugin)
             .add_plugins(SemiSolidPlugin)
+            .add_plugins(EggPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
             .register_ldtk_entity::<StartFlagBundle>("Start")
