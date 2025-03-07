@@ -139,7 +139,7 @@ pub fn handle_color_switch(
     };
 
     for scroll in ev_scroll.read() {
-        let sign = scroll.y.signum() as i32 * -1;
+        let sign = -(scroll.y.signum() as i32);
         let mut new_index = cur_index + sign;
 
         // suspicious algorithm to cycle through available colors with the scroll wheel

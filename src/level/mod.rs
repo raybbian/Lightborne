@@ -72,15 +72,13 @@ impl Plugin for LevelManagementPlugin {
             )
             .configure_sets(
                 Update,
-                LevelSystems::Simulation.run_if(
-                    in_state(GameState::Playing).or(in_state(AnimationState::AnimateShard)),
-                ),
+                LevelSystems::Simulation
+                    .run_if(in_state(GameState::Playing).or(in_state(AnimationState::Shard))),
             )
             .configure_sets(
                 FixedUpdate,
-                LevelSystems::Simulation.run_if(
-                    in_state(GameState::Playing).or(in_state(AnimationState::AnimateShard)),
-                ),
+                LevelSystems::Simulation
+                    .run_if(in_state(GameState::Playing).or(in_state(AnimationState::Shard))),
             );
     }
 }
@@ -157,7 +155,7 @@ pub fn switch_level(
                 // relies on camera to reset the state back to switching??
                 if !current_level.level_iid.to_string().is_empty() {
                     next_game_state.set(GameState::Animating);
-                    next_anim_state.set(AnimationState::AnimateSwitch);
+                    next_anim_state.set(AnimationState::Switch);
 
                     ev_move_camera.send(CameraMoveEvent {
                         to: camera_position_from_level(

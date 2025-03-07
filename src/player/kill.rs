@@ -190,7 +190,7 @@ pub fn start_kill_animation(
         effect: CameraTransition::SlideToBlack,
     });
     next_game_state.set(GameState::Animating);
-    next_anim_state.set(AnimationState::AnimateRespawn);
+    next_anim_state.set(AnimationState::Respawn);
 }
 
 pub fn after_slide_to_black(

@@ -219,6 +219,7 @@ impl FromWorld for ShardAnimationCallbacks {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn start_shard_animation(
     mut commands: Commands,
     cur_game_state: Res<State<GameState>>,
@@ -277,7 +278,7 @@ pub fn start_shard_animation(
         },
     });
     next_game_state.set(GameState::Animating);
-    next_anim_state.set(AnimationState::AnimateShard);
+    next_anim_state.set(AnimationState::Shard);
 }
 
 #[derive(Component)]

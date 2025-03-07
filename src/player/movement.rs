@@ -115,7 +115,7 @@ pub fn move_player(
         if movement_locked.is_some() {
             return false;
         }
-        return keys.pressed(key);
+        keys.pressed(key)
     };
 
     if output.grounded {

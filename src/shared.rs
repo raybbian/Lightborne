@@ -32,9 +32,9 @@ pub enum GameState {
 #[source(GameState = GameState::Animating)]
 pub enum AnimationState {
     #[default]
-    AnimateSwitch,
-    AnimateRespawn,
-    AnimateShard,
+    Switch,
+    Respawn,
+    Shard,
 }
 
 #[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
