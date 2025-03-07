@@ -8,12 +8,8 @@ use super::{
     animation::{PlayerAnimationType, ANIMATION_FRAMES},
     light::PlayerLightInventory,
     movement::PlayerMovement,
-    PlayerBundle, PlayerMarker,
+    PlayerBundle, PlayerHurtMarker, PlayerMarker,
 };
-
-/// Attached to player hitbox
-#[derive(Default, Component)]
-pub struct PlayerHurtMarker;
 
 /// Used by Ldtk to spawn the player correctly with all of the correct [`Component`]s.
 pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
@@ -93,7 +89,7 @@ pub fn add_player_sensors(
             .insert(Transform::default())
             .insert(CollisionGroups::new(
                 GroupLabel::PLAYER_SENSOR,
-                GroupLabel::HURT_BOX | GroupLabel::TERRAIN | GroupLabel::PLATFORM,
+                GroupLabel::HURT_BOX | GroupLabel::TERRAIN | GroupLabel::CRYSTAL_SHARD | GroupLabel::PLATFORM,
             ));
     });
 }

@@ -5,9 +5,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_ecs_tilemap::tiles::TileTextureIndex;
 use bevy_rapier2d::prelude::*;
 
-use crate::{
-    light::LightColor, lighting::Occluder2d, particle::dust::DustSurface, shared::GroupLabel,
-};
+use crate::{lighting::Occluder2d, shared::GroupLabel};
 
 use super::{
     entity::HurtMarker,
@@ -28,26 +26,27 @@ impl Plugin for CrystalPlugin {
             .add_systems(
                 PreUpdate,
                 (
-                    update_crystal_cache,
+                    invalidate_crystal_cache,
                     (
                         init_crystal_cache_tiles,
                         spawn_merged_tiles::<Crystal>,
                         init_crystal_cache_groups,
                     )
+                        // init_cache systems only touch their own level, which means that the
+                        // invalidations and initializations done should never overlap because a
+                        // level never despawns then spawns on the same frame
+                        .ambiguous_with(invalidate_crystal_cache)
                         .chain(),
                 )
                     .in_set(LevelSystems::Processing),
             )
-            // Has event reader, so must be on update
             .add_systems(
-                Update,
-                (
-                    on_crystal_changed
-                        .in_set(LevelSystems::Simulation)
-                        .after(update_light_sensors),
-                    reset_crystals.in_set(LevelSystems::Reset),
-                ),
-            );
+                FixedUpdate,
+                on_crystal_changed
+                    .in_set(LevelSystems::Simulation)
+                    .after(update_light_sensors),
+            )
+            .add_systems(Update, reset_crystals.in_set(LevelSystems::Reset));
 
         for i in 3..=10 {
             app.register_ldtk_int_cell_for_layer::<CrystalBundle>("Terrain", i);
@@ -59,24 +58,55 @@ impl Plugin for CrystalPlugin {
     }
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum CrystalColor {
+    #[default]
+    Pink,
+    Red,
+    Blue,
+    White,
+}
+
+impl CrystalColor {
+    pub fn button_color(&self) -> Color {
+        match self {
+            CrystalColor::Pink => Color::srgb(1.5, 0.7, 1.0),
+            CrystalColor::Red => Color::srgb(1.0, 0.0, 0.0),
+            CrystalColor::White => Color::srgb(0.9, 0.9, 0.9),
+            CrystalColor::Blue => Color::srgb(0.6, 1.1, 1.9),
+        }
+    }
+}
+
+impl From<&String> for CrystalColor {
+    fn from(value: &String) -> Self {
+        match value.as_str() {
+            "Pink" => CrystalColor::Pink,
+            "Red" => CrystalColor::Red,
+            "White" => CrystalColor::White,
+            "Blue" => CrystalColor::Blue,
+            _ => panic!("String does not represent a CrystalColor"),
+        }
+    }
+}
+
 /// Enum that represents the crystals that a [`LightSensor`] should toggle. Differs from the
 /// LightColor in that the white color requires an ID field.
 #[derive(Debug, Default, Clone, Copy, Eq, Hash, PartialEq)]
-pub struct CrystalColor {
-    pub color: LightColor,
+pub struct CrystalIdent {
+    pub color: CrystalColor,
     pub id: i32,
 }
 
-/// Marker [`Component`] used to query for crystals, currently does not contain any information.
 #[derive(Default, Component)]
 pub struct Crystal {
-    pub color: CrystalColor,
+    pub ident: CrystalIdent,
     init_active: bool,
     pub active: bool,
 }
 
 impl MergedTile for Crystal {
-    type CompareData = (CrystalColor, bool);
+    type CompareData = (CrystalIdent, bool);
 
     fn bundle(
         commands: &mut EntityCommands,
@@ -86,7 +116,7 @@ impl MergedTile for Crystal {
     ) {
         let (crystal_color, crystal_active) = compare_data;
 
-        if crystal_color.color == LightColor::Blue {
+        if crystal_color.color == CrystalColor::Blue {
             commands.insert(CollisionGroups::new(
                 GroupLabel::TERRAIN,
                 GroupLabel::ALL & !GroupLabel::BLUE_RAY,
@@ -106,7 +136,7 @@ impl MergedTile for Crystal {
             CrystalGroup {
                 representative: Crystal {
                     init_active: compare_data.1,
-                    color: compare_data.0,
+                    ident: compare_data.0,
                     active: compare_data.1,
                 },
                 half_extent,
@@ -116,7 +146,7 @@ impl MergedTile for Crystal {
     }
 
     fn compare_data(&self) -> Self::CompareData {
-        (self.color, self.init_active)
+        (self.ident, self.init_active)
     }
 }
 
@@ -155,11 +185,11 @@ pub struct CrystalIdBundle {
 
 #[derive(Debug, Default, Resource)]
 pub struct CrystalCache {
-    tiles: HashMap<LevelIid, HashMap<CrystalColor, Vec<Entity>>>,
-    groups: HashMap<LevelIid, HashMap<CrystalColor, Vec<Entity>>>,
+    tiles: HashMap<LevelIid, HashMap<CrystalIdent, Vec<Entity>>>,
+    groups: HashMap<LevelIid, HashMap<CrystalIdent, Vec<Entity>>>,
 }
 
-fn update_crystal_cache(
+fn invalidate_crystal_cache(
     mut ev_level: EventReader<LevelEvent>,
     mut crystal_cache: ResMut<CrystalCache>,
 ) {
@@ -189,7 +219,7 @@ fn init_crystal_cache_groups(
             .groups
             .entry(level_iid.clone())
             .or_default()
-            .entry(crystal_group.representative.color)
+            .entry(crystal_group.representative.ident)
             .or_default()
             .push(entity);
     }
@@ -237,8 +267,8 @@ fn init_crystal_cache_tiles(
 
         // crystal.color is currently CrystalColor::White with id 0, we need to pull the proper ID
         // in if it exists
-        let actual_color = CrystalColor {
-            color: crystal.color.color,
+        let actual_color = CrystalIdent {
+            color: crystal.ident.color,
             id: coords_map
                 .get(level_iid)
                 .and_then(|mp| mp.get(coord))
@@ -254,7 +284,7 @@ fn init_crystal_cache_tiles(
             .or_default()
             .push(entity);
 
-        crystal.color = actual_color;
+        crystal.ident = actual_color;
     }
 }
 
@@ -270,12 +300,12 @@ fn is_crystal_active(cell_value: IntGridCell) -> bool {
 }
 
 /// Function to determine the base color of the crystal.
-fn crystal_color(cell_value: IntGridCell) -> LightColor {
+fn crystal_color(cell_value: IntGridCell) -> CrystalColor {
     match cell_value.value {
-        3 | 4 => LightColor::Red,
-        5 | 6 => LightColor::Green,
-        7 | 8 => LightColor::White,
-        9 | 10 => LightColor::Blue,
+        3 | 4 => CrystalColor::Pink,
+        5 | 6 => CrystalColor::Red,
+        7 | 8 => CrystalColor::White,
+        9 | 10 => CrystalColor::Blue,
         _ => panic!("Cell value does not correspond to crystal!"),
     }
 }
@@ -285,8 +315,9 @@ impl From<IntGridCell> for Crystal {
         let init_active = is_crystal_active(cell);
 
         Crystal {
-            color: CrystalColor {
+            ident: CrystalIdent {
                 color: crystal_color(cell),
+                // initialzed later in init_crystal_cache_tiles
                 id: 0,
             },
             active: init_active,
@@ -352,7 +383,7 @@ pub fn reset_crystals(
 /// Event that will toggle all crystals of a certain color.
 #[derive(Event)]
 pub struct CrystalToggleEvent {
-    pub color: CrystalColor,
+    pub color: CrystalIdent,
 }
 
 /// [`System`] that listens to when [`Crystal`]s are activated or deactivated, updating the

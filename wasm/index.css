@@ -1,0 +1,48 @@
+@font-face {
+  font-family: 'Munro';
+  src: url('./assets/fonts/Munro.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.container {
+    width: auto; 
+    height: auto; 
+    aspect-ratio: 16 / 9; 
+    max-width: 100dvw; 
+    max-height: 100dvh;
+}
+
+.wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: black;
+    width: 100dvw;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.canvas {
+    outline: none;
+}
+
+#info-panel-left, #info-panel-right {
+    margin: 0px;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+}
+
+.info-panel {
+    width: 100%;
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    color: white;
+    font-family: "Munro";
+    opacity: 50%;
+    display: flex;
+    justify-content: space-between;
+}

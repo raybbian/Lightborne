@@ -59,6 +59,18 @@ impl Plugin for DebugPlugin {
                     ..default()
                 });
             });
+            app.edit_schedule(FixedPreUpdate, |schedule| {
+                schedule.set_build_settings(ScheduleBuildSettings {
+                    ambiguity_detection: LogLevel::Warn,
+                    ..default()
+                });
+            });
+            app.edit_schedule(FixedPostUpdate, |schedule| {
+                schedule.set_build_settings(ScheduleBuildSettings {
+                    ambiguity_detection: LogLevel::Warn,
+                    ..default()
+                });
+            });
         }
     }
 }

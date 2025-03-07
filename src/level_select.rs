@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use bevy::asset::RenderAssetUsages;
-use bevy::audio::PlaybackMode;
 use bevy::image::{BevyDefault, TextureFormatPixelInfo};
 use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
@@ -11,11 +10,14 @@ use bevy_ecs_ldtk::prelude::LdtkFields;
 use bevy_ecs_ldtk::LevelIid;
 use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
 
-use crate::camera::{camera_position_from_level, handle_move_camera, CameraMoveEvent};
+use crate::camera::{
+    camera_position_from_level, handle_move_camera, CameraControlType, CameraMoveEvent,
+};
 use crate::level::start_flag::StartFlag;
 use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
 use crate::player::PlayerMarker;
 use crate::shared::{GameState, UiState, LYRA_RESPAWN_EPSILON};
+use crate::sound::{BgmTrack, ChangeBgmEvent};
 
 pub struct LevelSelectPlugin;
 
@@ -23,7 +25,7 @@ const START_FLAG_IDENT: &str = "Start";
 const TERRAIN_LAYER_IDENT: &str = "Terrain";
 const ENTITY_LAYER_IDENT: &str = "Entities";
 const SENSOR_ENTITY_IDENT: &str = "Sensor";
-const SENSOR_COLOR_IDENT: &str = "light_color";
+const SENSOR_COLOR_IDENT: &str = "toggle_color";
 
 // [R, G, B, A] colors for level preview
 const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
@@ -47,8 +49,8 @@ const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
 
 fn sensor_color_to_rgba(sensor_color: &str) -> [u8; 4] {
     match sensor_color {
-        "Red" => [255, 143, 212, 255],
-        "Green" => [255, 0, 0, 255],
+        "Pink" => [255, 143, 212, 255],
+        "Red" => [255, 0, 0, 255],
         "White" => [229, 229, 229, 255],
         "Blue" => [143, 225, 255, 255],
         _ => [0, 0, 0, 255],
@@ -101,6 +103,7 @@ fn spawn_level_select(
     query_ldtk: Query<&LdtkProjectHandle>,
     level_select_ui_query: Query<Entity, With<LevelSelectUiMarker>>,
     asset_server: Res<AssetServer>,
+    mut ev_change_bgm: EventWriter<ChangeBgmEvent>,
 ) {
     if level_select_ui_query.get_single().is_ok() {
         return;
@@ -119,6 +122,10 @@ fn spawn_level_select(
         if level_id.is_empty() {
             panic!("Level id for a level should not be empty!");
         }
+        // FIXME: ignore all levels prefixed with .
+        if &level_id[0..1] == "." {
+            continue;
+        }
         sorted_levels.push((level_id, i));
     }
     sorted_levels.sort();
@@ -127,6 +134,8 @@ fn spawn_level_select(
         font: asset_server.load("fonts/Munro.ttf"),
         ..default()
     };
+
+    ev_change_bgm.send(ChangeBgmEvent(BgmTrack::LevelSelect));
 
     commands
         .spawn((
@@ -142,11 +151,6 @@ fn spawn_level_select(
                 ..default()
             },
             BackgroundColor(Color::BLACK),
-            AudioPlayer::new(asset_server.load("music/main_menu.wav")),
-            PlaybackSettings {
-                mode: PlaybackMode::Loop,
-                ..default()
-            },
         ))
         .with_children(|parent| {
             parent.spawn((Text::new("Level Select"), font.clone().with_font_size(36.)));
@@ -265,7 +269,10 @@ pub fn handle_level_selection(
                                     level_box_from_level(&ldtk_levels[index.0]),
                                     player_transform.translation.xy(),
                                 );
-                                ev_move_camera.send(CameraMoveEvent::Instant { to: camera_pos });
+                                ev_move_camera.send(CameraMoveEvent {
+                                    to: camera_pos,
+                                    variant: CameraControlType::Instant,
+                                });
 
                                 break 'loop_layers;
                             }

@@ -1,9 +1,22 @@
 use bevy::prelude::*;
 use enum_map::{enum_map, EnumMap};
 
-use crate::light::LightColor;
+use crate::{level::LevelSystems, light::LightColor, player::PlayerMarker};
 
-use super::{light::PlayerLightInventory, PlayerMarker};
+use super::PlayerLightInventory;
+
+pub struct LightIndicatorPlugin;
+
+impl Plugin for LightIndicatorPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_resource::<LightIndicatorData>()
+            .add_systems(
+                PreUpdate,
+                add_light_indicator.in_set(LevelSystems::Processing),
+            )
+            .add_systems(FixedUpdate, update_light_indicator);
+    }
+}
 
 /// A resource that stored handles to the [`Mesh2d`] and [`MeshMaterial2d`] used in the rendering
 /// of [`LightSegment`](super::segments::LightSegmentBundle)s.
@@ -27,16 +40,10 @@ impl FromWorld for LightIndicatorData {
         LightIndicatorData {
             mesh: mesh_handle,
             material_map: enum_map! {
-                LightColor::Green => materials.add(LightColor::Green.indicator_color()).into(),
-                LightColor::Red => materials.add(LightColor::Red.indicator_color()).into(),
-                LightColor::White => materials.add(LightColor::White.indicator_color()).into(),
-                LightColor::Blue => materials.add(LightColor::Blue.indicator_color()).into(),
+                val => materials.add(val.indicator_color()).into(),
             },
             dimmed_material_map: enum_map! {
-                LightColor::Green => materials.add(LightColor::Green.indicator_dimmed_color()).into(),
-                LightColor::Red => materials.add(LightColor::Red.indicator_dimmed_color()).into(),
-                LightColor::White => materials.add(LightColor::White.indicator_dimmed_color()).into(),
-                LightColor::Blue => materials.add(LightColor::Blue.indicator_dimmed_color()).into(),
+                val => materials.add(val.indicator_dimmed_color()).into(),
             },
         }
     }
@@ -80,10 +87,17 @@ pub fn update_light_indicator(
         return;
     };
 
-    let material = match inventory.sources[inventory.current_color] {
-        false => light_data.dimmed_material_map[inventory.current_color].clone(),
-        true => light_data.material_map[inventory.current_color].clone(),
+    match inventory.current_color {
+        None => commands.entity(indicator).insert(Visibility::Hidden),
+        Some(_) => commands.entity(indicator).insert(Visibility::Visible),
     };
 
-    commands.entity(indicator).insert(material);
+    if let Some(color) = inventory.current_color {
+        let material = match inventory.sources[color] {
+            false => light_data.dimmed_material_map[color].clone(),
+            true => light_data.material_map[color].clone(),
+        };
+
+        commands.entity(indicator).insert(material);
+    }
 }

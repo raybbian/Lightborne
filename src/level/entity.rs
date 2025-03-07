@@ -2,71 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{
-    particle::dust::DustSurface,
-    player::{movement::PlayerMovement, PlayerMarker},
-    shared::GroupLabel,
-};
-
-#[derive(Default, Component)]
-pub struct SemiSolid;
-
-/// Bundle for Semi-Solid Platforms
-#[derive(Bundle, LdtkIntCell)]
-pub struct SemiSolidPlatformBundle {
-    #[from_int_grid_cell]
-    fixed_entity_bundle: FixedEntityBundle,
-    semi_solid: SemiSolid,
-    dust_surface: DustSurface,
-}
-
-impl Default for SemiSolidPlatformBundle {
-    fn default() -> Self {
-        Self {
-            fixed_entity_bundle: FixedEntityBundle::default(),
-            semi_solid: SemiSolid::default(),
-            dust_surface: DustSurface::Wood,
-        }
-    }
-}
-
-pub fn adjust_semisolid_colliders(mut q_semisolid: Query<&mut Transform, Added<SemiSolid>>) {
-    for mut transform in q_semisolid.iter_mut() {
-        // if transform.translation.y % 8. == 0. {
-        transform.translation.y += 3.;
-        // }
-    }
-}
-
-/// Sets the state of SemiSolids based on Player's y coord
-pub fn set_semisolid(
-    q_player: Query<(&PlayerMovement, &GlobalTransform), With<PlayerMarker>>,
-    mut q_semisolid: Query<(&GlobalTransform, &mut CollisionGroups), With<SemiSolid>>,
-) {
-    let Ok((movement, player)) = q_player.get_single() else {
-        return;
-    };
-    const PLAYER_HALF_HEIGHT: f32 = 9.0;
-    let cutoff_height = if movement.crouching {
-        PLAYER_HALF_HEIGHT / 2.0
-    } else {
-        PLAYER_HALF_HEIGHT
-    };
-
-    for (transform, mut collisions) in q_semisolid.iter_mut() {
-        if player.compute_transform().translation.y - transform.compute_transform().translation.y
-            > cutoff_height
-        {
-            *collisions = CollisionGroups::new(GroupLabel::TERRAIN, GroupLabel::ALL);
-        } else {
-            *collisions = CollisionGroups::new(
-                GroupLabel::TERRAIN,
-                GroupLabel::ALL & !GroupLabel::PLAYER_COLLIDER,
-            );
-        }
-    }
-}
-
+use crate::shared::GroupLabel;
 /// Component for things that hurt
 #[derive(Default, Component)]
 pub struct HurtMarker;
@@ -102,6 +38,14 @@ impl From<&EntityInstance> for FixedEntityBundle {
                 collision_groups: CollisionGroups::new(
                     GroupLabel::LIGHT_SENSOR,
                     GroupLabel::LIGHT_RAY | GroupLabel::WHITE_RAY | GroupLabel::BLUE_RAY,
+                ),
+            },
+            "CrystalShard" => FixedEntityBundle {
+                collider: Collider::cuboid(6., 6.),
+                rigid_body: RigidBody::Fixed,
+                collision_groups: CollisionGroups::new(
+                    GroupLabel::CRYSTAL_SHARD,
+                    GroupLabel::PLAYER_SENSOR,
                 ),
             },
             _ => unreachable!(),

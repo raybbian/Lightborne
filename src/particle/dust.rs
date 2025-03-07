@@ -47,7 +47,7 @@ impl DustSurface {
             ],
         };
         let color = if let Self::Crystal(color) = self {
-            color.color.button_color()
+            color.button_color()
         } else {
             Color::default()
         };
@@ -119,7 +119,7 @@ pub fn add_crystal_dust(
     for (entity, crystal) in crystals.iter() {
         commands
             .entity(entity)
-            .insert(DustSurface::Crystal(crystal.representative.color));
+            .insert(DustSurface::Crystal(crystal.representative.ident.color));
     }
 }
 
@@ -148,11 +148,16 @@ pub fn spawn_player_walking_dust(
         return;
     }
 
-    let Some(dust_surface) = output
-        .collisions
-        .iter()
-        .find_map(|collision| dust_surfaces.get(collision.entity).ok())
-    else {
+    let Some(dust_surface) = output.collisions.iter().find_map(|collision| {
+        let is_below = collision
+            .hit
+            .details
+            .is_some_and(|detail| detail.normal2.y < 0.0);
+        if !is_below {
+            return None;
+        }
+        dust_surfaces.get(collision.entity).ok()
+    }) else {
         return;
     };
 

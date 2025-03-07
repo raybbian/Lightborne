@@ -32,7 +32,7 @@ impl FromWorld for LightRenderData {
             mesh: mesh_handle,
             material_map: enum_map! {
                 LightColor::Green => materials.add(LightMaterial::from(LightColor::Green)).into(),
-                LightColor::Red => materials.add(LightMaterial::from(LightColor::Red)).into(),
+                LightColor::Purple => materials.add(LightMaterial::from(LightColor::Purple)).into(),
                 LightColor::White => materials.add(LightMaterial::from(LightColor::White)).into(),
                 LightColor::Blue => materials.add(LightMaterial::from(LightColor::Blue)).into(),
             },

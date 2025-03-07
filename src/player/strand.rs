@@ -4,10 +4,42 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    animation::AnimationConfig, player::match_player::MatchPlayerPixel, shared::GroupLabel,
+    animation::AnimationConfig, level::LevelSystems, player::match_player::MatchPlayerPixel,
+    shared::GroupLabel,
 };
 
-use super::{animation::PlayerAnimationType, match_player::MatchPlayerZ, PlayerMarker};
+use super::{
+    animation::{set_animation, PlayerAnimationType},
+    kill::reset_player_on_kill,
+    match_player::MatchPlayerZ,
+    PlayerMarker,
+};
+
+pub struct PlayerStrandPlugin;
+
+impl Plugin for PlayerStrandPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            // LOL to reset strand on reset just simulate them a bunch
+            (update_strand, update_strand, update_strand, update_strand)
+                .after(reset_player_on_kill)
+                .in_set(LevelSystems::Reset),
+        )
+        .add_systems(
+            PreUpdate,
+            add_player_hair_and_cloth.in_set(LevelSystems::Processing),
+        )
+        .add_systems(
+            FixedUpdate,
+            (
+                update_strand,
+                update_player_strand_offsets.after(set_animation),
+            )
+                .in_set(LevelSystems::Simulation),
+        );
+    }
+}
 
 #[derive(Component)]
 /// [`Component`] representing one node in a chain of strands, used to simulate hair and clothes.

@@ -1,7 +1,9 @@
-use bevy::prelude::*;
+use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_rapier2d::prelude::*;
 
-use super::PlayerMarker;
+use crate::level::LevelSystems;
+
+use super::{not_input_locked, InputLocked, PlayerMarker};
 
 /// The number of [`FixedUpdate`] steps the player can jump for after pressing the spacebar.
 const SHOULD_JUMP_TICKS: isize = 8;
@@ -20,6 +22,34 @@ const PLAYER_JUMP_VEL: f32 = 2.2;
 const PLAYER_MOVE_VEL: f32 = 0.6;
 /// The y velocity subtracted from the player due to gravity.
 const PLAYER_GRAVITY: f32 = 0.15;
+
+pub struct PlayerMovementPlugin;
+
+impl Plugin for PlayerMovementPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            FixedUpdate,
+            move_player
+                .before(PhysicsSet::SyncBackend)
+                .in_set(LevelSystems::Simulation),
+        )
+        .add_systems(
+            Update,
+            queue_jump
+                .run_if(not_input_locked)
+                .run_if(input_just_pressed(KeyCode::Space).or(input_just_pressed(KeyCode::KeyW)))
+                .before(move_player)
+                .in_set(LevelSystems::Simulation),
+        )
+        .add_systems(
+            Update,
+            crouch_player
+                .run_if(not_input_locked)
+                .before(move_player)
+                .in_set(LevelSystems::Simulation),
+        );
+    }
+}
 
 /// [`Component`] that stores information about the player's movement state.
 #[derive(Component, Default)]
@@ -69,14 +99,23 @@ pub fn move_player(
         (
             &mut KinematicCharacterController,
             &KinematicCharacterControllerOutput,
-            &mut PlayerMovement
+            &mut PlayerMovement,
+            Option<&InputLocked>,
         ),
         With<PlayerMarker>,
     >,
     keys: Res<ButtonInput<KeyCode>>
 ) {
-    let Ok((mut controller, output, mut player)) = q_player.get_single_mut() else {
+    let Ok((mut controller, output, mut player, movement_locked)) = q_player.get_single_mut()
+    else {
         return;
+    };
+
+    let check_pressed = |key: KeyCode| {
+        if movement_locked.is_some() {
+            return false;
+        }
+        keys.pressed(key)
     };
 
     if output.grounded {
@@ -87,7 +126,10 @@ pub fn move_player(
     // grounded in the past COYOTE_TIME_TICKS
     if player.should_jump_ticks_remaining > 0 && player.coyote_time_ticks_remaining > 0 {
         player.jump_boost_ticks_remaining = JUMP_BOOST_TICKS;
-    } else if !keys.pressed(KeyCode::Space) && player.velocity.y > 0. {
+    } else if !check_pressed(KeyCode::Space)
+        && !check_pressed(KeyCode::KeyW)
+        && player.velocity.y > 0.
+    {
         // Jump was cut
         player.velocity.y = PLAYER_GRAVITY;
         player.jump_boost_ticks_remaining = 0;
@@ -108,11 +150,11 @@ pub fn move_player(
     player.velocity.y = player.velocity.y.clamp(-PLAYER_MAX_Y_VEL, PLAYER_MAX_Y_VEL);
 
     let mut moved = false;
-    if keys.pressed(KeyCode::KeyA) {
+    if check_pressed(KeyCode::KeyA) {
         player.velocity.x -= PLAYER_MOVE_VEL;
         moved = true;
     }
-    if keys.pressed(KeyCode::KeyD) {
+    if check_pressed(KeyCode::KeyD) {
         player.velocity.x += PLAYER_MOVE_VEL;
         moved = true;
     }

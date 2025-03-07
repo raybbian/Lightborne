@@ -6,23 +6,28 @@ use noise::{NoiseFn, Simplex};
 use rand::prelude::IndexedRandom;
 
 pub mod dust;
-use crate::level::crystal::Crystal;
+use crate::{
+    level::{crystal::Crystal, LevelSystems},
+    lighting::{LineLight2d, Occluder2dGroups},
+};
 pub struct ParticlePlugin;
 impl Plugin for ParticlePlugin {
     fn build(&self, app: &mut App) {
-        app
-            .insert_resource(Wind::new())
+        app.insert_resource(Wind::new())
             .insert_resource(DustSpawnStopwatch::default())
             .add_systems(Startup, setup)
-            .add_systems(Update, update_particles)
-            .add_systems(Update, update_particle_emitters)
-            .add_systems(Update, add_crystal_shine)
-            // .add_systems(Update, add_segment_sparks)
-            .add_systems(Update, spawn_player_walking_dust)
-            .add_systems(Update, add_crystal_dust)
-            .add_systems(Update, delete_particles)
-        // end
-        ;
+            .add_systems(
+                Update,
+                (
+                    (delete_particles, update_particles).chain(),
+                    update_particle_emitters,
+                    add_crystal_shine,
+                    spawn_player_walking_dust,
+                    adjust_crystal_shine_lights,
+                    add_crystal_dust,
+                )
+                    .in_set(LevelSystems::Simulation),
+            );
     }
 }
 
@@ -134,7 +139,6 @@ impl ParticleBundle {
 }
 
 #[derive(Clone, Debug)]
-
 pub enum ParticleEmitterArea {
     // Point,
     Cuboid { half_x: f32, half_y: f32 },
@@ -150,7 +154,7 @@ pub struct ParticleEmitterOptions {
 }
 
 #[derive(Component, Clone, Debug)]
-#[require(Transform)]
+#[require(Transform, Visibility)]
 pub struct ParticleEmitter {
     pub options: ParticleEmitterOptions,
     pub timer: Timer,
@@ -173,9 +177,9 @@ fn setup() {}
 fn update_particle_emitters(
     mut commands: Commands,
     time: Res<Time>,
-    mut emitters: Query<(&mut ParticleEmitter, &GlobalTransform)>,
+    mut emitters: Query<(Entity, &mut ParticleEmitter)>,
 ) {
-    for (mut emitter, transform) in emitters.iter_mut() {
+    for (emitter_entity, mut emitter) in emitters.iter_mut() {
         emitter.timer.tick(time.delta());
         if !emitter.timer.finished() {
             continue;
@@ -184,44 +188,44 @@ fn update_particle_emitters(
             rand::random_range(emitter.options.delay_range.clone()),
             TimerMode::Once,
         );
-        let emitter_pos = transform.translation().truncate();
-        let start_pos = emitter_pos
-            + match emitter.options.area {
-                // ParticleEmitterArea::Point => Vec2::ZERO,
-                ParticleEmitterArea::Cuboid { half_x, half_y } => Vec2::new(
-                    half_x * rand::random_range(-1.0..1.0),
-                    half_y * rand::random_range(-1.0..1.0),
-                ),
-                // ParticleEmitterArea::Circle { radius } => {
-                //     let angle = rand::random_range(0.0..(2.0 * PI));
-                //     let dist = rand::random_range(0.0..radius);
-                //     Vec2::new(angle.cos() * dist, angle.sin() * dist)
-                // }
-                // ParticleEmitterArea::Capsule { radius } => {
-                //     let unit_vec = transform
-                //         .rotation()
-                //         .mul_vec3(Vec3::new(1.0, 0.0, 0.0))
-                //         .truncate();
-                //     let point_1_offset = unit_vec * transform.scale().x / 2.;
-                //     let point_2_offset = -unit_vec * transform.scale().x / 2.;
+        let start_pos = match emitter.options.area {
+            // ParticleEmitterArea::Point => Vec2::ZERO,
+            ParticleEmitterArea::Cuboid { half_x, half_y } => Vec2::new(
+                half_x * rand::random_range(-1.0..1.0),
+                half_y * rand::random_range(-1.0..1.0),
+            ),
+            // ParticleEmitterArea::Circle { radius } => {
+            //     let angle = rand::random_range(0.0..(2.0 * PI));
+            //     let dist = rand::random_range(0.0..radius);
+            //     Vec2::new(angle.cos() * dist, angle.sin() * dist)
+            // }
+            // ParticleEmitterArea::Capsule { radius } => {
+            //     let unit_vec = transform
+            //         .rotation()
+            //         .mul_vec3(Vec3::new(1.0, 0.0, 0.0))
+            //         .truncate();
+            //     let point_1_offset = unit_vec * transform.scale().x / 2.;
+            //     let point_2_offset = -unit_vec * transform.scale().x / 2.;
 
-                //     let weight = rand::random_range(0.0..1.0);
-                //     let point_on_line = point_1_offset * weight + point_2_offset * (1.0 - weight);
+            //     let weight = rand::random_range(0.0..1.0);
+            //     let point_on_line = point_1_offset * weight + point_2_offset * (1.0 - weight);
 
-                //     let angle = rand::random_range(0.0..(2.0 * PI));
-                //     let dist = rand::random_range(0.0..radius);
-                //     point_on_line + Vec2::new(angle.cos() * dist, angle.sin() * dist)
-                // }
-            };
-        commands.spawn(ParticleBundle::new(
-            emitter
-                .options
-                .particles
-                .choose(&mut rand::rng())
-                .expect("ParticleBundle particles were empty")
-                .clone(),
-            start_pos,
-        ));
+            //     let angle = rand::random_range(0.0..(2.0 * PI));
+            //     let dist = rand::random_range(0.0..radius);
+            //     point_on_line + Vec2::new(angle.cos() * dist, angle.sin() * dist)
+            // }
+        };
+        commands
+            .entity(emitter_entity)
+            .with_child(ParticleBundle::new(
+                emitter
+                    .options
+                    .particles
+                    .choose(&mut rand::rng())
+                    .expect("ParticleBundle particles were empty")
+                    .clone(),
+                start_pos,
+            ));
     }
 }
 
@@ -275,6 +279,9 @@ fn update_particles(
     }
 }
 
+#[derive(Default, Component, Debug)]
+pub struct CrystalEmitterMarker;
+
 fn add_crystal_shine(
     mut commands: Commands,
     crystal: Query<(Entity, &Crystal), Changed<Crystal>>,
@@ -282,9 +289,8 @@ fn add_crystal_shine(
 ) {
     for (entity, crystal) in crystal.iter() {
         if crystal.active {
-            commands
-                .entity(entity)
-                .insert_if_new(ParticleEmitter::new(ParticleEmitterOptions {
+            commands.entity(entity).insert_if_new((
+                ParticleEmitter::new(ParticleEmitterOptions {
                     area: ParticleEmitterArea::Cuboid {
                         half_x: 4.0,
                         half_y: 4.0,
@@ -328,9 +334,42 @@ fn add_crystal_shine(
                             }
                         },
                     ],
-                }));
+                }),
+                CrystalEmitterMarker,
+            ));
         } else {
-            commands.entity(entity).remove::<ParticleEmitter>();
+            commands
+                .entity(entity)
+                .remove::<(ParticleEmitter, CrystalEmitterMarker)>();
+        }
+    }
+}
+
+fn adjust_crystal_shine_lights(
+    mut commands: Commands,
+    q_crystal_emitter: Query<&Children, With<CrystalEmitterMarker>>,
+    mut q_particle: Query<(&Particle, Option<&mut LineLight2d>)>,
+) {
+    for crystal_emitter_children in q_crystal_emitter.iter() {
+        for crystal_particle in crystal_emitter_children.iter() {
+            let Ok((particle, light)) = q_particle.get_mut(*crystal_particle) else {
+                continue;
+            };
+            match light {
+                None => {
+                    commands.entity(*crystal_particle).insert((
+                        LineLight2d::point(Vec4::new(1.0, 1.0, 1.0, 0.0), 15.0, 0.005),
+                        Occluder2dGroups::NONE,
+                    ));
+                }
+                Some(mut light) => {
+                    let progress = particle.life_timer.elapsed_secs()
+                        / particle.life_timer.duration().as_secs_f32();
+                    // light follows 1-x^2 over [-1, 1]
+                    let progress_one_one = progress * 2. - 1.;
+                    light.color.w = 1. - progress_one_one.powi(2);
+                }
+            }
         }
     }
 }

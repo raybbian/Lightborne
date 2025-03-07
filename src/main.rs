@@ -15,7 +15,8 @@ use lighting::DeferredLightingPlugin;
 use particle::ParticlePlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
-use shared::{GameState, ResetLevel, UiState};
+use shared::{AnimationState, GameState, ResetLevel, UiState};
+use sound::SoundPlugin;
 
 mod animation;
 mod camera;
@@ -30,6 +31,7 @@ mod particle;
 mod pause;
 mod player;
 mod shared;
+mod sound;
 
 fn main() {
     App::new()
@@ -41,6 +43,7 @@ fn main() {
                         title: "Lightborne".into(),
                         name: Some("lightborne".into()),
                         present_mode: PresentMode::AutoNoVsync,
+                        canvas: Some("#bevy-container".into()),
                         fit_canvas_to_parent: true,
                         prevent_default_event_handling: false,
                         ..default()
@@ -61,16 +64,19 @@ fn main() {
         .add_plugins(PlayerManagementPlugin)
         .add_plugins(LevelManagementPlugin)
         .add_plugins(LightManagementPlugin)
+        .add_plugins(SoundPlugin)
         .add_plugins(ParticlePlugin)
         .add_plugins(PausePlugin)
         .add_plugins(LevelSelectPlugin)
         .add_plugins(CameraPlugin)
         .insert_state(GameState::Ui)
         .add_sub_state::<UiState>()
+        .add_sub_state::<AnimationState>()
         .insert_state(UiState::LevelSelect)
         .add_plugins(DeferredLightingPlugin)
         .add_plugins(DebugPlugin {
-            physics: false,
+            // physics: true,
+            // ambiguity: true,
             ..default()
         })
         .add_event::<ResetLevel>()
