@@ -63,6 +63,7 @@ impl FromWorld for LightSegmentCache {
                         CollisionGroups::new(
                             GroupLabel::WHITE_RAY,
                             GroupLabel::TERRAIN
+                                | GroupLabel::PLATFORM
                                 | GroupLabel::LIGHT_SENSOR
                                 | GroupLabel::LIGHT_RAY
                                 | GroupLabel::BLUE_RAY,
@@ -172,15 +173,15 @@ pub fn play_light_beam(
     let collision_groups = match source.color {
         LightColor::White => CollisionGroups::new(
             GroupLabel::WHITE_RAY,
-            GroupLabel::TERRAIN | GroupLabel::LIGHT_SENSOR,
+            GroupLabel::TERRAIN | GroupLabel::PLATFORM | GroupLabel::LIGHT_SENSOR,
         ),
         LightColor::Blue => CollisionGroups::new(
             GroupLabel::BLUE_RAY,
-            GroupLabel::TERRAIN | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
+            GroupLabel::TERRAIN | GroupLabel::PLATFORM | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
         ),
         _ => CollisionGroups::new(
             GroupLabel::LIGHT_RAY,
-            GroupLabel::TERRAIN | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
+            GroupLabel::TERRAIN | GroupLabel::PLATFORM | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
         ),
     };
 
