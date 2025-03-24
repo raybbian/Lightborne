@@ -4,12 +4,12 @@ use bevy_rapier2d::prelude::*;
 use enum_map::EnumMap;
 
 use crate::{
-    level::crystal::{CrystalIdent, CrystalToggleEvent},
+    level::{crystal::{CrystalIdent, CrystalToggleEvent}, platform::ChangePlatformStateEvent},
     light::segments::simulate_light_sources,
     lighting::LineLight2d,
 };
 
-use super::{crystal::CrystalColor, entity::FixedEntityBundle, LevelSystems, LightColor};
+use super::{crystal::CrystalColor, entity::FixedEntityBundle, LevelSystems, LightColor, platform::PlatformState};
 
 pub struct LightSensorPlugin;
 
@@ -50,12 +50,14 @@ pub struct LightSensor {
     pub toggle_ident: CrystalIdent,
     /// Meter's rate of change, per fixed timestep tick.
     rate: f32,
+    /// The id of the platform to toggle
+    pub platform_id: i32,
     /// Stored color used to animate the center of the sensor when the light no longer hits it
     stored_color: Color,
 }
 
 impl LightSensor {
-    fn new(toggle_ident: CrystalIdent, millis: i32) -> Self {
+    fn new(toggle_ident: CrystalIdent, millis: i32, platform_id: i32) -> Self {
         let rate = 1.0 / (millis as f32) * (1000.0 / 64.0);
         LightSensor {
             meter: 0.0,
@@ -64,6 +66,7 @@ impl LightSensor {
             is_active: false,
             toggle_ident,
             rate,
+            platform_id,
             stored_color: Color::WHITE,
         }
     }
@@ -106,7 +109,12 @@ impl From<&EntityInstance> for LightSensor {
             id: *id,
         };
 
-        LightSensor::new(toggle_ident, millis)
+        let platform_id = match entity_instance.get_int_field("platform_id") {
+            Ok(platform_id) => *platform_id,
+            Err(_) => -1
+        };
+
+        LightSensor::new(toggle_ident, millis, platform_id)
     }
 }
 
@@ -189,6 +197,7 @@ pub fn update_light_sensors(
     mut commands: Commands,
     mut q_sensors: Query<(Entity, &mut LightSensor, &mut Sprite)>,
     mut ev_crystal_toggle: EventWriter<CrystalToggleEvent>,
+    mut platform_change: EventWriter<ChangePlatformStateEvent>,
     asset_server: Res<AssetServer>,
     time: Res<Time>,
 ) {
@@ -214,6 +223,17 @@ pub fn update_light_sensors(
             ev_crystal_toggle.send(CrystalToggleEvent {
                 color: sensor.toggle_ident,
             });
+            if was_hit {
+                platform_change.send(ChangePlatformStateEvent {
+                    new_state: PlatformState::Play,
+                    id: sensor.platform_id,
+                });
+            } else {
+                platform_change.send(ChangePlatformStateEvent {
+                    new_state: PlatformState::Pause,
+                    id: sensor.platform_id,
+                });
+            }
             commands.entity(entity).with_child((
                 AudioPlayer::new(asset_server.load("sfx/button.wav")),
                 PlaybackSettings::DESPAWN,

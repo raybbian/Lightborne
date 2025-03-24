@@ -21,6 +21,7 @@ use crate::{
 };
 use crystal::CrystalPlugin;
 use entity::SpikeBundle;
+use platform::PlatformPlugin;
 use setup::LevelSetupPlugin;
 use start_flag::{init_start_marker, StartFlagBundle};
 use walls::{Wall, WallBundle};
@@ -28,6 +29,7 @@ use walls::{Wall, WallBundle};
 pub mod crystal;
 mod egg;
 pub mod entity;
+pub mod platform;
 mod merge_tile;
 mod semisolid;
 pub mod sensor;
@@ -44,6 +46,7 @@ impl Plugin for LevelManagementPlugin {
         app.add_plugins(LdtkPlugin)
             .add_plugins(LevelSetupPlugin)
             .add_plugins(CrystalPlugin)
+            .add_plugins(PlatformPlugin)
             .add_plugins(CrystalShardPlugin)
             .add_plugins(LightSensorPlugin)
             .add_plugins(SemiSolidPlugin)
