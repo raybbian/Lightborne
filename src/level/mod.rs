@@ -4,6 +4,7 @@ use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
 use egg::EggPlugin;
 use enum_map::{enum_map, EnumMap};
+use lantern::LdtkLanternBundle;
 use merge_tile::spawn_merged_tiles;
 use semisolid::SemiSolidPlugin;
 use sensor::LightSensorPlugin;
@@ -29,8 +30,9 @@ use walls::{Wall, WallBundle};
 pub mod crystal;
 mod egg;
 pub mod entity;
-pub mod platform;
+mod lantern;
 mod merge_tile;
+pub mod platform;
 mod semisolid;
 pub mod sensor;
 mod setup;
@@ -54,6 +56,7 @@ impl Plugin for LevelManagementPlugin {
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
             .register_ldtk_entity::<StartFlagBundle>("Start")
+            .register_ldtk_entity::<LdtkLanternBundle>("Lantern")
             .register_ldtk_int_cell_for_layer::<WallBundle>("Terrain", 1)
             .register_ldtk_int_cell_for_layer::<SpikeBundle>("Terrain", 2)
             .add_systems(
