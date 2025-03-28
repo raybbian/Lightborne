@@ -14,7 +14,10 @@ use crate::{
     light::LightColor,
     lighting::LineLight2d,
     player::{
-        light::{despawn_angle_indicator, should_shoot_light, PlayerLightInventory},
+        light::{
+            despawn_angle_increments_indicators, despawn_angle_indicator, should_shoot_light,
+            PlayerLightInventory,
+        },
         InputLocked, PlayerHurtMarker, PlayerMarker,
     },
     shared::{AnimationState, GameState, ResetLevel},
@@ -40,7 +43,11 @@ impl Plugin for CrystalShardPlugin {
             // manager resource
             .add_systems(
                 Update,
-                (despawn_angle_indicator, should_shoot_light::<false>)
+                (
+                    despawn_angle_indicator,
+                    despawn_angle_increments_indicators,
+                    should_shoot_light::<false>,
+                )
                     .run_if(on_event::<ShardAnimationEvent>),
             )
             .add_systems(

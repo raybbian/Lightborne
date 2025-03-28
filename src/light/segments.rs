@@ -177,11 +177,17 @@ pub fn play_light_beam(
         ),
         LightColor::Blue => CollisionGroups::new(
             GroupLabel::BLUE_RAY,
-            GroupLabel::TERRAIN | GroupLabel::PLATFORM | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
+            GroupLabel::TERRAIN
+                | GroupLabel::PLATFORM
+                | GroupLabel::LIGHT_SENSOR
+                | GroupLabel::WHITE_RAY,
         ),
         _ => CollisionGroups::new(
             GroupLabel::LIGHT_RAY,
-            GroupLabel::TERRAIN | GroupLabel::PLATFORM | GroupLabel::LIGHT_SENSOR | GroupLabel::WHITE_RAY,
+            GroupLabel::TERRAIN
+                | GroupLabel::PLATFORM
+                | GroupLabel::LIGHT_SENSOR
+                | GroupLabel::WHITE_RAY,
         ),
     };
 

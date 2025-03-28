@@ -29,7 +29,10 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
             Rot::default(),
             Collider::cuboid(6.0, 7.0),
         )]),
-        collision_groups: CollisionGroups::new(GroupLabel::PLAYER_COLLIDER, GroupLabel::TERRAIN | GroupLabel::PLATFORM),
+        collision_groups: CollisionGroups::new(
+            GroupLabel::PLAYER_COLLIDER,
+            GroupLabel::TERRAIN | GroupLabel::PLATFORM,
+        ),
         player_movement: PlayerMovement::default(),
         friction: Friction {
             coefficient: 0.,
@@ -89,7 +92,10 @@ pub fn add_player_sensors(
             .insert(Transform::default())
             .insert(CollisionGroups::new(
                 GroupLabel::PLAYER_SENSOR,
-                GroupLabel::HURT_BOX | GroupLabel::TERRAIN | GroupLabel::CRYSTAL_SHARD | GroupLabel::PLATFORM,
+                GroupLabel::HURT_BOX
+                    | GroupLabel::TERRAIN
+                    | GroupLabel::CRYSTAL_SHARD
+                    | GroupLabel::PLATFORM,
             ));
     });
 }
