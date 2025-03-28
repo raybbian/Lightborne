@@ -10,6 +10,9 @@ use enum_map::{enum_map, EnumMap};
 use itertools::Itertools;
 use ui::LightUiPlugin;
 
+use bevy::prelude::ops::{cos, sin};
+use std::f32::consts::PI;
+
 use crate::{
     input::{update_cursor_world_coords, CursorWorldCoords},
     level::{CurrentLevel, LevelSystems},
@@ -23,6 +26,8 @@ use indicator::LightIndicatorPlugin;
 
 mod indicator;
 mod ui;
+
+const NUMINCREMENTS: i32 = 16;
 
 use super::{not_input_locked, PlayerMarker};
 
@@ -178,6 +183,7 @@ pub fn shoot_light(
     mut q_player: Query<(&Transform, &mut PlayerLightInventory), With<PlayerMarker>>,
     q_light_source_z: Query<&Transform, With<LightSourceZMarker>>,
     q_cursor: Query<&CursorWorldCoords>,
+    keys: Res<ButtonInput<KeyCode>>,
     asset_server: Res<AssetServer>,
 ) {
     let Ok((player_transform, mut player_inventory)) = q_player.get_single_mut() else {
@@ -194,7 +200,11 @@ pub fn shoot_light(
     }
 
     let ray_pos = player_transform.translation.truncate();
-    let ray_dir = (cursor_pos.pos - ray_pos).normalize_or_zero();
+    let mut ray_dir = (cursor_pos.pos - ray_pos).normalize_or_zero();
+
+    if keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight) {
+        ray_dir = snap_ray(ray_dir);
+    }
 
     if ray_dir == Vec2::ZERO {
         return;
@@ -242,6 +252,7 @@ pub fn preview_light_path(
     mut q_rapier: Query<&mut RapierContext>,
     q_player: Query<(&Transform, &PlayerLightInventory), With<PlayerMarker>>,
     q_cursor: Query<&CursorWorldCoords>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut gizmos: Gizmos,
 ) {
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
@@ -260,7 +271,11 @@ pub fn preview_light_path(
     let shoot_color = inventory.current_color.unwrap();
 
     let ray_pos = transform.translation.truncate();
-    let ray_dir = (cursor_pos.pos - ray_pos).normalize_or_zero();
+    let mut ray_dir = (cursor_pos.pos - ray_pos).normalize_or_zero();
+
+    if keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight) {
+        ray_dir = snap_ray(ray_dir);
+    }
 
     let dummy_source = LightBeamSource {
         start_pos: ray_pos,
@@ -273,4 +288,12 @@ pub fn preview_light_path(
     for (a, b) in playback.iter_points(&dummy_source).tuple_windows() {
         gizmos.line_2d(a, b, shoot_color.light_beam_color().darker(0.3));
     }
+}
+
+fn snap_ray(ray_vec: Vec2) -> Vec2 {
+    let ray_angle = (ray_vec.y.atan2(ray_vec.x) + (2.0 * PI)) % (2.0 * PI);
+    let increment_angle = (2.0 * PI) / NUMINCREMENTS as f32;
+    let snapped_angle = (ray_angle / increment_angle).round() * increment_angle;
+    let new_ray_vec = Vec2::new(cos(snapped_angle), sin(snapped_angle));
+    return new_ray_vec;
 }
