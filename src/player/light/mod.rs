@@ -134,6 +134,7 @@ pub struct AngleIncrementMarker;
 pub fn spawn_angle_increments_indicators(
     mut commands: Commands,
     q_player: Query<Entity, With<PlayerMarker>>,
+    q_angle: Query<Entity, With<AngleIncrementMarker>>,
     asset_server: Res<AssetServer>,
 ) {
     for i in 0..NUMINCREMENTS {
@@ -141,6 +142,10 @@ pub fn spawn_angle_increments_indicators(
         let Ok(player) = q_player.get_single() else {
             return;
         };
+
+        if !q_angle.is_empty() {
+            return;
+        }
     
         commands.entity(player).with_child((
             Sprite {
