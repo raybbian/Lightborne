@@ -1,7 +1,6 @@
 use bevy::{
     input::{
-        common_conditions::{input_just_pressed, input_just_released},
-        mouse::MouseWheel,
+        common_conditions::{input_just_pressed, input_just_released, input_pressed}, mouse::MouseWheel
     },
     prelude::*,
 };
@@ -27,7 +26,7 @@ use indicator::LightIndicatorPlugin;
 mod indicator;
 mod ui;
 
-const NUMINCREMENTS: i32 = 16;
+const NUMINCREMENTS: i32 = 16; // The number of angle increments for light beam alignment
 
 use super::{not_input_locked, PlayerMarker};
 
@@ -44,11 +43,24 @@ impl Plugin for PlayerLightPlugin {
                     should_shoot_light::<true>.run_if(input_just_pressed(MouseButton::Left)),
                     should_shoot_light::<false>.run_if(input_just_pressed(MouseButton::Right)),
                     preview_light_path,
-                    spawn_angle_indicator.run_if(input_just_pressed(MouseButton::Left)),
+                    spawn_angle_indicator.run_if(
+                        input_just_pressed(MouseButton::Left)
+                            .or((input_just_released(KeyCode::ShiftLeft).or(input_just_released(KeyCode::ShiftRight)))
+                            .and(input_pressed(MouseButton::Left)))),
                     despawn_angle_indicator.run_if(
                         input_just_released(MouseButton::Left)
-                            .or(input_just_pressed(MouseButton::Right)),
+                            .or(input_just_pressed(MouseButton::Right))
+                            .or(input_just_pressed(KeyCode::ShiftLeft))
+                            .or(input_just_pressed(KeyCode::ShiftRight))
                     ),
+                    spawn_angle_increments_indicators.run_if(
+                        input_just_pressed(KeyCode::ShiftLeft)
+                            .or(input_just_pressed(KeyCode::ShiftRight))
+                            .and(input_pressed(MouseButton::Left))),
+                    despawn_angle_increments_indicators.run_if(
+                        input_just_released(KeyCode::ShiftLeft)
+                            .or(input_just_released(KeyCode::ShiftRight))
+                            .or(input_just_pressed(MouseButton::Right))),
                     shoot_light.run_if(input_just_released(MouseButton::Left)),
                 )
                     .chain()
@@ -95,11 +107,16 @@ pub struct AngleMarker;
 pub fn spawn_angle_indicator(
     mut commands: Commands,
     q_player: Query<Entity, With<PlayerMarker>>,
+    q_angle: Query<Entity, With<AngleMarker>>,
     asset_server: Res<AssetServer>,
 ) {
     let Ok(player) = q_player.get_single() else {
         return;
     };
+
+    if !q_angle.is_empty() {
+        return;
+    }
 
     commands.entity(player).with_child((
         Sprite {
@@ -111,7 +128,42 @@ pub fn spawn_angle_indicator(
     ));
 }
 
+#[derive(Component)]
+pub struct AngleIncrementMarker;
+
+pub fn spawn_angle_increments_indicators(
+    mut commands: Commands,
+    q_player: Query<Entity, With<PlayerMarker>>,
+    asset_server: Res<AssetServer>,
+) {
+    for i in 0..NUMINCREMENTS {
+        let angle_increment = (2.0 * PI) / NUMINCREMENTS as f32;
+        let Ok(player) = q_player.get_single() else {
+            return;
+        };
+    
+        commands.entity(player).with_child((
+            Sprite {
+                image: asset_server.load("angle_increment.png"),
+                color: Color::srgba(1.0, 1.0, 1.0, 0.1),
+                ..default()
+            },
+            AngleIncrementMarker,
+            Transform {
+                rotation: Quat::from_rotation_z(i as f32 * angle_increment),
+                ..default()
+            },
+        ));
+    }
+}
+
 pub fn despawn_angle_indicator(mut commands: Commands, q_angle: Query<Entity, With<AngleMarker>>) {
+    for angle in q_angle.iter() {
+        commands.entity(angle).despawn_recursive();
+    }
+}
+
+pub fn despawn_angle_increments_indicators(mut commands: Commands, q_angle: Query<Entity, With<AngleIncrementMarker>>) {
     for angle in q_angle.iter() {
         commands.entity(angle).despawn_recursive();
     }
