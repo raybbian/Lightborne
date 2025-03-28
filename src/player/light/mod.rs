@@ -1,6 +1,7 @@
 use bevy::{
     input::{
-        common_conditions::{input_just_pressed, input_just_released, input_pressed}, mouse::MouseWheel
+        common_conditions::{input_just_pressed, input_just_released, input_pressed},
+        mouse::MouseWheel,
     },
     prelude::*,
 };
@@ -44,23 +45,28 @@ impl Plugin for PlayerLightPlugin {
                     should_shoot_light::<false>.run_if(input_just_pressed(MouseButton::Right)),
                     preview_light_path,
                     spawn_angle_indicator.run_if(
-                        input_just_pressed(MouseButton::Left)
-                            .or((input_just_released(KeyCode::ShiftLeft).or(input_just_released(KeyCode::ShiftRight)))
-                            .and(input_pressed(MouseButton::Left)))),
+                        input_just_pressed(MouseButton::Left).or((input_just_released(
+                            KeyCode::ShiftLeft,
+                        )
+                        .or(input_just_released(KeyCode::ShiftRight)))
+                        .and(input_pressed(MouseButton::Left))),
+                    ),
                     despawn_angle_indicator.run_if(
                         input_just_released(MouseButton::Left)
                             .or(input_just_pressed(MouseButton::Right))
                             .or(input_just_pressed(KeyCode::ShiftLeft))
-                            .or(input_just_pressed(KeyCode::ShiftRight))
+                            .or(input_just_pressed(KeyCode::ShiftRight)),
                     ),
                     spawn_angle_increments_indicators.run_if(
                         input_just_pressed(KeyCode::ShiftLeft)
                             .or(input_just_pressed(KeyCode::ShiftRight))
-                            .and(input_pressed(MouseButton::Left))),
+                            .and(input_pressed(MouseButton::Left)),
+                    ),
                     despawn_angle_increments_indicators.run_if(
                         input_just_released(KeyCode::ShiftLeft)
                             .or(input_just_released(KeyCode::ShiftRight))
-                            .or(input_just_pressed(MouseButton::Right))),
+                            .or(input_just_pressed(MouseButton::Right)),
+                    ),
                     shoot_light.run_if(input_just_released(MouseButton::Left)),
                 )
                     .chain()
@@ -146,7 +152,7 @@ pub fn spawn_angle_increments_indicators(
         if !q_angle.is_empty() {
             return;
         }
-    
+
         commands.entity(player).with_child((
             Sprite {
                 image: asset_server.load("angle_increment.png"),
@@ -168,7 +174,10 @@ pub fn despawn_angle_indicator(mut commands: Commands, q_angle: Query<Entity, Wi
     }
 }
 
-pub fn despawn_angle_increments_indicators(mut commands: Commands, q_angle: Query<Entity, With<AngleIncrementMarker>>) {
+pub fn despawn_angle_increments_indicators(
+    mut commands: Commands,
+    q_angle: Query<Entity, With<AngleIncrementMarker>>,
+) {
     for angle in q_angle.iter() {
         commands.entity(angle).despawn_recursive();
     }

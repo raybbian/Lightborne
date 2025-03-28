@@ -630,4 +630,3 @@ pub fn change_platform_state(
         }
     }
 }
-
