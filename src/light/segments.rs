@@ -6,12 +6,15 @@ use super::{
     render::{LightMaterial, LightRenderData},
     LightBeamSource, LightColor, LightSegmentZMarker, LIGHT_SPEED,
 };
-use crate::{level::sensor::LightSensor, lighting::LineLight2d, shared::GroupLabel};
+use crate::{
+    level::sensor::LightSensor, lighting::LineLight2d, particle::spark::SparkExplosionEvent,
+    shared::GroupLabel,
+};
 
 /// Marker [`Component`] used to query for light segments.
 #[derive(Default, Component, Clone, Debug)]
 pub struct LightSegment {
-    color: LightColor,
+    pub color: LightColor,
 }
 
 /// [`Bundle`] used in the initialization of the [`LightSegmentCache`] to spawn segment entities.
@@ -249,13 +252,14 @@ pub fn simulate_light_sources(
             &mut Transform,
             &mut Visibility,
             &mut LineLight2d,
-            &LightSegment,
+            &mut LightSegment,
         ),
         Without<LightSegmentZMarker>,
     >,
     q_light_segment_z: Query<&Transform, With<LightSegmentZMarker>>,
     segment_cache: Res<LightSegmentCache>,
     light_bounce_sfx: Local<LightBounceSfx>,
+    mut ev_spark_explosion: EventWriter<SparkExplosionEvent>,
 ) {
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
         return;
@@ -320,6 +324,11 @@ pub fn simulate_light_sources(
                     } else {
                         light_bounce_sfx.bounce[i].clone()
                     };
+
+                    ev_spark_explosion.send(SparkExplosionEvent {
+                        pos: new_x.point,
+                        color: source.color.light_beam_color(),
+                    });
 
                     commands
                         .entity(new_x.entity)
