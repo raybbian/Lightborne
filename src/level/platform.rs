@@ -107,7 +107,7 @@ impl MovingPlatform {
                     (PI * 8.0 * (self.previous_segment.x as f32 - next_segment.x as f32).abs())
                         / (2.0 * self.speed);
                 if self.curr_state == PlatformState::Play {
-                    self.arc_time = self.arc_time + time.delta_secs();
+                    self.arc_time += time.delta_secs();
                 }
                 let curr_t = (self.arc_time / total_time) * PI / 2.0;
 
@@ -171,41 +171,33 @@ impl MovingPlatform {
         let (_, _, player_controller_output, player_transform, player_global_transform) = player;
 
         // Crush player if platform is above player, moving down, and player is grounded
-        if !entity_above_player.is_none() {
-            if entity_above_player.unwrap().eq(&platform_entity) {
-                if player_controller_output.grounded && direction_and_velocity.y < 0.0 {
-                    ev_reset_level.send(ResetLevel::Respawn);
-                    return;
-                }
-            }
+        if entity_above_player.is_some() && entity_above_player.unwrap().eq(&platform_entity) && player_controller_output.grounded && direction_and_velocity.y < 0.0 {
+            ev_reset_level.send(ResetLevel::Respawn);
+            return;
         }
 
         // Move player with platform if player is standing on platform
-        if !entity_below_player.is_none() {
-            if entity_below_player.unwrap().eq(&platform_entity) {
-                if self.curr_state == PlatformState::Play {
-                    // Crush player if platform moving player into ceiling
-                    if direction.y > 0.0 {
-                        if !entity_above_player.is_none() {
-                            ev_reset_level.send(ResetLevel::Respawn);
-                            return;
-                        }
-                    }
-                    if (entity_left_of_player.is_none() || direction.x > 0.0)
-                        && (entity_right_of_player.is_none() || direction.x < 0.0)
-                    {
-                        player_transform.translation +=
-                            Vec3::new(direction.x, direction.y + 0.1, 0.0)
-                                * self.speed
-                                * time.delta_secs();
-                    } else {
-                        player_transform.translation +=
-                            Vec3::new(0.0, direction.y + 0.1, 0.0) * self.speed * time.delta_secs();
-                    }
+        if entity_below_player.is_some() && entity_below_player.unwrap().eq(&platform_entity) {
+            if self.curr_state == PlatformState::Play {
+                // Crush player if platform moving player into ceiling
+                if direction.y > 0.0 && entity_above_player.is_some() {
+                    ev_reset_level.send(ResetLevel::Respawn);
+                    return;
+                }
+                if (entity_left_of_player.is_none() || direction.x > 0.0)
+                    && (entity_right_of_player.is_none() || direction.x < 0.0)
+                {
+                    player_transform.translation +=
+                        Vec3::new(direction.x, direction.y + 0.1, 0.0)
+                            * self.speed
+                            * time.delta_secs();
                 } else {
                     player_transform.translation +=
-                        Vec3::new(0.0, 0.2, 0.0) * 1.0 * time.delta_secs();
+                        Vec3::new(0.0, direction.y + 0.1, 0.0) * self.speed * time.delta_secs();
                 }
+            } else {
+                player_transform.translation +=
+                    Vec3::new(0.0, 0.2, 0.0) * 1.0 * time.delta_secs();
             }
         }
 
@@ -229,15 +221,13 @@ impl MovingPlatform {
             // 5 pixel offset
             if self.curr_state == PlatformState::Play {
                 if relative_horizontal.x < 0.0 {
-                    if !entity_right_of_player.is_none() {
+                    if entity_right_of_player.is_some() {
                         ev_reset_level.send(ResetLevel::Respawn);
                         return;
                     }
-                } else {
-                    if !entity_left_of_player.is_none() {
-                        ev_reset_level.send(ResetLevel::Respawn);
-                        return;
-                    }
+                } else if entity_left_of_player.is_some() {
+                    ev_reset_level.send(ResetLevel::Respawn);
+                    return;
                 }
                 // Offset player if they are clipping into the platform
                 let speed_adjustment = match horizontal_distance {
@@ -254,19 +244,19 @@ impl MovingPlatform {
 // Setting initial platform values and obtaining LDtk fields
 impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
     fn from(entity_instance: &bevy_ecs_ldtk::EntityInstance) -> Self {
-        let mut path = match &(*entity_instance.get_field_instance("path").unwrap()).value {
+        let mut path = match &entity_instance.get_field_instance("path").unwrap().value {
             FieldValue::Points(val) => val.clone().into_iter().flatten().collect::<Vec<IVec2>>(),
             _ => panic!("Unexpected data type!"),
         };
-        let mut path_curve_points = match &(*entity_instance
+        let mut path_curve_points = match &entity_instance
             .get_field_instance("path_curve_points")
-            .unwrap())
+            .unwrap()
         .value
         {
             FieldValue::Bools(val) => val.clone(),
             _ => panic!("Unexpected data type!"),
         };
-        if path_curve_points.len() == 0 {
+        if path_curve_points.is_empty() {
             for _ in path.iter() {
                 path_curve_points.insert(0, false);
             }
@@ -277,7 +267,7 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
             PlatformState::from(entity_instance.get_enum_field("InitialState").unwrap());
         let width = entity_instance.width;
         let height = entity_instance.height;
-        let curr_segment = path[0].clone();
+        let curr_segment = path[0];
         let curr_segment_index = match path.len() {
             0 => 0,
             _ => 1,
@@ -291,12 +281,12 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
         let curr_state = initial_state;
         //let curr_direction = PlatformDirection::Forward;
         let does_reverse = *entity_instance.get_bool_field("does_reverse").unwrap();
-        if does_reverse && path_curve_points[path_curve_points.len() - 1] == true {
+        if does_reverse && path_curve_points[path_curve_points.len() - 1] {
             panic!("Last element of path_curve_points cannot be a curve if the platform reverses!");
         }
         let mut last_point = path_curve_points[0];
         for point in path_curve_points[1..].iter() {
-            if last_point == true && last_point == *point {
+            if last_point && last_point == *point {
                 panic!("Elements in path_curve_points cannot be adjacent!");
             } else {
                 last_point = *point;
@@ -412,7 +402,7 @@ pub fn move_platforms(
     //get entities that are near or intersecting player
     let entity_above_player = cast_player_ray_shape(
         &rapier_context,
-        &player_transform,
+        player_transform,
         0.0,
         5.5,
         12.0,
@@ -422,7 +412,7 @@ pub fn move_platforms(
     );
     let entity_below_player = cast_player_ray_shape(
         &rapier_context,
-        &player_transform,
+        player_transform,
         0.0,
         -10.0,
         16.0,
@@ -432,7 +422,7 @@ pub fn move_platforms(
     );
     let entity_left_of_player = cast_player_ray_shape(
         &rapier_context,
-        &player_transform,
+        player_transform,
         -8.0,
         -1.5,
         0.0,
@@ -442,7 +432,7 @@ pub fn move_platforms(
     ); // Check Y-Offset again
     let entity_right_of_player = cast_player_ray_shape(
         &rapier_context,
-        &player_transform,
+        player_transform,
         8.0,
         -1.5,
         0.0,
@@ -500,7 +490,7 @@ pub fn move_platforms(
         // Handles the transition of the platform's goal once it reaches it's current one (Skips a goal if circular motion)
         if distance <= 0.005 * platform.speed {
             platform.previous_segment = platform.curr_segment;
-            if platform.path_curve_points[platform.curr_segment_index as usize] == true {
+            if platform.path_curve_points[platform.curr_segment_index as usize] {
                 platform.arc_time = 0.0;
                 platform.curr_segment_index =
                     (platform.curr_segment_index + 1) % platform.path.len() as i32;

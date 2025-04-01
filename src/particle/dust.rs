@@ -65,6 +65,7 @@ impl DustSurface {
                 color,
                 ..default()
             },
+            ..default()
         }
     }
 
