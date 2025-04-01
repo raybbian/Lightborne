@@ -360,6 +360,6 @@ fn snap_ray(ray_vec: Vec2) -> Vec2 {
     let ray_angle = (ray_vec.y.atan2(ray_vec.x) + (2.0 * PI)) % (2.0 * PI);
     let increment_angle = (2.0 * PI) / NUMINCREMENTS as f32;
     let snapped_angle = (ray_angle / increment_angle).round() * increment_angle;
-    let new_ray_vec = Vec2::new(cos(snapped_angle), sin(snapped_angle));
-    return new_ray_vec;
+    
+    Vec2::new(cos(snapped_angle), sin(snapped_angle))
 }
