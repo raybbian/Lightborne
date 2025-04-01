@@ -59,7 +59,7 @@ pub fn add_segment_sparks(
             .with_child((
                 ParticleEmitter::new(ParticleEmitterOptions {
                     area: ParticleEmitterArea::Circle { radius: 0.5 },
-                    delay_range: Duration::from_secs_f32(0.0)..Duration::from_secs_f32(0.18),
+                    delay_range: Duration::from_secs_f32(0.0)..Duration::from_secs_f32(0.4),
                     particles: vec![new_spark_particle(
                         segment.color.light_beam_color(),
                         &asset_server,
