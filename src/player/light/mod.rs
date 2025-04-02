@@ -1,6 +1,6 @@
 use bevy::{
     input::{
-        common_conditions::{input_just_pressed, input_just_released},
+        common_conditions::{input_just_pressed, input_just_released, input_pressed},
         mouse::MouseWheel,
     },
     prelude::*,
@@ -9,6 +9,9 @@ use bevy_rapier2d::plugin::RapierContext;
 use enum_map::{enum_map, EnumMap};
 use itertools::Itertools;
 use ui::LightUiPlugin;
+
+use bevy::prelude::ops::{cos, sin};
+use std::f32::consts::PI;
 
 use crate::{
     input::{update_cursor_world_coords, CursorWorldCoords},
@@ -23,6 +26,8 @@ use indicator::LightIndicatorPlugin;
 
 mod indicator;
 mod ui;
+
+const NUMINCREMENTS: i32 = 16; // The number of angle increments for light beam alignment
 
 use super::{not_input_locked, PlayerMarker};
 
@@ -39,9 +44,27 @@ impl Plugin for PlayerLightPlugin {
                     should_shoot_light::<true>.run_if(input_just_pressed(MouseButton::Left)),
                     should_shoot_light::<false>.run_if(input_just_pressed(MouseButton::Right)),
                     preview_light_path,
-                    spawn_angle_indicator.run_if(input_just_pressed(MouseButton::Left)),
+                    spawn_angle_indicator.run_if(
+                        input_just_pressed(MouseButton::Left).or((input_just_released(
+                            KeyCode::ShiftLeft,
+                        )
+                        .or(input_just_released(KeyCode::ShiftRight)))
+                        .and(input_pressed(MouseButton::Left))),
+                    ),
                     despawn_angle_indicator.run_if(
                         input_just_released(MouseButton::Left)
+                            .or(input_just_pressed(MouseButton::Right))
+                            .or(input_just_pressed(KeyCode::ShiftLeft))
+                            .or(input_just_pressed(KeyCode::ShiftRight)),
+                    ),
+                    spawn_angle_increments_indicators.run_if(
+                        input_just_pressed(KeyCode::ShiftLeft)
+                            .or(input_just_pressed(KeyCode::ShiftRight))
+                            .and(input_pressed(MouseButton::Left)),
+                    ),
+                    despawn_angle_increments_indicators.run_if(
+                        input_just_released(KeyCode::ShiftLeft)
+                            .or(input_just_released(KeyCode::ShiftRight))
                             .or(input_just_pressed(MouseButton::Right)),
                     ),
                     shoot_light.run_if(input_just_released(MouseButton::Left)),
@@ -90,11 +113,16 @@ pub struct AngleMarker;
 pub fn spawn_angle_indicator(
     mut commands: Commands,
     q_player: Query<Entity, With<PlayerMarker>>,
+    q_angle: Query<Entity, With<AngleMarker>>,
     asset_server: Res<AssetServer>,
 ) {
     let Ok(player) = q_player.get_single() else {
         return;
     };
+
+    if !q_angle.is_empty() {
+        return;
+    }
 
     commands.entity(player).with_child((
         Sprite {
@@ -106,7 +134,50 @@ pub fn spawn_angle_indicator(
     ));
 }
 
+#[derive(Component)]
+pub struct AngleIncrementMarker;
+
+pub fn spawn_angle_increments_indicators(
+    mut commands: Commands,
+    q_player: Query<Entity, With<PlayerMarker>>,
+    q_angle: Query<Entity, With<AngleIncrementMarker>>,
+    asset_server: Res<AssetServer>,
+) {
+    for i in 0..NUMINCREMENTS {
+        let angle_increment = (2.0 * PI) / NUMINCREMENTS as f32;
+        let Ok(player) = q_player.get_single() else {
+            return;
+        };
+
+        if !q_angle.is_empty() {
+            return;
+        }
+
+        commands.entity(player).with_child((
+            Sprite {
+                image: asset_server.load("angle_increment.png"),
+                color: Color::srgba(1.0, 1.0, 1.0, 0.1),
+                ..default()
+            },
+            AngleIncrementMarker,
+            Transform {
+                rotation: Quat::from_rotation_z(i as f32 * angle_increment),
+                ..default()
+            },
+        ));
+    }
+}
+
 pub fn despawn_angle_indicator(mut commands: Commands, q_angle: Query<Entity, With<AngleMarker>>) {
+    for angle in q_angle.iter() {
+        commands.entity(angle).despawn_recursive();
+    }
+}
+
+pub fn despawn_angle_increments_indicators(
+    mut commands: Commands,
+    q_angle: Query<Entity, With<AngleIncrementMarker>>,
+) {
     for angle in q_angle.iter() {
         commands.entity(angle).despawn_recursive();
     }
@@ -178,6 +249,7 @@ pub fn shoot_light(
     mut q_player: Query<(&Transform, &mut PlayerLightInventory), With<PlayerMarker>>,
     q_light_source_z: Query<&Transform, With<LightSourceZMarker>>,
     q_cursor: Query<&CursorWorldCoords>,
+    keys: Res<ButtonInput<KeyCode>>,
     asset_server: Res<AssetServer>,
 ) {
     let Ok((player_transform, mut player_inventory)) = q_player.get_single_mut() else {
@@ -194,7 +266,11 @@ pub fn shoot_light(
     }
 
     let ray_pos = player_transform.translation.truncate();
-    let ray_dir = (cursor_pos.pos - ray_pos).normalize_or_zero();
+    let mut ray_dir = (cursor_pos.pos - ray_pos).normalize_or_zero();
+
+    if keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight) {
+        ray_dir = snap_ray(ray_dir);
+    }
 
     if ray_dir == Vec2::ZERO {
         return;
@@ -217,7 +293,7 @@ pub fn shoot_light(
             time_traveled: 0.0,
             color: shoot_color,
         })
-        .insert(PrevLightBeamPlayback::from_color(shoot_color))
+        .insert(PrevLightBeamPlayback::default())
         .insert(LineLight2d::point(
             shoot_color.lighting_color().extend(1.0),
             30.0,
@@ -242,6 +318,7 @@ pub fn preview_light_path(
     mut q_rapier: Query<&mut RapierContext>,
     q_player: Query<(&Transform, &PlayerLightInventory), With<PlayerMarker>>,
     q_cursor: Query<&CursorWorldCoords>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut gizmos: Gizmos,
 ) {
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
@@ -260,7 +337,11 @@ pub fn preview_light_path(
     let shoot_color = inventory.current_color.unwrap();
 
     let ray_pos = transform.translation.truncate();
-    let ray_dir = (cursor_pos.pos - ray_pos).normalize_or_zero();
+    let mut ray_dir = (cursor_pos.pos - ray_pos).normalize_or_zero();
+
+    if keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight) {
+        ray_dir = snap_ray(ray_dir);
+    }
 
     let dummy_source = LightBeamSource {
         start_pos: ray_pos,
@@ -273,4 +354,12 @@ pub fn preview_light_path(
     for (a, b) in playback.iter_points(&dummy_source).tuple_windows() {
         gizmos.line_2d(a, b, shoot_color.light_beam_color().darker(0.3));
     }
+}
+
+fn snap_ray(ray_vec: Vec2) -> Vec2 {
+    let ray_angle = (ray_vec.y.atan2(ray_vec.x) + (2.0 * PI)) % (2.0 * PI);
+    let increment_angle = (2.0 * PI) / NUMINCREMENTS as f32;
+    let snapped_angle = (ray_angle / increment_angle).round() * increment_angle;
+
+    Vec2::new(cos(snapped_angle), sin(snapped_angle))
 }

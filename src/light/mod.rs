@@ -7,8 +7,8 @@ use bevy_ecs_ldtk::prelude::*;
 use enum_map::Enum;
 use render::{LightMaterial, LightRenderData};
 use segments::{
-    cleanup_light_sources, insert_line_lights, simulate_light_sources, tick_light_sources,
-    LightSegmentCache, PrevLightBeamPlayback,
+    cleanup_light_sources, simulate_light_sources, spawn_needed_segments, tick_light_sources,
+    visually_sync_segments, LightSegmentCache, PrevLightBeamPlayback,
 };
 
 use crate::level::LevelSystems;
@@ -34,9 +34,17 @@ impl Plugin for LightManagementPlugin {
             .register_ldtk_entity::<LightSourceZBundle>("LightSourceZMarker")
             .add_systems(
                 FixedUpdate,
-                (simulate_light_sources, tick_light_sources).in_set(LevelSystems::Simulation),
+                (
+                    (
+                        simulate_light_sources,
+                        spawn_needed_segments,
+                        visually_sync_segments,
+                    )
+                        .chain(),
+                    tick_light_sources,
+                )
+                    .in_set(LevelSystems::Simulation),
             )
-            .add_systems(Startup, insert_line_lights)
             // why does this need to be on update???
             .add_systems(Update, cleanup_light_sources.in_set(LevelSystems::Reset));
     }
