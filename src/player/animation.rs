@@ -5,7 +5,7 @@ use crate::{animation::AnimationConfig, input::CursorWorldCoords};
 
 use super::{light::PlayerLightInventory, movement::PlayerMovement, PlayerMarker};
 
-pub const ANIMATION_FRAMES: usize = 31;
+pub const ANIMATION_FRAMES: usize = 29;
 
 #[derive(Debug, Component, PartialEq, Eq, Clone, Copy, Default)]
 pub enum PlayerAnimationType {
@@ -46,9 +46,7 @@ const OFFSETS: [[Vec2; 3]; ANIMATION_FRAMES] = [
     [vec2(-2.0, 4.0), vec2(-4.0, -3.0), vec2(4.0, -3.0)],
     [vec2(-2.0, 4.0), vec2(-5.0, -2.0), vec2(5.0, -2.0)],
     [vec2(-2.0, 4.0), vec2(-4.0, -3.0), vec2(5.0, -3.0)], // land 1
-    [vec2(-2.0, 4.0), vec2(-3.0, -4.0), vec2(4.0, -4.0)],
     [vec2(-2.0, 3.0), vec2(-3.0, -4.0), vec2(4.0, -4.0)],
-    [vec2(-2.0, 2.0), vec2(-3.0, -5.0), vec2(5.0, -4.0)],
     [vec2(-2.0, 1.0), vec2(-4.0, -5.0), vec2(5.0, -5.0)],
     [vec2(-2.0, 3.0), vec2(-4.0, -4.0), vec2(4.0, -4.0)],
 ];
@@ -76,7 +74,7 @@ impl From<PlayerAnimationType> for AnimationConfig {
             PlayerAnimationType::Crouch => AnimationConfig::new(11, 14, 48, false),
             PlayerAnimationType::Jump => AnimationConfig::new(15, 20, 24, false),
             PlayerAnimationType::Fall => AnimationConfig::new(21, 24, 24, false),
-            PlayerAnimationType::Land => AnimationConfig::new(25, 30, 24, false),
+            PlayerAnimationType::Land => AnimationConfig::new(25, 28, 18, false),
         }
     }
 }
