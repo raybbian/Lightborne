@@ -25,79 +25,14 @@ pub struct LightSegmentBundle {
     pub material: MeshMaterial2d<LightMaterial>,
     pub visibility: Visibility,
     pub transform: Transform,
+    pub line_light: LineLight2d,
 }
 
 /// [`Resource`] used to store [`Entity`] handles to the light segments so they aren't added and
 /// despawned every frame. See [`simulate_light_sources`] for details.
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub struct LightSegmentCache {
     segments: EnumMap<LightColor, Vec<Entity>>,
-}
-
-impl FromWorld for LightSegmentCache {
-    fn from_world(world: &mut World) -> Self {
-        let mut cache = LightSegmentCache {
-            segments: EnumMap::default(),
-        };
-        let render_data = world.resource::<LightRenderData>();
-
-        let mut segment_bundles: EnumMap<LightColor, LightSegmentBundle> = EnumMap::default();
-
-        for (color, _) in cache.segments.iter_mut() {
-            segment_bundles[color] = LightSegmentBundle {
-                segment: LightSegment { color },
-                mesh: render_data.mesh.clone(),
-                material: render_data.material_map[color].clone(),
-                visibility: Visibility::Hidden,
-                transform: Transform::default(),
-            }
-        }
-
-        for (color, segments) in cache.segments.iter_mut() {
-            while segments.len() < color.num_bounces() + 1 {
-                let mut cmds = world.spawn(());
-                cmds.insert(segment_bundles[color].clone());
-
-                // White beams need colliders
-                if color == LightColor::White {
-                    cmds.insert((
-                        Collider::cuboid(0.5, 0.5),
-                        Sensor,
-                        CollisionGroups::new(
-                            GroupLabel::WHITE_RAY,
-                            GroupLabel::TERRAIN
-                                | GroupLabel::PLATFORM
-                                | GroupLabel::LIGHT_SENSOR
-                                | GroupLabel::LIGHT_RAY
-                                | GroupLabel::BLUE_RAY,
-                        ),
-                    ));
-                }
-
-                segments.push(cmds.id());
-            }
-        }
-
-        cache
-    }
-}
-
-/// System to insert line lights into segments. This insertion cannot be done in FromWorld
-/// because doing so inserts the archetype in the world before the required components are
-/// registered for it. This is currently not allowed by Bevy, and therefore the light segments
-/// must be added later.
-pub fn insert_line_lights(
-    mut commands: Commands,
-    q_new_segments: Query<(Entity, &LightSegment), Added<LightSegment>>,
-) {
-    for (entity, segment) in q_new_segments.iter() {
-        commands.entity(entity).insert(LineLight2d {
-            color: segment.color.lighting_color().extend(1.0),
-            half_length: 10.0,
-            radius: 20.0,
-            volumetric_intensity: 0.008,
-        });
-    }
 }
 
 /// Local variable for [`simulate_light_sources`] used to store the handle to the audio SFX
@@ -159,14 +94,6 @@ pub struct PrevLightBeamPlayback {
     pub intersections: Vec<Option<LightBeamIntersection>>,
 }
 
-impl PrevLightBeamPlayback {
-    pub fn from_color(color: LightColor) -> Self {
-        PrevLightBeamPlayback {
-            intersections: vec![None; color.num_bounces() + 1],
-        }
-    }
-}
-
 pub fn play_light_beam(
     rapier_context: &mut RapierContext,
     source: &LightBeamSource,
@@ -213,6 +140,7 @@ pub fn play_light_beam(
             break;
         };
 
+        // if inside something???
         if intersection.time_of_impact < 0.01 {
             break;
         }
@@ -234,6 +162,9 @@ pub fn play_light_beam(
     playback
 }
 
+#[derive(Default, Component)]
+pub struct LightBeamPoints(Vec<Vec2>);
+
 /// [`System`] that runs on [`Update`], calculating the [`Transform`] of light segments from the
 /// corresponding [`LightBeamSource`]. Note that this calculation happens every frame, so instead of
 /// rapidly spawning/despawning the entities, we spawn them and cache them in the
@@ -244,41 +175,28 @@ pub fn play_light_beam(
 #[allow(clippy::too_many_arguments)]
 pub fn simulate_light_sources(
     mut commands: Commands,
-    mut q_light_sources: Query<(&mut LightBeamSource, &mut PrevLightBeamPlayback)>,
+    mut q_light_sources: Query<(Entity, &mut LightBeamSource, &mut PrevLightBeamPlayback)>,
     mut q_rapier: Query<&mut RapierContext>,
     mut q_light_sensor: Query<&mut LightSensor>,
-    mut q_segments: Query<
-        (
-            &mut Transform,
-            &mut Visibility,
-            &mut LineLight2d,
-            &mut LightSegment,
-        ),
-        Without<LightSegmentZMarker>,
-    >,
-    q_light_segment_z: Query<&Transform, With<LightSegmentZMarker>>,
-    segment_cache: Res<LightSegmentCache>,
+    // used to tell if a collision was against a white beam (a different sound is played)
+    q_segments: Query<&LightSegment, Without<LightSegmentZMarker>>,
     light_bounce_sfx: Local<LightBounceSfx>,
     mut ev_spark_explosion: EventWriter<SparkExplosionEvent>,
 ) {
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
         return;
     };
-    let Ok(light_segment_z) = q_light_segment_z.get_single() else {
-        return;
-    };
     // Reborrow!!!
     let rapier_context = rapier_context.into_inner();
 
-    for (mut source, mut prev_playback) in q_light_sources.iter_mut() {
+    for (source_entity, mut source, mut prev_playback) in q_light_sources.iter_mut() {
         let playback = play_light_beam(rapier_context, &source);
 
         let mut pts: Vec<Vec2> = playback.iter_points(&source).collect();
 
-        let max_intersections = source.color.num_bounces() + 1;
         let intersections = playback.intersections.len();
         for i in 0..intersections {
-            let prev_x = prev_playback.intersections[i];
+            let prev_x = prev_playback.intersections.get(i).cloned().flatten();
             let new_x = playback.intersections[i];
 
             let is_same_intersection = prev_x.is_some_and(|prev_x| prev_x.entity == new_x.entity);
@@ -309,42 +227,35 @@ pub fn simulate_light_sources(
                     if let Ok(mut sensor) = q_light_sensor.get_mut(new_x.entity) {
                         sensor.hit_by[source.color] = true;
                     }
-                    prev_playback.intersections[i] = Some(new_x);
+                    if i >= prev_playback.intersections.len() {
+                        assert!(i == prev_playback.intersections.len());
+                        prev_playback.intersections.push(Some(new_x));
+                    } else {
+                        prev_playback.intersections[i] = Some(new_x);
+                    }
                     source.time_traveled = new_x.time;
                 }
 
                 if play_sound {
                     let reflect = match q_segments.get(new_x.entity) {
-                        Ok((_, _, _, segment)) => segment.color == LightColor::White,
+                        Ok(segment) => segment.color == LightColor::White,
                         _ => false,
                     };
-
                     let audio = if reflect {
                         light_bounce_sfx.reflect[i].clone()
                     } else {
                         light_bounce_sfx.bounce[i].clone()
                     };
-
                     ev_spark_explosion.send(SparkExplosionEvent {
                         pos: new_x.point,
                         color: source.color.light_beam_color(),
                     });
-
                     commands
                         .entity(new_x.entity)
                         .with_child((AudioPlayer::new(audio), PlaybackSettings::DESPAWN));
                 }
 
-                // discard and update all future intersections
-                for intersection in prev_playback.intersections[i + 1..max_intersections].iter_mut()
-                {
-                    if let Some(intersection) = intersection {
-                        if let Ok(mut sensor) = q_light_sensor.get_mut(intersection.entity) {
-                            sensor.hit_by[source.color] = false;
-                        }
-                    }
-                    *intersection = None;
-                }
+                prev_playback.intersections.truncate(i + 1);
                 break;
             } else {
                 // keep on updating the previous intersection buffer because this could be a moving
@@ -352,14 +263,76 @@ pub fn simulate_light_sources(
                 prev_playback.intersections[i] = Some(new_x);
             }
         }
+        commands.entity(source_entity).insert(LightBeamPoints(pts));
+    }
+}
 
+pub fn spawn_needed_segments(
+    mut commands: Commands,
+    q_light_sources: Query<(&LightBeamSource, &LightBeamPoints)>,
+    mut segment_cache: ResMut<LightSegmentCache>,
+    light_render_data: Res<LightRenderData>,
+    q_light_segment_z: Query<&Transform, With<LightSegmentZMarker>>,
+) {
+    let Ok(light_segment_z) = q_light_segment_z.get_single() else {
+        return;
+    };
+    for (source, pts) in q_light_sources.iter() {
+        let segments = pts.0.len() - 1;
+        // lazily spawn segment entities until there are enough segments to display the light beam
+        // path
+        while segment_cache.segments[source.color].len() < segments.min(10) {
+            let id = commands
+                .spawn(LightSegmentBundle {
+                    segment: LightSegment {
+                        color: source.color,
+                    },
+                    mesh: light_render_data.mesh.clone(),
+                    material: light_render_data.material_map[source.color].clone(),
+                    visibility: Visibility::Hidden,
+                    transform: Transform::from_xyz(0., 0., light_segment_z.translation.z),
+                    line_light: LineLight2d {
+                        color: source.color.lighting_color().extend(1.0),
+                        half_length: 10.0,
+                        radius: 20.0,
+                        volumetric_intensity: 0.008,
+                    },
+                })
+                .id();
+            // White beams need colliders
+            if source.color == LightColor::White {
+                commands.entity(id).insert((
+                    Collider::cuboid(0.5, 0.5),
+                    Sensor,
+                    CollisionGroups::new(
+                        GroupLabel::WHITE_RAY,
+                        GroupLabel::TERRAIN
+                            | GroupLabel::PLATFORM
+                            | GroupLabel::LIGHT_SENSOR
+                            | GroupLabel::LIGHT_RAY
+                            | GroupLabel::BLUE_RAY,
+                    ),
+                ));
+            }
+            segment_cache.segments[source.color].push(id);
+        }
+    }
+}
+
+pub fn visually_sync_segments(
+    q_light_sources: Query<(&LightBeamSource, &LightBeamPoints)>,
+    segment_cache: Res<LightSegmentCache>,
+    mut q_segments: Query<(&mut LineLight2d, &mut Transform, &mut Visibility), With<LightSegment>>,
+) {
+    for (source, pts) in q_light_sources.iter() {
+        let pts = &pts.0;
+        // use the light beam path to set the transform of the segments currently in the cache
         for (i, segment) in segment_cache.segments[source.color].iter().enumerate() {
-            let Ok((mut c_transform, mut c_visibility, mut line_light, _)) =
+            let Ok((mut line_light, mut c_transform, mut c_visibility)) =
                 q_segments.get_mut(*segment)
             else {
-                panic!("Segment did not have visibility or transform");
+                panic!("Segment doesn't have transform or visibility!");
             };
-
             if i + 1 < pts.len() && pts[i].distance(pts[i + 1]) > 0.1 {
                 let midpoint = pts[i].midpoint(pts[i + 1]).extend(1.0);
                 let scale = Vec3::new(pts[i].distance(pts[i + 1]), 1., 1.);
@@ -378,10 +351,6 @@ pub fn simulate_light_sources(
                 *c_transform = Transform::default();
                 *c_visibility = Visibility::Hidden;
             }
-
-            // match the z index with the dummy entity spawned by ldtk to match the stupid ldtk
-            // plugin's arbitrary z-indexing order
-            c_transform.translation.z = light_segment_z.translation.z;
         }
     }
 }

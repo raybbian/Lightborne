@@ -230,7 +230,7 @@ impl FromWorld for ShardAnimationCallbacks {
 const SHARD_FADE_DURATION: Duration = Duration::from_millis(500);
 const SHARD_FADE_VOLUME: f32 = 0.1;
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn start_shard_animation(
     mut commands: Commands,
     cur_game_state: Res<State<GameState>>,
@@ -387,6 +387,7 @@ pub fn on_shard_zoom_in_finished(
         ));
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn on_shard_text_read_finish(
     mut commands: Commands,
     mut ev_move_camera: EventWriter<CameraMoveEvent>,

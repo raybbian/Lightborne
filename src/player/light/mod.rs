@@ -293,7 +293,7 @@ pub fn shoot_light(
             time_traveled: 0.0,
             color: shoot_color,
         })
-        .insert(PrevLightBeamPlayback::from_color(shoot_color))
+        .insert(PrevLightBeamPlayback::default())
         .insert(LineLight2d::point(
             shoot_color.lighting_color().extend(1.0),
             30.0,
@@ -360,6 +360,6 @@ fn snap_ray(ray_vec: Vec2) -> Vec2 {
     let ray_angle = (ray_vec.y.atan2(ray_vec.x) + (2.0 * PI)) % (2.0 * PI);
     let increment_angle = (2.0 * PI) / NUMINCREMENTS as f32;
     let snapped_angle = (ray_angle / increment_angle).round() * increment_angle;
-    
+
     Vec2::new(cos(snapped_angle), sin(snapped_angle))
 }

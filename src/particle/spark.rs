@@ -12,6 +12,7 @@ use super::{
 #[derive(Resource, Default)]
 pub struct SegmentTransformMap(HashMap<Entity, Transform>);
 
+#[allow(clippy::type_complexity)]
 pub fn add_segment_sparks(
     mut commands: Commands,
     mut transform_map: ResMut<SegmentTransformMap>,
@@ -54,7 +55,6 @@ pub fn add_segment_sparks(
                 modifier: ParticleModifier {
                     add_velocity: Some((-VEL..VEL, -VEL..VEL)),
                 },
-                ..default()
             }))
             .with_child((
                 ParticleEmitter::new(ParticleEmitterOptions {
@@ -89,7 +89,6 @@ pub fn create_spark_explosions(
     const VEL: f32 = 50.0;
     let modifier: ParticleModifier = ParticleModifier {
         add_velocity: Some((-VEL..VEL, -VEL..VEL)),
-        ..default()
     };
     for event in spark_explosion_events.read() {
         for _ in 0..15 {

@@ -139,6 +139,8 @@ impl MovingPlatform {
             }
         }
     }
+
+    #[allow(clippy::too_many_arguments)]
     fn adjust_player(
         &self,
         player: &mut (
@@ -171,7 +173,11 @@ impl MovingPlatform {
         let (_, _, player_controller_output, player_transform, player_global_transform) = player;
 
         // Crush player if platform is above player, moving down, and player is grounded
-        if entity_above_player.is_some() && entity_above_player.unwrap().eq(&platform_entity) && player_controller_output.grounded && direction_and_velocity.y < 0.0 {
+        if entity_above_player.is_some()
+            && entity_above_player.unwrap().eq(&platform_entity)
+            && player_controller_output.grounded
+            && direction_and_velocity.y < 0.0
+        {
             ev_reset_level.send(ResetLevel::Respawn);
             return;
         }
@@ -187,17 +193,15 @@ impl MovingPlatform {
                 if (entity_left_of_player.is_none() || direction.x > 0.0)
                     && (entity_right_of_player.is_none() || direction.x < 0.0)
                 {
-                    player_transform.translation +=
-                        Vec3::new(direction.x, direction.y + 0.1, 0.0)
-                            * self.speed
-                            * time.delta_secs();
+                    player_transform.translation += Vec3::new(direction.x, direction.y + 0.1, 0.0)
+                        * self.speed
+                        * time.delta_secs();
                 } else {
                     player_transform.translation +=
                         Vec3::new(0.0, direction.y + 0.1, 0.0) * self.speed * time.delta_secs();
                 }
             } else {
-                player_transform.translation +=
-                    Vec3::new(0.0, 0.2, 0.0) * 1.0 * time.delta_secs();
+                player_transform.translation += Vec3::new(0.0, 0.2, 0.0) * 1.0 * time.delta_secs();
             }
         }
 
@@ -251,7 +255,7 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
         let mut path_curve_points = match &entity_instance
             .get_field_instance("path_curve_points")
             .unwrap()
-        .value
+            .value
         {
             FieldValue::Bools(val) => val.clone(),
             _ => panic!("Unexpected data type!"),
@@ -533,6 +537,7 @@ pub fn reset_platforms(mut platform_q: Query<(&mut MovingPlatform, &mut Transfor
 }
 
 /// function that casts a ray shape relative to the player
+#[allow(clippy::too_many_arguments)]
 fn cast_player_ray_shape(
     rapier_context: &ReadDefaultRapierContext,
     player_transform: &Transform,
