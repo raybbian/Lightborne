@@ -7,7 +7,9 @@ use super::{
     LightBeamSource, LightColor, LightSegmentZMarker, LIGHT_SPEED,
 };
 use crate::{
-    level::sensor::LightSensor, lighting::LineLight2d, particle::spark::SparkExplosionEvent,
+    level::{mirror::Mirror, sensor::LightSensor},
+    lighting::LineLight2d,
+    particle::spark::SparkExplosionEvent,
     shared::GroupLabel,
 };
 
@@ -97,6 +99,7 @@ pub struct PrevLightBeamPlayback {
 pub fn play_light_beam(
     rapier_context: &mut RapierContext,
     source: &LightBeamSource,
+    q_mirrors: &Query<&Mirror>,
 ) -> LightBeamPlayback {
     let mut ray_pos = source.start_pos;
     let mut ray_dir = source.start_dir;
@@ -130,7 +133,14 @@ pub fn play_light_beam(
         elapsed_time: 0.0,
     };
 
-    for _ in 0..source.color.num_bounces() + 1 {
+    const MAX_SEGMENTS: usize = 10;
+
+    // for _ in 0..source.color.num_bounces() + 1 {
+    let num_segments = source.color.num_bounces() + 1;
+
+    let mut i = 0;
+    let mut extra_bounces_from_mirror = 0;
+    while i < num_segments + extra_bounces_from_mirror && i <= MAX_SEGMENTS {
         let Some((entity, intersection)) =
             rapier_context.cast_ray_and_get_normal(ray_pos, ray_dir, remaining_time, true, ray_qry)
         else {
@@ -139,6 +149,9 @@ pub fn play_light_beam(
             playback.end_point = Some(final_point);
             break;
         };
+        if q_mirrors.contains(entity) {
+            extra_bounces_from_mirror += 1;
+        }
 
         // if inside something???
         if intersection.time_of_impact < 0.01 {
@@ -157,6 +170,7 @@ pub fn play_light_beam(
         ray_pos = intersection.point;
         ray_dir = ray_dir.reflect(intersection.normal);
         ray_qry = ray_qry.exclude_collider(entity);
+        i += 1;
     }
 
     playback
@@ -181,6 +195,7 @@ pub fn simulate_light_sources(
     // used to tell if a collision was against a white beam (a different sound is played)
     q_segments: Query<&LightSegment, Without<LightSegmentZMarker>>,
     light_bounce_sfx: Local<LightBounceSfx>,
+    q_mirrors: Query<&Mirror>,
     mut ev_spark_explosion: EventWriter<SparkExplosionEvent>,
 ) {
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
@@ -190,7 +205,7 @@ pub fn simulate_light_sources(
     let rapier_context = rapier_context.into_inner();
 
     for (source_entity, mut source, mut prev_playback) in q_light_sources.iter_mut() {
-        let playback = play_light_beam(rapier_context, &source);
+        let playback = play_light_beam(rapier_context, &source, &q_mirrors);
 
         let mut pts: Vec<Vec2> = playback.iter_points(&source).collect();
 
@@ -242,10 +257,17 @@ pub fn simulate_light_sources(
                         _ => false,
                     };
                     let audio = if reflect {
-                        light_bounce_sfx.reflect[i].clone()
+                        light_bounce_sfx
+                            .reflect
+                            .get(i)
+                            .unwrap_or(&light_bounce_sfx.reflect[2])
                     } else {
-                        light_bounce_sfx.bounce[i].clone()
-                    };
+                        light_bounce_sfx
+                            .bounce
+                            .get(i)
+                            .unwrap_or(&light_bounce_sfx.bounce[2])
+                    }
+                    .clone();
                     ev_spark_explosion.send(SparkExplosionEvent {
                         pos: new_x.point,
                         color: source.color.light_beam_color(),

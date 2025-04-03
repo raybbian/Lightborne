@@ -73,6 +73,11 @@ impl From<IntGridCell> for FixedEntityBundle {
                 rigid_body: RigidBody::Fixed,
                 collision_groups: CollisionGroups::new(GroupLabel::TERRAIN, GroupLabel::ALL),
             },
+            16 => FixedEntityBundle {
+                collider: Collider::cuboid(4., 4.),
+                rigid_body: RigidBody::Fixed,
+                collision_groups: CollisionGroups::new(GroupLabel::TERRAIN, GroupLabel::ALL),
+            },
             _ => unreachable!(),
         }
     }
