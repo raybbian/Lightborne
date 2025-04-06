@@ -103,7 +103,7 @@ fn init_levels(
     query_ldtk: Query<&LdtkProjectHandle>,
     ldtk_assets: Res<Assets<LdtkProject>>,
 ) {
-    if res_levels.0.len() > 0 {
+    if !res_levels.0.is_empty() {
         return;
     }
     let Ok(ldtk_handle) = query_ldtk.get_single() else {
@@ -168,8 +168,6 @@ fn switch_to_level_select(
 
 fn spawn_level_select(
     mut commands: Commands,
-    ldtk_assets: Res<Assets<LdtkProject>>,
-    query_ldtk: Query<&LdtkProjectHandle>,
     level_select_ui_query: Query<Entity, With<LevelSelectUiMarker>>,
     asset_server: Res<AssetServer>,
     mut ev_change_bgm: EventWriter<ChangeBgmEvent>,
@@ -178,13 +176,6 @@ fn spawn_level_select(
     if level_select_ui_query.get_single().is_ok() {
         return;
     }
-    let Ok(ldtk_handle) = query_ldtk.get_single() else {
-        return;
-    };
-    let Ok(levels) = get_ldtk_level_data(ldtk_assets.into_inner(), ldtk_handle) else {
-        return;
-    };
-
     let font = TextFont {
         font: asset_server.load("fonts/Munro.ttf"),
         ..default()
