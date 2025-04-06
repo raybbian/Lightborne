@@ -13,7 +13,7 @@ impl Plugin for LevelCompletionPlugin {
         app.register_ldtk_entity::<CompletionMarkerBundle>("StartMarker")
             .register_ldtk_entity::<CompletionMarkerBundle>("EndMarker")
             .insert_resource(InProgressLevel(LevelIid::default()))
-            .add_systems(Update, debug_start_end_markers);
+            .add_systems(Update, handle_start_end_markers);
     }
 }
 
@@ -63,7 +63,7 @@ impl LdtkEntity for CompletionMarkerBundle {
     }
 }
 
-fn debug_start_end_markers(
+fn handle_start_end_markers(
     rapier_context: Query<&RapierContext>,
     q_player: Query<Entity, With<PlayerHurtMarker>>,
     q_completion_markers: Query<(Entity, &CompletionMarkerType), Without<PlayerHurtMarker>>,
