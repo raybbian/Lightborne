@@ -20938,22 +20938,6 @@
 							"fieldInstances": [],
 							"__worldX": 36,
 							"__worldY": 152
-						},
-						{
-							"__identifier": "Lantern",
-							"__grid": [12,2],
-							"__pivot": [0.5,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FEAE34",
-							"iid": "c40cba20-e920-11ef-8258-a3e30c13a79b",
-							"width": 10,
-							"height": 12,
-							"defUid": 1383,
-							"px": [96,16],
-							"fieldInstances": [],
-							"__worldX": 96,
-							"__worldY": 16
 						}
 					]
 				},
@@ -21070,6 +21054,22 @@
 							}] }],
 							"__worldX": 116,
 							"__worldY": 132
+						},
+						{
+							"__identifier": "Lantern",
+							"__grid": [12,2],
+							"__pivot": [0.5,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FEAE34",
+							"iid": "5060ab50-1030-11f0-b60f-8935c4509946",
+							"width": 10,
+							"height": 12,
+							"defUid": 1383,
+							"px": [100,16],
+							"fieldInstances": [],
+							"__worldX": 100,
+							"__worldY": 16
 						}
 					]
 				},
