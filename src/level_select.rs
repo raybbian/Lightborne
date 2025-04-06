@@ -67,12 +67,76 @@ pub struct LevelPreviewMarker;
 #[derive(Resource)]
 pub struct LevelPreviewStore(HashMap<String, (Vec2, Handle<Image>)>);
 
+// FIXME .0 is ldtk level index, .1 is index into the Levels.0 vector
 #[derive(Component)]
-pub struct LevelSelectButtonIndex(usize);
+pub struct LevelSelectButtonIndex(usize, usize);
+
+#[derive(PartialEq, Eq)]
+pub struct LevelSaveData {
+    level_id: String,
+    pub level_iid: LevelIid,
+    level_index: usize,
+    pub complete: bool,
+    pub locked: bool,
+}
+
+impl Ord for LevelSaveData {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.level_id.cmp(&other.level_id)
+    }
+}
+
+impl PartialOrd for LevelSaveData {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+#[derive(Resource)]
+pub struct Levels(pub Vec<LevelSaveData>);
+
+fn init_levels(
+    mut res_levels: ResMut<Levels>,
+    query_ldtk: Query<&LdtkProjectHandle>,
+    ldtk_assets: Res<Assets<LdtkProject>>,
+) {
+    if res_levels.0.len() > 0 {
+        return;
+    }
+    let Ok(ldtk_handle) = query_ldtk.get_single() else {
+        return;
+    };
+    let Ok(levels) = get_ldtk_level_data(ldtk_assets.into_inner(), ldtk_handle) else {
+        return;
+    };
+    // let mut sorted_levels = Vec::with_capacity(levels.len());
+    for (i, level) in levels.iter().enumerate() {
+        let level_id = level
+            .get_string_field("LevelId")
+            .expect("Levels should always have a level id!");
+        if level_id.is_empty() {
+            panic!("Level id for a level should not be empty!");
+        }
+        // FIXME: ignore all levels prefixed with .
+        if &level_id[0..1] == "." {
+            continue;
+        }
+        res_levels.0.push(LevelSaveData {
+            level_id: level_id.to_string(),
+            level_iid: LevelIid::new(level.iid.clone()),
+            level_index: i,
+            complete: false,
+            locked: true,
+        });
+    }
+    res_levels.0.sort();
+    res_levels.0[0].locked = false;
+}
 
 impl Plugin for LevelSelectPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(LevelPreviewStore(HashMap::new()))
+            .insert_resource(Levels(Vec::new()))
             .add_systems(
                 PostUpdate,
                 switch_to_level_select.run_if(input_just_pressed(KeyCode::KeyL)),
@@ -80,6 +144,7 @@ impl Plugin for LevelSelectPlugin {
             .add_systems(
                 FixedUpdate,
                 (
+                    init_levels.before(spawn_level_select),
                     spawn_level_select.run_if(in_state(UiState::LevelSelect)),
                     despawn_level_select
                         .after(handle_move_camera)
@@ -105,6 +170,7 @@ fn spawn_level_select(
     level_select_ui_query: Query<Entity, With<LevelSelectUiMarker>>,
     asset_server: Res<AssetServer>,
     mut ev_change_bgm: EventWriter<ChangeBgmEvent>,
+    sorted_levels: Res<Levels>,
 ) {
     if level_select_ui_query.get_single().is_ok() {
         return;
@@ -115,21 +181,6 @@ fn spawn_level_select(
     let Ok(levels) = get_ldtk_level_data(ldtk_assets.into_inner(), ldtk_handle) else {
         return;
     };
-    let mut sorted_levels = Vec::with_capacity(levels.len());
-    for (i, level) in levels.iter().enumerate() {
-        let level_id = level
-            .get_string_field("LevelId")
-            .expect("Levels should always have a level id!");
-        if level_id.is_empty() {
-            panic!("Level id for a level should not be empty!");
-        }
-        // FIXME: ignore all levels prefixed with .
-        if &level_id[0..1] == "." {
-            continue;
-        }
-        sorted_levels.push((level_id, i));
-    }
-    sorted_levels.sort();
 
     let font = TextFont {
         font: asset_server.load("fonts/Munro.ttf"),
@@ -167,7 +218,17 @@ fn spawn_level_select(
                     ..default()
                 })
                 .with_children(|parent| {
-                    for (level_id, index) in sorted_levels.iter() {
+                    for (
+                        i,
+                        LevelSaveData {
+                            level_id,
+                            level_iid: _,
+                            level_index: index,
+                            complete,
+                            locked,
+                        },
+                    ) in sorted_levels.0.iter().enumerate()
+                    {
                         parent
                             .spawn((
                                 Button,
@@ -181,11 +242,21 @@ fn spawn_level_select(
                                     align_items: AlignItems::Center,
                                     ..default()
                                 },
-                                BorderColor(Color::WHITE),
-                                LevelSelectButtonIndex(*index),
+                                BorderColor(if *complete {
+                                    Color::srgb(0.0, 1.0, 0.0)
+                                } else if !*locked {
+                                    Color::WHITE
+                                } else {
+                                    Color::srgb(1.0, 0.0, 0.0)
+                                }),
+                                LevelSelectButtonIndex(*index, i),
                             ))
                             .with_child((
-                                Text::new(level_id.to_string()),
+                                if *locked {
+                                    Text::new("LOCKED")
+                                } else {
+                                    Text::new(level_id.to_string())
+                                },
                                 font.clone().with_font_size(24.),
                             ));
                     }
@@ -232,6 +303,7 @@ pub fn handle_level_selection(
     mut assets: ResMut<Assets<Image>>,
     mut query_level_preview: Query<(Entity, Option<&mut ImageNode>), With<LevelPreviewMarker>>,
     mut commands: Commands,
+    res_levels: Res<Levels>,
 ) {
     let Ok(ldtk_handle) = query_ldtk.get_single() else {
         return;
@@ -246,6 +318,9 @@ pub fn handle_level_selection(
         let level = &ldtk_levels[index.0];
         match *interaction {
             Interaction::Pressed => {
+                if res_levels.0[index.1].locked {
+                    return;
+                }
                 let Some(layers) = level.layer_instances.as_ref() else {
                     panic!("Layers not found! (This is probably because you are using the \"Separate level files\" option.)")
                 };
