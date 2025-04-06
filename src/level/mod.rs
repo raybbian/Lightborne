@@ -6,6 +6,7 @@ use egg::EggPlugin;
 use enum_map::{enum_map, EnumMap};
 use lantern::LdtkLanternBundle;
 use merge_tile::spawn_merged_tiles;
+use mirror::MirrorPlugin;
 use semisolid::SemiSolidPlugin;
 use sensor::LightSensorPlugin;
 use shard::CrystalShardPlugin;
@@ -32,6 +33,7 @@ mod egg;
 pub mod entity;
 mod lantern;
 mod merge_tile;
+pub mod mirror;
 pub mod platform;
 mod semisolid;
 pub mod sensor;
@@ -52,6 +54,7 @@ impl Plugin for LevelManagementPlugin {
             .add_plugins(CrystalShardPlugin)
             .add_plugins(LightSensorPlugin)
             .add_plugins(SemiSolidPlugin)
+            .add_plugins(MirrorPlugin)
             .add_plugins(EggPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")

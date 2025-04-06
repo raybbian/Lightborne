@@ -15,7 +15,7 @@ use std::f32::consts::PI;
 
 use crate::{
     input::{update_cursor_world_coords, CursorWorldCoords},
-    level::{CurrentLevel, LevelSystems},
+    level::{mirror::Mirror, CurrentLevel, LevelSystems},
     light::{
         segments::{play_light_beam, PrevLightBeamPlayback},
         LightBeamSource, LightColor, LightSourceZMarker,
@@ -319,6 +319,7 @@ pub fn preview_light_path(
     q_player: Query<(&Transform, &PlayerLightInventory), With<PlayerMarker>>,
     q_cursor: Query<&CursorWorldCoords>,
     keys: Res<ButtonInput<KeyCode>>,
+    q_mirror: Query<&Mirror>,
     mut gizmos: Gizmos,
 ) {
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
@@ -349,7 +350,7 @@ pub fn preview_light_path(
         time_traveled: 10000.0, // LOL
         color: shoot_color,
     };
-    let playback = play_light_beam(rapier_context.into_inner(), &dummy_source);
+    let playback = play_light_beam(rapier_context.into_inner(), &dummy_source, &q_mirror);
 
     for (a, b) in playback.iter_points(&dummy_source).tuple_windows() {
         gizmos.line_2d(a, b, shoot_color.light_beam_color().darker(0.3));

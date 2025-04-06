@@ -28,7 +28,7 @@ const SENSOR_ENTITY_IDENT: &str = "Sensor";
 const SENSOR_COLOR_IDENT: &str = "toggle_color";
 
 // [R, G, B, A] colors for level preview
-const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
+const LEVEL_PREVIEW_COLORS: [[u8; 4]; 17] = [
     [0, 0, 0, 255],       // intgrid 0
     [41, 54, 78, 255],    // intgrid 1
     [117, 158, 202, 255], // intgrid 2
@@ -45,6 +45,7 @@ const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
     [0, 0, 0, 255],       // intgrid 13
     [0, 0, 0, 255],       // intgrid 14
     [115, 62, 57, 255],   // intgrid 15
+    [200, 200, 200, 255], // intgrid 16
 ];
 
 fn sensor_color_to_rgba(sensor_color: &str) -> [u8; 4] {
