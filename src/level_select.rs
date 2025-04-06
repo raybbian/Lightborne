@@ -64,6 +64,9 @@ struct LevelSelectUiMarker;
 #[derive(Component)]
 pub struct LevelPreviewMarker;
 
+#[derive(Component)]
+pub struct LevelPreviewLockedMarker;
+
 #[derive(Resource)]
 pub struct LevelPreviewStore(HashMap<String, (Vec2, Handle<Image>)>);
 
@@ -270,7 +273,26 @@ fn spawn_level_select(
                     ..default()
                 },))
                 .with_children(|parent| {
-                    parent.spawn((LevelPreviewMarker, Node::default()));
+                    let lock = asset_server.load("lock.png");
+                    parent
+                        .spawn((LevelPreviewMarker, Node::default()))
+                        .with_children(|parent| {
+                            parent
+                                .spawn((Node {
+                                    width: Val::Percent(100.),
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    ..default()
+                                },))
+                                .with_child((
+                                    Node {
+                                        width: Val::Percent(50.),
+                                        ..default()
+                                    },
+                                    LevelPreviewLockedMarker,
+                                    ImageNode::new(lock).with_color(Color::srgba(1., 1., 1., 0.)),
+                                ));
+                        });
                 });
         });
 }
@@ -302,6 +324,10 @@ pub fn handle_level_selection(
     mut level_preview_store: ResMut<LevelPreviewStore>,
     mut assets: ResMut<Assets<Image>>,
     mut query_level_preview: Query<(Entity, Option<&mut ImageNode>), With<LevelPreviewMarker>>,
+    mut query_level_preview_locked: Query<
+        &mut ImageNode,
+        (With<LevelPreviewLockedMarker>, Without<LevelPreviewMarker>),
+    >,
     mut commands: Commands,
     res_levels: Res<Levels>,
 ) {
@@ -452,10 +478,28 @@ pub fn handle_level_selection(
                 else {
                     panic!("Could not find level preview");
                 };
+                let locked = res_levels.0[index.1].locked;
+                const LOCKED_LEVEL_PREVIEW_SCALE: f32 = 0.3;
+                let scaled_color = Color::srgba(
+                    LOCKED_LEVEL_PREVIEW_SCALE,
+                    LOCKED_LEVEL_PREVIEW_SCALE,
+                    LOCKED_LEVEL_PREVIEW_SCALE,
+                    1.0,
+                );
                 if let Some(mut level_preview_image_node) = level_preview_image_node {
                     level_preview_image_node.image = level_preview;
+                    if locked {
+                        level_preview_image_node.color = scaled_color
+                    } else {
+                        level_preview_image_node.color = Color::WHITE;
+                    }
                 } else {
-                    let image_node = ImageNode::new(level_preview);
+                    let mut image_node = ImageNode::new(level_preview);
+                    if locked {
+                        image_node.color = scaled_color;
+                    } else {
+                        image_node.color = Color::WHITE;
+                    }
                     commands.entity(level_preview_entity).insert((
                         image_node,
                         Node {
@@ -466,6 +510,15 @@ pub fn handle_level_selection(
                             ..default()
                         },
                     ));
+                }
+                let Ok(mut preview_locked_node) = query_level_preview_locked.get_single_mut()
+                else {
+                    return;
+                };
+                if locked {
+                    preview_locked_node.color = Color::WHITE;
+                } else {
+                    preview_locked_node.color = Color::srgba(1., 1., 1., 0.);
                 }
             }
             _ => {}
