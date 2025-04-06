@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 1388,
+	"nextUid": 1385,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -194,61 +194,14 @@
 				{ "value": 7, "identifier": "white_active", "color": "#C0CBDC", "tile": null, "groupUid": 4 },
 				{ "value": 8, "identifier": "white_inactive", "color": "#373A3E", "tile": null, "groupUid": 4 },
 				{ "value": 9, "identifier": "blue_active", "color": "#0099DB", "tile": null, "groupUid": 4 },
-				{ "value": 10, "identifier": "blue_inactive", "color": "#124E89", "tile": null, "groupUid": 4 },
-				{ "value": 16, "identifier": "mirror", "color": "#C0CBDC", "tile": null, "groupUid": 5 }
+				{ "value": 10, "identifier": "blue_inactive", "color": "#124E89", "tile": null, "groupUid": 4 }
 			],
 			"intGridValuesGroups": [
 				{ "uid": 2, "identifier": "Terrain", "color": null },
 				{ "uid": 3, "identifier": "Ouchies", "color": null },
-				{ "uid": 4, "identifier": "Crystals", "color": null },
-				{ "uid": 5, "identifier": "Mirrors", "color": null }
+				{ "uid": 4, "identifier": "Crystals", "color": null }
 			],
 			"autoRuleGroups": [
-				{
-					"uid": 1385,
-					"name": "mirrors",
-					"color": null,
-					"icon": null,
-					"active": true,
-					"isOptional": false,
-					"rules": [
-						{
-							"uid": 1387,
-							"active": true,
-							"size": 1,
-							"tileRectsIds": [[296]],
-							"alpha": 1,
-							"chance": 1,
-							"breakOnMatch": true,
-							"pattern": [16],
-							"flipX": false,
-							"flipY": false,
-							"xModulo": 1,
-							"yModulo": 1,
-							"xOffset": 0,
-							"yOffset": 0,
-							"tileXOffset": 0,
-							"tileYOffset": 0,
-							"tileRandomXMin": 0,
-							"tileRandomXMax": 0,
-							"tileRandomYMin": 0,
-							"tileRandomYMax": 0,
-							"checker": "None",
-							"tileMode": "Single",
-							"pivotX": 0,
-							"pivotY": 0,
-							"outOfBoundsValue": 16,
-							"invalidated": false,
-							"perlinActive": false,
-							"perlinSeed": 7417546,
-							"perlinScale": 0.2,
-							"perlinOctaves": 2
-						}
-					],
-					"usesWizard": true,
-					"requiredBiomeValues": [],
-					"biomeRequirementMode": 0
-				},
 				{
 					"uid": 1314,
 					"name": "semi_solid_platforms",
@@ -12126,7 +12079,7 @@
 			"enumTags": [],
 			"customData": [],
 			"savedSelections": [],
-			"cachedPixelData": null
+			"cachedPixelData": { "opaqueTiles": "000", "averageColors": "a454a454a454" }
 		}
 	], "enums": [
 		{ "identifier": "LightColor", "uid": 159, "values": [
