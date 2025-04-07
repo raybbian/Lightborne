@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 1388,
+	"nextUid": 1389,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -205,7 +205,7 @@
 			],
 			"autoRuleGroups": [
 				{
-					"uid": 1385,
+					"uid": 1387,
 					"name": "mirrors",
 					"color": null,
 					"icon": null,
@@ -213,7 +213,7 @@
 					"isOptional": false,
 					"rules": [
 						{
-							"uid": 1387,
+							"uid": 1388,
 							"active": true,
 							"size": 1,
 							"tileRectsIds": [[296]],
@@ -237,15 +237,15 @@
 							"tileMode": "Single",
 							"pivotX": 0,
 							"pivotY": 0,
-							"outOfBoundsValue": 16,
+							"outOfBoundsValue": null,
 							"invalidated": false,
 							"perlinActive": false,
-							"perlinSeed": 7417546,
+							"perlinSeed": 4631304,
 							"perlinScale": 0.2,
 							"perlinOctaves": 2
 						}
 					],
-					"usesWizard": true,
+					"usesWizard": false,
 					"requiredBiomeValues": [],
 					"biomeRequirementMode": 0
 				},
@@ -12022,6 +12022,76 @@
 			"pivotX": 0.5,
 			"pivotY": 0,
 			"fieldDefs": []
+		},
+		{
+			"identifier": "StartMarker",
+			"uid": 1385,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 8,
+			"height": 8,
+			"resizableX": true,
+			"resizableY": true,
+			"minWidth": 8,
+			"maxWidth": null,
+			"minHeight": 8,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#733E39",
+			"renderMode": "Rectangle",
+			"showName": true,
+			"tilesetId": null,
+			"tileRenderMode": "FitInside",
+			"tileRect": null,
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
+		},
+		{
+			"identifier": "EndMarker",
+			"uid": 1386,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 8,
+			"height": 8,
+			"resizableX": true,
+			"resizableY": true,
+			"minWidth": 8,
+			"maxWidth": null,
+			"minHeight": 8,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#3E2731",
+			"renderMode": "Rectangle",
+			"showName": true,
+			"tilesetId": null,
+			"tileRenderMode": "FitInside",
+			"tileRect": null,
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -12126,7 +12196,7 @@
 			"enumTags": [],
 			"customData": [],
 			"savedSelections": [],
-			"cachedPixelData": null
+			"cachedPixelData": { "opaqueTiles": "000", "averageColors": "a454a454a454" }
 		}
 	], "enums": [
 		{ "identifier": "LightColor", "uid": 159, "values": [
@@ -12399,6 +12469,38 @@
 							],
 							"__worldX": 1408,
 							"__worldY": 16
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [2,14],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "6ad6a7f0-1030-11f0-8338-452b88562568",
+							"width": 8,
+							"height": 48,
+							"defUid": 1385,
+							"px": [16,112],
+							"fieldInstances": [],
+							"__worldX": 1296,
+							"__worldY": 112
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "6eda55e0-1030-11f0-8338-f7587795b0a9",
+							"width": 8,
+							"height": 40,
+							"defUid": 1386,
+							"px": [304,24],
+							"fieldInstances": [],
+							"__worldX": 1584,
+							"__worldY": 24
 						}
 					]
 				},
@@ -13507,6 +13609,38 @@
 							"fieldInstances": [],
 							"__worldX": 2888,
 							"__worldY": 344
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [3,18],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "ba7b9a40-1030-11f0-8338-85e513b5ee94",
+							"width": 8,
+							"height": 24,
+							"defUid": 1385,
+							"px": [24,144],
+							"fieldInstances": [],
+							"__worldX": 2904,
+							"__worldY": 328
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,2],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "bd64d780-1030-11f0-8338-291a15453c45",
+							"width": 8,
+							"height": 32,
+							"defUid": 1386,
+							"px": [304,16],
+							"fieldInstances": [],
+							"__worldX": 3184,
+							"__worldY": 200
 						}
 					]
 				},
@@ -14674,6 +14808,38 @@
 							"fieldInstances": [],
 							"__worldX": 3208,
 							"__worldY": 224
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [2,2],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "c23ac990-1030-11f0-8338-919e3b0b7284",
+							"width": 8,
+							"height": 56,
+							"defUid": 1385,
+							"px": [16,16],
+							"fieldInstances": [],
+							"__worldX": 3216,
+							"__worldY": 200
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,18],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "c4e21bd0-1030-11f0-8338-6b652dc1512e",
+							"width": 8,
+							"height": 24,
+							"defUid": 1386,
+							"px": [304,144],
+							"fieldInstances": [],
+							"__worldX": 3504,
+							"__worldY": 328
 						}
 					]
 				},
@@ -15819,6 +15985,38 @@
 							"fieldInstances": [],
 							"__worldX": 648,
 							"__worldY": 96
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [2,0],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "4cf7b6c0-1030-11f0-8338-db30f3f9cc0d",
+							"width": 8,
+							"height": 128,
+							"defUid": 1385,
+							"px": [16,0],
+							"fieldInstances": [],
+							"__worldX": 656,
+							"__worldY": 0
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,16],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "516d8770-1030-11f0-8338-8ff4d3bbd315",
+							"width": 8,
+							"height": 40,
+							"defUid": 1386,
+							"px": [304,128],
+							"fieldInstances": [],
+							"__worldX": 944,
+							"__worldY": 128
 						}
 					]
 				},
@@ -16783,6 +16981,38 @@
 							"fieldInstances": [],
 							"__worldX": 976,
 							"__worldY": 160
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [3,11],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "57357aa0-1030-11f0-8338-cd0f440980a5",
+							"width": 8,
+							"height": 80,
+							"defUid": 1385,
+							"px": [24,88],
+							"fieldInstances": [],
+							"__worldX": 984,
+							"__worldY": 88
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,11],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "5de29db0-1030-11f0-8338-dbb7591e24b3",
+							"width": 8,
+							"height": 64,
+							"defUid": 1386,
+							"px": [304,88],
+							"fieldInstances": [],
+							"__worldX": 1264,
+							"__worldY": 88
 						}
 					]
 				},
@@ -17775,6 +18005,38 @@
 							"fieldInstances": [],
 							"__worldX": 1616,
 							"__worldY": 56
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [3,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "72e2bec0-1030-11f0-8338-dbddc0d41ddc",
+							"width": 8,
+							"height": 40,
+							"defUid": 1385,
+							"px": [24,24],
+							"fieldInstances": [],
+							"__worldX": 1624,
+							"__worldY": 24
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [17,21],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "7732b7f0-1030-11f0-8338-131f020890f1",
+							"width": 24,
+							"height": 8,
+							"defUid": 1386,
+							"px": [136,168],
+							"fieldInstances": [],
+							"__worldX": 1736,
+							"__worldY": 168
 						}
 					]
 				},
@@ -18757,6 +19019,38 @@
 							"fieldInstances": [],
 							"__worldX": 1752,
 							"__worldY": 224
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [16,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "86470a20-1030-11f0-8338-5949ceb017a5",
+							"width": 8,
+							"height": 32,
+							"defUid": 1385,
+							"px": [128,24],
+							"fieldInstances": [],
+							"__worldX": 1728,
+							"__worldY": 208
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "8bb8c700-1030-11f0-8338-2b4bf73371f7",
+							"width": 8,
+							"height": 24,
+							"defUid": 1386,
+							"px": [304,24],
+							"fieldInstances": [],
+							"__worldX": 1904,
+							"__worldY": 208
 						}
 					]
 				},
@@ -19811,6 +20105,38 @@
 							"fieldInstances": [],
 							"__worldX": 1928,
 							"__worldY": 224
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [3,1],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "90524c50-1030-11f0-8338-d7ceabea968a",
+							"width": 8,
+							"height": 48,
+							"defUid": 1385,
+							"px": [24,8],
+							"fieldInstances": [],
+							"__worldX": 1944,
+							"__worldY": 192
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,3],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "9391bfe0-1030-11f0-8338-b14ac4d65715",
+							"width": 8,
+							"height": 24,
+							"defUid": 1386,
+							"px": [304,24],
+							"fieldInstances": [],
+							"__worldX": 2224,
+							"__worldY": 208
 						}
 					]
 				},
@@ -21056,19 +21382,51 @@
 							"__worldY": 132
 						},
 						{
+							"__identifier": "StartMarker",
+							"__grid": [1,15],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "0e7fe480-1030-11f0-8338-834d4b39a6e9",
+							"width": 64,
+							"height": 48,
+							"defUid": 1385,
+							"px": [8,120],
+							"fieldInstances": [],
+							"__worldX": 8,
+							"__worldY": 120
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,0],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "346435c0-1030-11f0-8338-5308f0ee03b9",
+							"width": 8,
+							"height": 104,
+							"defUid": 1386,
+							"px": [304,0],
+							"fieldInstances": [],
+							"__worldX": 304,
+							"__worldY": 0
+						},
+						{
 							"__identifier": "Lantern",
-							"__grid": [12,2],
+							"__grid": [13,2],
 							"__pivot": [0.5,0],
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#FEAE34",
-							"iid": "5060ab50-1030-11f0-b60f-8935c4509946",
+							"iid": "13946cc0-1030-11f0-b884-a3e1b896c0fe",
 							"width": 10,
 							"height": 12,
 							"defUid": 1383,
-							"px": [100,16],
+							"px": [108,16],
 							"fieldInstances": [],
-							"__worldX": 100,
+							"__worldX": 108,
 							"__worldY": 16
 						}
 					]
@@ -22142,6 +22500,38 @@
 							],
 							"__worldX": 4112,
 							"__worldY": 352
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [3,15],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "cead47c0-1030-11f0-8338-7da878375fe2",
+							"width": 8,
+							"height": 48,
+							"defUid": 1385,
+							"px": [24,120],
+							"fieldInstances": [],
+							"__worldX": 3864,
+							"__worldY": 304
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,0],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "d1d69b40-1030-11f0-8338-f15b0c6d1b7b",
+							"width": 8,
+							"height": 40,
+							"defUid": 1386,
+							"px": [304,0],
+							"fieldInstances": [],
+							"__worldX": 4144,
+							"__worldY": 184
 						}
 					]
 				},
@@ -23211,6 +23601,38 @@
 							],
 							"__worldX": 2464,
 							"__worldY": 352
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [2,1],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "9a205e70-1030-11f0-8338-3ff0b8c89206",
+							"width": 8,
+							"height": 48,
+							"defUid": 1385,
+							"px": [16,8],
+							"fieldInstances": [],
+							"__worldX": 2256,
+							"__worldY": 192
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [39,18],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "a2524cc0-1030-11f0-8338-518a0ee92b93",
+							"width": 8,
+							"height": 24,
+							"defUid": 1386,
+							"px": [312,144],
+							"fieldInstances": [],
+							"__worldX": 2552,
+							"__worldY": 328
 						}
 					]
 				},
@@ -24262,6 +24684,38 @@
 							"fieldInstances": [],
 							"__worldX": 328,
 							"__worldY": 96
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [2,0],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "3eb867d0-1030-11f0-8338-e34d2d05f9ee",
+							"width": 8,
+							"height": 104,
+							"defUid": 1385,
+							"px": [16,0],
+							"fieldInstances": [],
+							"__worldX": 336,
+							"__worldY": 0
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,0],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "46ef5f30-1030-11f0-8338-c9ebe2ace79a",
+							"width": 8,
+							"height": 112,
+							"defUid": 1386,
+							"px": [304,0],
+							"fieldInstances": [],
+							"__worldX": 624,
+							"__worldY": 0
 						}
 					]
 				},
@@ -24954,6 +25408,38 @@
 							"fieldInstances": [],
 							"__worldX": 2576,
 							"__worldY": 344
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [3,13],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "a8d6b220-1030-11f0-8338-6915739f6600",
+							"width": 8,
+							"height": 64,
+							"defUid": 1385,
+							"px": [24,104],
+							"fieldInstances": [],
+							"__worldX": 2584,
+							"__worldY": 288
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [38,18],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "b558e7c0-1030-11f0-8338-ef5e8d8e77a6",
+							"width": 8,
+							"height": 24,
+							"defUid": 1386,
+							"px": [304,144],
+							"fieldInstances": [],
+							"__worldX": 2864,
+							"__worldY": 328
 						}
 					]
 				},
@@ -25875,6 +26361,38 @@
 							],
 							"__worldX": 3680,
 							"__worldY": 216
+						},
+						{
+							"__identifier": "StartMarker",
+							"__grid": [3,15],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#733E39",
+							"iid": "c77793c0-1030-11f0-8338-21a42cf1132d",
+							"width": 8,
+							"height": 48,
+							"defUid": 1385,
+							"px": [24,120],
+							"fieldInstances": [],
+							"__worldX": 3544,
+							"__worldY": 304
+						},
+						{
+							"__identifier": "EndMarker",
+							"__grid": [39,18],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E2731",
+							"iid": "cc1b2b30-1030-11f0-8338-4ff5af79f30e",
+							"width": 8,
+							"height": 24,
+							"defUid": 1386,
+							"px": [312,144],
+							"fieldInstances": [],
+							"__worldX": 3832,
+							"__worldY": 328
 						}
 					]
 				},
