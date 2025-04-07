@@ -96,6 +96,8 @@ pub struct PrevLightBeamPlayback {
     pub intersections: Vec<Option<LightBeamIntersection>>,
 }
 
+const LIGHT_MAX_SEGMENTS: usize = 10;
+
 pub fn play_light_beam(
     rapier_context: &mut RapierContext,
     source: &LightBeamSource,
@@ -133,14 +135,12 @@ pub fn play_light_beam(
         elapsed_time: 0.0,
     };
 
-    const MAX_SEGMENTS: usize = 10;
-
     // for _ in 0..source.color.num_bounces() + 1 {
     let num_segments = source.color.num_bounces() + 1;
 
     let mut i = 0;
     let mut extra_bounces_from_mirror = 0;
-    while i < num_segments + extra_bounces_from_mirror && i <= MAX_SEGMENTS {
+    while i < num_segments + extra_bounces_from_mirror && i <= LIGHT_MAX_SEGMENTS {
         let Some((entity, intersection)) =
             rapier_context.cast_ray_and_get_normal(ray_pos, ray_dir, remaining_time, true, ray_qry)
         else {
@@ -294,16 +294,12 @@ pub fn spawn_needed_segments(
     q_light_sources: Query<(&LightBeamSource, &LightBeamPoints)>,
     mut segment_cache: ResMut<LightSegmentCache>,
     light_render_data: Res<LightRenderData>,
-    q_light_segment_z: Query<&Transform, With<LightSegmentZMarker>>,
 ) {
-    let Ok(light_segment_z) = q_light_segment_z.get_single() else {
-        return;
-    };
     for (source, pts) in q_light_sources.iter() {
         let segments = pts.0.len() - 1;
         // lazily spawn segment entities until there are enough segments to display the light beam
         // path
-        while segment_cache.segments[source.color].len() < segments.min(10) {
+        while segment_cache.segments[source.color].len() < segments.min(LIGHT_MAX_SEGMENTS) {
             let id = commands
                 .spawn(LightSegmentBundle {
                     segment: LightSegment {
@@ -312,7 +308,7 @@ pub fn spawn_needed_segments(
                     mesh: light_render_data.mesh.clone(),
                     material: light_render_data.material_map[source.color].clone(),
                     visibility: Visibility::Hidden,
-                    transform: Transform::from_xyz(0., 0., light_segment_z.translation.z),
+                    transform: Transform::default(),
                     line_light: LineLight2d {
                         color: source.color.lighting_color().extend(1.0),
                         half_length: 10.0,
@@ -345,7 +341,11 @@ pub fn visually_sync_segments(
     q_light_sources: Query<(&LightBeamSource, &LightBeamPoints)>,
     segment_cache: Res<LightSegmentCache>,
     mut q_segments: Query<(&mut LineLight2d, &mut Transform, &mut Visibility), With<LightSegment>>,
+    q_light_segment_z: Query<&GlobalTransform, With<LightSegmentZMarker>>,
 ) {
+    let Ok(light_segment_z) = q_light_segment_z.get_single() else {
+        return;
+    };
     for (source, pts) in q_light_sources.iter() {
         let pts = &pts.0;
         // use the light beam path to set the transform of the segments currently in the cache
@@ -356,7 +356,9 @@ pub fn visually_sync_segments(
                 panic!("Segment doesn't have transform or visibility!");
             };
             if i + 1 < pts.len() && pts[i].distance(pts[i + 1]) > 0.1 {
-                let midpoint = pts[i].midpoint(pts[i + 1]).extend(1.0);
+                let midpoint = pts[i]
+                    .midpoint(pts[i + 1])
+                    .extend(light_segment_z.translation().z);
                 let scale = Vec3::new(pts[i].distance(pts[i + 1]), 1., 1.);
                 let rotation = (pts[i + 1] - pts[i]).to_angle();
 
