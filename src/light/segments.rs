@@ -4,7 +4,7 @@ use enum_map::EnumMap;
 
 use super::{
     render::{LightMaterial, LightRenderData},
-    LightBeamSource, LightColor, LightSegmentZMarker, LIGHT_SPEED,
+    BlackRayComponent, LightBeamSource, LightColor, LightSegmentZMarker, LIGHT_SPEED,
 };
 use crate::{
     level::{mirror::Mirror, sensor::LightSensor},
@@ -101,6 +101,7 @@ const LIGHT_MAX_SEGMENTS: usize = 10;
 pub fn play_light_beam(
     rapier_context: &mut RapierContext,
     source: &LightBeamSource,
+    black_ray_qry: &Query<(Entity, &BlackRayComponent)>,
     q_mirrors: &Query<&Mirror>,
 ) -> LightBeamPlayback {
     let mut ray_pos = source.start_pos;
@@ -110,19 +111,25 @@ pub fn play_light_beam(
             GroupLabel::WHITE_RAY,
             GroupLabel::TERRAIN | GroupLabel::PLATFORM | GroupLabel::LIGHT_SENSOR,
         ),
+        LightColor::Black => CollisionGroups::new(
+            GroupLabel::BLACK_RAY,
+            GroupLabel::TERRAIN | GroupLabel::PLATFORM | GroupLabel::LIGHT_SENSOR,
+        ),
         LightColor::Blue => CollisionGroups::new(
             GroupLabel::BLUE_RAY,
             GroupLabel::TERRAIN
                 | GroupLabel::PLATFORM
                 | GroupLabel::LIGHT_SENSOR
-                | GroupLabel::WHITE_RAY,
+                | GroupLabel::WHITE_RAY
+                | GroupLabel::BLACK_RAY,
         ),
         _ => CollisionGroups::new(
             GroupLabel::LIGHT_RAY,
             GroupLabel::TERRAIN
                 | GroupLabel::PLATFORM
                 | GroupLabel::LIGHT_SENSOR
-                | GroupLabel::WHITE_RAY,
+                | GroupLabel::WHITE_RAY
+                | GroupLabel::BLACK_RAY,
         ),
     };
 
@@ -170,6 +177,10 @@ pub fn play_light_beam(
         ray_pos = intersection.point;
         ray_dir = ray_dir.reflect(intersection.normal);
         ray_qry = ray_qry.exclude_collider(entity);
+
+        if black_ray_qry.get(entity).is_ok() {
+            break;
+        }
         i += 1;
     }
 
@@ -190,6 +201,7 @@ pub struct LightBeamPoints(Vec<Vec2>);
 pub fn simulate_light_sources(
     mut commands: Commands,
     mut q_light_sources: Query<(Entity, &mut LightBeamSource, &mut PrevLightBeamPlayback)>,
+    q_black_ray: Query<(Entity, &BlackRayComponent)>,
     mut q_rapier: Query<&mut RapierContext>,
     mut q_light_sensor: Query<&mut LightSensor>,
     // used to tell if a collision was against a white beam (a different sound is played)
@@ -205,8 +217,7 @@ pub fn simulate_light_sources(
     let rapier_context = rapier_context.into_inner();
 
     for (source_entity, mut source, mut prev_playback) in q_light_sources.iter_mut() {
-        let playback = play_light_beam(rapier_context, &source, &q_mirrors);
-
+        let playback = play_light_beam(rapier_context, &source, &q_black_ray, &q_mirrors);
         let mut pts: Vec<Vec2> = playback.iter_points(&source).collect();
 
         let intersections = playback.intersections.len();
@@ -251,7 +262,7 @@ pub fn simulate_light_sources(
                     source.time_traveled = new_x.time;
                 }
 
-                if play_sound {
+                if play_sound && source.color != LightColor::Black {
                     let reflect = match q_segments.get(new_x.entity) {
                         Ok(segment) => segment.color == LightColor::White,
                         _ => false,
@@ -328,7 +339,25 @@ pub fn spawn_needed_segments(
                             | GroupLabel::PLATFORM
                             | GroupLabel::LIGHT_SENSOR
                             | GroupLabel::LIGHT_RAY
-                            | GroupLabel::BLUE_RAY,
+                            | GroupLabel::BLUE_RAY
+                            | GroupLabel::BLACK_RAY,
+                    ),
+                ));
+            }
+            // Black beams need Black_Ray_Component and colliders
+            if source.color == LightColor::Black {
+                commands.entity(id).insert((
+                    BlackRayComponent,
+                    Sensor,
+                    Collider::cuboid(0.5, 0.5),
+                    CollisionGroups::new(
+                        GroupLabel::BLACK_RAY,
+                        GroupLabel::TERRAIN
+                            | GroupLabel::PLATFORM
+                            | GroupLabel::LIGHT_SENSOR
+                            | GroupLabel::LIGHT_RAY
+                            | GroupLabel::BLUE_RAY
+                            | GroupLabel::WHITE_RAY,
                     ),
                 ));
             }
@@ -390,15 +419,17 @@ pub fn tick_light_sources(mut q_light_sources: Query<&mut LightBeamSource>) {
 /// and despawning [`LightBeamSource`]s when the level changes.
 pub fn cleanup_light_sources(
     mut commands: Commands,
-    q_light_sources: Query<Entity, With<LightBeamSource>>,
+    q_light_sources: Query<(Entity, &LightBeamSource)>,
     segment_cache: Res<LightSegmentCache>,
     mut q_segments: Query<(&mut Transform, &mut Visibility), With<LightSegment>>,
 ) {
     // FIXME: should make these entities children of the level so that they are despawned
     // automagically (?)
 
-    for entity in q_light_sources.iter() {
-        commands.entity(entity).despawn_recursive();
+    for (entity, light_beam_source) in q_light_sources.iter() {
+        if light_beam_source.color != LightColor::Black {
+            commands.entity(entity).despawn_recursive();
+        }
     }
 
     segment_cache.segments.iter().for_each(|(_, items)| {

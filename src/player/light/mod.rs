@@ -18,7 +18,7 @@ use crate::{
     level::{mirror::Mirror, CurrentLevel, LevelSystems},
     light::{
         segments::{play_light_beam, PrevLightBeamPlayback},
-        LightBeamSource, LightColor, LightSourceZMarker,
+        BlackRayComponent, LightBeamSource, LightColor, LightSourceZMarker,
     },
     lighting::LineLight2d,
 };
@@ -98,6 +98,7 @@ impl PlayerLightInventory {
                 LightColor::Blue => true,
                 LightColor::Purple => true,
                 LightColor::White =>true,
+                LightColor::Black => true,
             },
         }
     }
@@ -194,11 +195,12 @@ pub fn handle_color_switch(
         return;
     };
 
-    static COLOR_BINDS: [(KeyCode, LightColor); 4] = [
+    static COLOR_BINDS: [(KeyCode, LightColor); 5] = [
         (KeyCode::Digit1, LightColor::Green),
         (KeyCode::Digit2, LightColor::Purple),
         (KeyCode::Digit3, LightColor::White),
         (KeyCode::Digit4, LightColor::Blue),
+        (KeyCode::Digit5, LightColor::Black),
     ];
 
     let mut cur_index = match inventory.current_color {
@@ -207,6 +209,7 @@ pub fn handle_color_switch(
         Some(LightColor::Purple) => 1,
         Some(LightColor::White) => 2,
         Some(LightColor::Blue) => 3,
+        Some(LightColor::Black) => 4,
     };
 
     for scroll in ev_scroll.read() {
@@ -321,6 +324,7 @@ pub fn preview_light_path(
     keys: Res<ButtonInput<KeyCode>>,
     q_mirror: Query<&Mirror>,
     mut gizmos: Gizmos,
+    q_black_ray: Query<(Entity, &BlackRayComponent)>,
 ) {
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
         return;
@@ -350,7 +354,12 @@ pub fn preview_light_path(
         time_traveled: 10000.0, // LOL
         color: shoot_color,
     };
-    let playback = play_light_beam(rapier_context.into_inner(), &dummy_source, &q_mirror);
+    let playback = play_light_beam(
+        rapier_context.into_inner(),
+        &dummy_source,
+        &q_black_ray,
+        &q_mirror,
+    );
 
     for (a, b) in playback.iter_points(&dummy_source).tuple_windows() {
         gizmos.line_2d(a, b, shoot_color.light_beam_color().darker(0.3));

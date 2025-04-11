@@ -41,6 +41,7 @@ pub fn spawn_light_icons(
         LightColor::Purple => asset_server.load("ui/purple_light_icon.png"),
         LightColor::Blue => asset_server.load("ui/blue_light_icon.png"),
         LightColor::White => asset_server.load("ui/white_light_icon.png"),
+        LightColor::Black => asset_server.load("ui/black_light_icon.png"),
     };
 
     // better way to get ID of child?

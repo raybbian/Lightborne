@@ -130,6 +130,7 @@ pub fn add_crystal_shard_sprites(
         LightColor::Green => 1,
         LightColor::Purple => 2,
         LightColor::White => 3,
+        LightColor::Black => 4,
     };
 
     for (shard_entity, shard) in q_shards.iter() {
@@ -347,6 +348,7 @@ pub fn on_shard_zoom_in_finished(
         LightColor::Blue => "Blue light, formerly known as the light of harmony. I wonder what it'll do if I shoot it directly at the sensor above me?",
         LightColor::White => "A different feeling than before... could this color have a special property?",
         LightColor::Purple => "This one's even more powerful... I should be able to bounce this one more than once.",
+        LightColor::Black => "Devs Only!!!",
     };
 
     commands
