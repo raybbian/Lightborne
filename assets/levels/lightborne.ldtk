@@ -21627,29 +21627,6 @@
 							"fieldInstances": [],
 							"__worldX": 108,
 							"__worldY": 16
-						},
-						{
-							"__identifier": "LightSource",
-							"__grid": [20,19],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#533E97",
-							"iid": "9b574060-1030-11f0-baa2-a9d0b8dd120e",
-							"width": 8,
-							"height": 8,
-							"defUid": 1390,
-							"px": [160,152],
-							"fieldInstances": [
-								{ "__identifier": "Direction", "__type": "Point", "__value": { "cx": 20, "cy": 13 }, "__tile": null, "defUid": 1391, "realEditorValues": [{
-									"id": "V_String",
-									"params": ["20,13"]
-								}] },
-								{ "__identifier": "XOffset", "__type": "Float", "__value": 0, "__tile": null, "defUid": 1392, "realEditorValues": [] },
-								{ "__identifier": "YOffset", "__type": "Float", "__value": 0, "__tile": null, "defUid": 1393, "realEditorValues": [] }
-							],
-							"__worldX": 160,
-							"__worldY": 152
 						}
 					]
 				},
