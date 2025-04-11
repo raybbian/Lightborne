@@ -267,8 +267,7 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
         }
         path_curve_points.insert(0, false);
         let speed = *entity_instance.get_float_field("speed").unwrap();
-        let initial_state =
-            PlatformState::from(entity_instance.get_enum_field("InitialState").unwrap());
+        let initial_state = PlatformState::Play;
         let width = entity_instance.width;
         let height = entity_instance.height;
         let curr_segment = path[0];
@@ -349,7 +348,7 @@ impl Default for PlatformPhysicsBundle {
     fn default() -> Self {
         Self {
             rigid_body: RigidBody::KinematicVelocityBased,
-            collider: Collider::cuboid(4.0, 4.0), // shape of platform
+            collider: Collider::cuboid(12.0, 4.0), // shape of platform
             velocity: Velocity::zero(),
             friction: Friction {
                 coefficient: 0.0,
@@ -367,7 +366,7 @@ pub struct MovingPlatformBundle {
     pub platform: MovingPlatform,
     #[grid_coords]
     pub grid_coords: GridCoords,
-    #[sprite("platform.png")]
+    #[sprite_sheet]
     pub sprite: Sprite,
     pub physics: PlatformPhysicsBundle,
 }

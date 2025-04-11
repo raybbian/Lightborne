@@ -3,10 +3,13 @@ use bevy_rapier2d::prelude::*;
 use enum_map::EnumMap;
 
 use super::{
-    render::{LightMaterial, LightRenderData}, BlackRayComponent, LightBeamSource, LightColor, LightSegmentZMarker, LIGHT_SPEED
+    render::{LightMaterial, LightRenderData},
+    BlackRayComponent, LightBeamSource, LightColor, LightSegmentZMarker, LIGHT_SPEED,
 };
 use crate::{
-    level::sensor::LightSensor, lighting::LineLight2d, particle::spark::SparkExplosionEvent,
+    level::{mirror::Mirror, sensor::LightSensor},
+    lighting::LineLight2d,
+    particle::spark::SparkExplosionEvent,
     shared::GroupLabel,
 };
 
@@ -93,10 +96,13 @@ pub struct PrevLightBeamPlayback {
     pub intersections: Vec<Option<LightBeamIntersection>>,
 }
 
+const LIGHT_MAX_SEGMENTS: usize = 10;
+
 pub fn play_light_beam(
     rapier_context: &mut RapierContext,
     source: &LightBeamSource,
     black_ray_qry: &Query<(Entity, &BlackRayComponent)>,
+    q_mirrors: &Query<&Mirror>,
 ) -> LightBeamPlayback {
     let mut ray_pos = source.start_pos;
     let mut ray_dir = source.start_dir;
@@ -136,7 +142,12 @@ pub fn play_light_beam(
         elapsed_time: 0.0,
     };
 
-    for _ in 0..source.color.num_bounces() + 1 {
+    // for _ in 0..source.color.num_bounces() + 1 {
+    let num_segments = source.color.num_bounces() + 1;
+
+    let mut i = 0;
+    let mut extra_bounces_from_mirror = 0;
+    while i < num_segments + extra_bounces_from_mirror && i <= LIGHT_MAX_SEGMENTS {
         let Some((entity, intersection)) =
             rapier_context.cast_ray_and_get_normal(ray_pos, ray_dir, remaining_time, true, ray_qry)
         else {
@@ -145,6 +156,9 @@ pub fn play_light_beam(
             playback.end_point = Some(final_point);
             break;
         };
+        if q_mirrors.contains(entity) {
+            extra_bounces_from_mirror += 1;
+        }
 
         // if inside something???
         if intersection.time_of_impact < 0.01 {
@@ -164,16 +178,10 @@ pub fn play_light_beam(
         ray_dir = ray_dir.reflect(intersection.normal);
         ray_qry = ray_qry.exclude_collider(entity);
 
-        let mut found_black_ray_collision:i32 = 0;
-        for (found_entity, _) in black_ray_qry.iter() {
-            if found_entity == entity {
-                found_black_ray_collision = 1;
-                break;
-            }
-        }
-        if found_black_ray_collision == 1 {
+        if black_ray_qry.get(entity).is_ok() {
             break;
         }
+        i += 1;
     }
 
     playback
@@ -199,6 +207,7 @@ pub fn simulate_light_sources(
     // used to tell if a collision was against a white beam (a different sound is played)
     q_segments: Query<&LightSegment, Without<LightSegmentZMarker>>,
     light_bounce_sfx: Local<LightBounceSfx>,
+    q_mirrors: Query<&Mirror>,
     mut ev_spark_explosion: EventWriter<SparkExplosionEvent>,
 ) {
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
@@ -208,8 +217,7 @@ pub fn simulate_light_sources(
     let rapier_context = rapier_context.into_inner();
 
     for (source_entity, mut source, mut prev_playback) in q_light_sources.iter_mut() {
-        let playback = play_light_beam(rapier_context, &source, &q_black_ray);
-
+        let playback = play_light_beam(rapier_context, &source, &q_black_ray, &q_mirrors);
         let mut pts: Vec<Vec2> = playback.iter_points(&source).collect();
 
         let intersections = playback.intersections.len();
@@ -260,10 +268,17 @@ pub fn simulate_light_sources(
                         _ => false,
                     };
                     let audio = if reflect {
-                        light_bounce_sfx.reflect[i].clone()
+                        light_bounce_sfx
+                            .reflect
+                            .get(i)
+                            .unwrap_or(&light_bounce_sfx.reflect[2])
                     } else {
-                        light_bounce_sfx.bounce[i].clone()
-                    };
+                        light_bounce_sfx
+                            .bounce
+                            .get(i)
+                            .unwrap_or(&light_bounce_sfx.bounce[2])
+                    }
+                    .clone();
                     ev_spark_explosion.send(SparkExplosionEvent {
                         pos: new_x.point,
                         color: source.color.light_beam_color(),
@@ -290,16 +305,12 @@ pub fn spawn_needed_segments(
     q_light_sources: Query<(&LightBeamSource, &LightBeamPoints)>,
     mut segment_cache: ResMut<LightSegmentCache>,
     light_render_data: Res<LightRenderData>,
-    q_light_segment_z: Query<&Transform, With<LightSegmentZMarker>>,
 ) {
-    let Ok(light_segment_z) = q_light_segment_z.get_single() else {
-        return;
-    };
     for (source, pts) in q_light_sources.iter() {
         let segments = pts.0.len() - 1;
         // lazily spawn segment entities until there are enough segments to display the light beam
         // path
-        while segment_cache.segments[source.color].len() < segments.min(10) {
+        while segment_cache.segments[source.color].len() < segments.min(LIGHT_MAX_SEGMENTS) {
             let id = commands
                 .spawn(LightSegmentBundle {
                     segment: LightSegment {
@@ -308,7 +319,7 @@ pub fn spawn_needed_segments(
                     mesh: light_render_data.mesh.clone(),
                     material: light_render_data.material_map[source.color].clone(),
                     visibility: Visibility::Hidden,
-                    transform: Transform::from_xyz(0., 0., light_segment_z.translation.z),
+                    transform: Transform::default(),
                     line_light: LineLight2d {
                         color: source.color.lighting_color().extend(1.0),
                         half_length: 10.0,
@@ -335,14 +346,20 @@ pub fn spawn_needed_segments(
             }
             // Black beams need Black_Ray_Component and colliders
             if source.color == LightColor::Black {
-                commands.entity(id).insert((BlackRayComponent, Sensor, Collider::cuboid(0.5, 0.5), CollisionGroups::new(GroupLabel::BLACK_RAY,
-                    GroupLabel::TERRAIN
-                        | GroupLabel::PLATFORM
-                        | GroupLabel::LIGHT_SENSOR
-                        | GroupLabel::LIGHT_RAY
-                        | GroupLabel::BLUE_RAY
-                        | GroupLabel::WHITE_RAY,
-                )));
+                commands.entity(id).insert((
+                    BlackRayComponent,
+                    Sensor,
+                    Collider::cuboid(0.5, 0.5),
+                    CollisionGroups::new(
+                        GroupLabel::BLACK_RAY,
+                        GroupLabel::TERRAIN
+                            | GroupLabel::PLATFORM
+                            | GroupLabel::LIGHT_SENSOR
+                            | GroupLabel::LIGHT_RAY
+                            | GroupLabel::BLUE_RAY
+                            | GroupLabel::WHITE_RAY,
+                    ),
+                ));
             }
             segment_cache.segments[source.color].push(id);
         }
@@ -353,7 +370,11 @@ pub fn visually_sync_segments(
     q_light_sources: Query<(&LightBeamSource, &LightBeamPoints)>,
     segment_cache: Res<LightSegmentCache>,
     mut q_segments: Query<(&mut LineLight2d, &mut Transform, &mut Visibility), With<LightSegment>>,
+    q_light_segment_z: Query<&GlobalTransform, With<LightSegmentZMarker>>,
 ) {
+    let Ok(light_segment_z) = q_light_segment_z.get_single() else {
+        return;
+    };
     for (source, pts) in q_light_sources.iter() {
         let pts = &pts.0;
         // use the light beam path to set the transform of the segments currently in the cache
@@ -364,7 +385,9 @@ pub fn visually_sync_segments(
                 panic!("Segment doesn't have transform or visibility!");
             };
             if i + 1 < pts.len() && pts[i].distance(pts[i + 1]) > 0.1 {
-                let midpoint = pts[i].midpoint(pts[i + 1]).extend(1.0);
+                let midpoint = pts[i]
+                    .midpoint(pts[i + 1])
+                    .extend(light_segment_z.translation().z);
                 let scale = Vec3::new(pts[i].distance(pts[i + 1]), 1., 1.);
                 let rotation = (pts[i + 1] - pts[i]).to_angle();
 

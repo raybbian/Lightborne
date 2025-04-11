@@ -1,12 +1,14 @@
 use bevy::{
-    prelude::*, sprite::{AlphaMode2d, Material2dPlugin},
+    prelude::*,
+    sprite::{AlphaMode2d, Material2dPlugin},
 };
 use bevy_ecs_ldtk::prelude::*;
 
 use enum_map::Enum;
 use render::{LightMaterial, LightRenderData};
 use segments::{
-    cleanup_light_sources, simulate_light_sources, spawn_needed_segments, tick_light_sources, visually_sync_segments, LightSegmentCache, PrevLightBeamPlayback,
+    cleanup_light_sources, simulate_light_sources, spawn_needed_segments, tick_light_sources,
+    visually_sync_segments, LightSegmentCache, PrevLightBeamPlayback,
 };
 
 use crate::{level::LevelSystems, lighting::LineLight2d};
@@ -47,13 +49,22 @@ impl Plugin for LightManagementPlugin {
             )
             // why does this need to be on update???
             .add_systems(Update, cleanup_light_sources.in_set(LevelSystems::Reset))
-            .add_systems(PostUpdate, spawn_level_light_beams.in_set(LevelSystems::Simulation))
-            .add_systems(PostUpdate, add_light_beam_added.in_set(LevelSystems::Processing));
+            .add_systems(
+                PostUpdate,
+                spawn_level_light_beams.in_set(LevelSystems::Simulation),
+            )
+            .add_systems(
+                PostUpdate,
+                add_light_beam_added.in_set(LevelSystems::Processing),
+            );
     }
 }
 
 fn add_light_beam_added(
-    ldtk_sources: Query<(Entity, &LightBeamLDTKSource, &GlobalTransform), Added<LightBeamLDTKSource>>,
+    ldtk_sources: Query<
+        (Entity, &LightBeamLDTKSource, &GlobalTransform),
+        Added<LightBeamLDTKSource>,
+    >,
     mut commands: Commands,
 ) {
     for source in ldtk_sources.iter() {
@@ -63,21 +74,22 @@ fn add_light_beam_added(
 
 fn spawn_level_light_beams(
     mut commands: Commands,
-    ldtk_sources: Query<(Entity, &LightBeamLDTKSource, &GlobalTransform), Added<LightBeamSourceAdded>>,
-    //asset_server: Res<AssetServer>,
-    //q_light_source_z: Query<&Transform, With<LightSourceZMarker>>,
+    ldtk_sources: Query<
+        (Entity, &LightBeamLDTKSource, &GlobalTransform),
+        Added<LightBeamSourceAdded>,
+    >,
 ) {
     for (_, source, transform) in ldtk_sources.iter() {
-        /*
-        let Ok(light_source_z) = q_light_source_z.get_single() else {
-            return;
-        };
-        */
-        println!("Found a beam");
-        println!("{:?}", transform.translation());
         let ray_dir_int = source.direction - source.position;
-        let ray_dir = Vec2::new(ray_dir_int.x as f32 + (source.x_offset / 8.0), -(ray_dir_int.y as f32 + (source.y_offset / 8.0))).normalize();
-        let ray_pos = Vec2::new(transform.translation().truncate().x + source.x_offset, transform.translation().truncate().y + source.y_offset);
+        let ray_dir = Vec2::new(
+            ray_dir_int.x as f32 + (source.x_offset / 8.0),
+            -(ray_dir_int.y as f32 + (source.y_offset / 8.0)),
+        )
+        .normalize();
+        let ray_pos = Vec2::new(
+            transform.translation().truncate().x + source.x_offset,
+            transform.translation().truncate().y + source.y_offset,
+        );
         let shoot_color = LightColor::Black;
 
         /* Used for the source image; currently not used
@@ -88,7 +100,7 @@ fn spawn_level_light_beams(
         let mut outer_source_sprite = Sprite::from_image(asset_server.load("light/compass-gold.png"));
         outer_source_sprite.color = shoot_color.light_beam_color().mix(&Color::BLACK, 0.4);
         */
-        
+
         let light_beam_source = LightBeamSource {
             start_pos: ray_pos,
             start_dir: ray_dir,
@@ -96,13 +108,13 @@ fn spawn_level_light_beams(
             color: shoot_color,
         };
         commands
-        .spawn(light_beam_source)
-        .insert(PrevLightBeamPlayback::default())
-        .insert(LineLight2d::point(
-            shoot_color.lighting_color().extend(1.0),
-            30.0,
-            0.0,
-        ));
+            .spawn(light_beam_source)
+            .insert(PrevLightBeamPlayback::default())
+            .insert(LineLight2d::point(
+                shoot_color.lighting_color().extend(1.0),
+                30.0,
+                0.0,
+            ));
     }
 }
 

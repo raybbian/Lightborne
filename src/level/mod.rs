@@ -4,8 +4,10 @@ use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
 use egg::EggPlugin;
 use enum_map::{enum_map, EnumMap};
-use lantern::LdtkLanternBundle;
+use lantern::{LdtkLantern2Bundle, LdtkLanternBundle};
+use level_completion::LevelCompletionPlugin;
 use merge_tile::spawn_merged_tiles;
+use mirror::MirrorPlugin;
 use semisolid::SemiSolidPlugin;
 use sensor::LightSensorPlugin;
 use shard::CrystalShardPlugin;
@@ -31,7 +33,9 @@ pub mod crystal;
 mod egg;
 pub mod entity;
 mod lantern;
+mod level_completion;
 mod merge_tile;
+pub mod mirror;
 pub mod platform;
 mod semisolid;
 pub mod sensor;
@@ -52,11 +56,14 @@ impl Plugin for LevelManagementPlugin {
             .add_plugins(CrystalShardPlugin)
             .add_plugins(LightSensorPlugin)
             .add_plugins(SemiSolidPlugin)
+            .add_plugins(MirrorPlugin)
             .add_plugins(EggPlugin)
+            .add_plugins(LevelCompletionPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
             .register_ldtk_entity::<StartFlagBundle>("Start")
             .register_ldtk_entity::<LdtkLanternBundle>("Lantern")
+            .register_ldtk_entity::<LdtkLantern2Bundle>("Lantern2")
             .register_ldtk_int_cell_for_layer::<WallBundle>("Terrain", 1)
             .register_ldtk_int_cell_for_layer::<SpikeBundle>("Terrain", 2)
             .add_systems(
