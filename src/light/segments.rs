@@ -1,6 +1,5 @@
 use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier2d::prelude::*;
-use enum_map::EnumMap;
 
 use super::{
     render::{LightMaterial, LightRenderData},
@@ -306,7 +305,7 @@ pub fn spawn_needed_segments(
     mut segment_cache: ResMut<LightSegmentCache>,
     light_render_data: Res<LightRenderData>,
 ) {
-    for (entity, mut source, pts) in q_light_sources.iter() {
+    for (entity, source, pts) in q_light_sources.iter() {
         let segments = pts.0.len() - 1;
         // lazily spawn segment entities until there are enough segments to display the light beam
         // path
@@ -380,7 +379,7 @@ pub fn visually_sync_segments(
     let Ok(light_segment_z) = q_light_segment_z.get_single() else {
         return;
     };
-    for (entity, source, pts) in q_light_sources.iter() {
+    for (entity, _source, pts) in q_light_sources.iter() {
         let pts = &pts.0;
         // use the light beam path to set the transform of the segments currently in the cache
         
