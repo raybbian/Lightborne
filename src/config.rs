@@ -33,6 +33,7 @@ impl Default for Config {
 #[derive(Deserialize, Default)]
 pub struct DebugConfig {
     pub ui: bool,
+    pub unlock_levels: bool,
 }
 
 #[derive(Deserialize)]

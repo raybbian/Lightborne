@@ -13,6 +13,7 @@ use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
 use crate::camera::{
     camera_position_from_level, handle_move_camera, CameraControlType, CameraMoveEvent,
 };
+use crate::config::Config;
 use crate::level::start_flag::StartFlag;
 use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
 use crate::player::PlayerMarker;
@@ -102,6 +103,7 @@ fn init_levels(
     mut res_levels: ResMut<Levels>,
     query_ldtk: Query<&LdtkProjectHandle>,
     ldtk_assets: Res<Assets<LdtkProject>>,
+    config: Res<Config>,
 ) {
     if !res_levels.0.is_empty() {
         return;
@@ -128,8 +130,8 @@ fn init_levels(
             level_id: level_id.to_string(),
             level_iid: LevelIid::new(level.iid.clone()),
             level_index: i,
-            complete: false,
-            locked: true,
+            complete: config.debug_config.unlock_levels,
+            locked: !config.debug_config.unlock_levels,
         });
     }
     res_levels.0.sort();

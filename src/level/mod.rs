@@ -2,9 +2,9 @@ use std::time::Duration;
 
 use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
+use decoration::DecorationPlugin;
 use egg::EggPlugin;
 use enum_map::{enum_map, EnumMap};
-use lantern::{LdtkLantern2Bundle, LdtkLanternBundle};
 use level_completion::LevelCompletionPlugin;
 use merge_tile::spawn_merged_tiles;
 use mirror::MirrorPlugin;
@@ -30,9 +30,9 @@ use start_flag::{init_start_marker, StartFlagBundle};
 use walls::{Wall, WallBundle};
 
 pub mod crystal;
+mod decoration;
 mod egg;
 pub mod entity;
-mod lantern;
 mod level_completion;
 mod merge_tile;
 pub mod mirror;
@@ -59,11 +59,10 @@ impl Plugin for LevelManagementPlugin {
             .add_plugins(MirrorPlugin)
             .add_plugins(EggPlugin)
             .add_plugins(LevelCompletionPlugin)
+            .add_plugins(DecorationPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
             .register_ldtk_entity::<StartFlagBundle>("Start")
-            .register_ldtk_entity::<LdtkLanternBundle>("Lantern")
-            .register_ldtk_entity::<LdtkLantern2Bundle>("Lantern2")
             .register_ldtk_int_cell_for_layer::<WallBundle>("Terrain", 1)
             .register_ldtk_int_cell_for_layer::<SpikeBundle>("Terrain", 2)
             .add_systems(

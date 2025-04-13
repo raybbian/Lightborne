@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 1395,
+	"nextUid": 1396,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -12272,7 +12272,7 @@
 					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
-				},
+                },
 				{
 					"identifier": "BothDirections",
 					"doc": "If true, light source will be spawned both facing and opposite the direction vector.",
@@ -12314,6 +12314,41 @@
 					"tilesetUid": null
 				}
 			]
+		},
+		{
+			"identifier": "Treebranch",
+			"uid": 1394,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 32,
+			"height": 32,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
+			"maxWidth": null,
+			"minHeight": null,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 0.08,
+			"lineOpacity": 0,
+			"hollow": false,
+			"color": "#FEE761",
+			"renderMode": "Tile",
+			"showName": true,
+			"tilesetId": 1395,
+			"tileRenderMode": "FitInside",
+			"tileRect": { "tilesetUid": 1395, "x": 0, "y": 0, "w": 32, "h": 32 },
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -12419,6 +12454,25 @@
 			"customData": [],
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "000", "averageColors": "a454a454a454" }
+		},
+		{
+			"__cWid": 1,
+			"__cHei": 1,
+			"identifier": "Treebranch",
+			"uid": 1395,
+			"relPath": "../treebranch.png",
+			"embedAtlas": null,
+			"pxWid": 32,
+			"pxHei": 32,
+			"tileGridSize": 32,
+			"spacing": 0,
+			"padding": 0,
+			"tags": [],
+			"tagsSourceEnumUid": null,
+			"enumTags": [],
+			"customData": [],
+			"savedSelections": [],
+			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "8454" }
 		}
 	], "enums": [
 		{ "identifier": "LightColor", "uid": 159, "values": [
@@ -16256,6 +16310,22 @@
 							"fieldInstances": [],
 							"__worldX": 944,
 							"__worldY": 128
+						},
+						{
+							"__identifier": "Treebranch",
+							"__grid": [35,5],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 1395, "x": 0, "y": 0, "w": 32, "h": 32 },
+							"__smartColor": "#FEE761",
+							"iid": "0f5a63b0-1030-11f0-baa2-255110d11a73",
+							"width": 32,
+							"height": 32,
+							"defUid": 1394,
+							"px": [280,40],
+							"fieldInstances": [],
+							"__worldX": 920,
+							"__worldY": 40
 						}
 					]
 				},
