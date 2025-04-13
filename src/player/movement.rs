@@ -27,6 +27,7 @@ pub struct PlayerMovement {
     /// Holds information that is passed into the rapier character controller's translation
     pub velocity: Vec2,
     pub crouching: bool,
+    pub sneaking: bool,
     should_jump_ticks_remaining: isize,
     coyote_time_ticks_remaining: isize,
     jump_boost_ticks_remaining: isize,
@@ -116,7 +117,18 @@ pub fn move_player(
         player.velocity.x += PLAYER_MOVE_VEL;
         moved = true;
     }
-    player.velocity.x = player.velocity.x.clamp(-PLAYER_MAX_H_VEL, PLAYER_MAX_H_VEL);
+    if keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight) {
+        player.sneaking = true;
+    } else {
+        player.sneaking = false;
+    }
+    let temp_max_h_vel =
+    if player.sneaking {
+        PLAYER_MAX_H_VEL / 2.
+    } else {
+        PLAYER_MAX_H_VEL
+    };
+    player.velocity.x = player.velocity.x.clamp(-temp_max_h_vel, temp_max_h_vel);
     if !moved {
         // slow player down when not moving horizontally
         // NOTE: why not using rapier friction?
