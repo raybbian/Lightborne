@@ -396,7 +396,6 @@ pub fn move_platforms(
     parents: Query<&Parent>,
     levels: Query<&LevelIid>,
     rapier_context: ReadDefaultRapierContext,
-    current_level: Res<CurrentLevel>,
     time: Res<Time>,
     mut ev_reset_level: EventWriter<ResetLevel>,
 ) {
