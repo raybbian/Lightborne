@@ -11,7 +11,7 @@
 	"iid": "a26276c0-7820-11ed-b6fd-ed05d55c9a75",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 1398,
+	"nextUid": 1396,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -11541,43 +11541,6 @@
 					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
-				},
-				{
-					"identifier": "platform_id",
-					"doc": "id of platform to connect to",
-					"__type": "Int",
-					"uid": 1396,
-					"type": "F_Int",
-					"isArray": false,
-					"canBeNull": false,
-					"arrayMinLength": null,
-					"arrayMaxLength": null,
-					"editorDisplayMode": "Hidden",
-					"editorDisplayScale": 1,
-					"editorDisplayPos": "Above",
-					"editorLinkStyle": "StraightArrow",
-					"editorDisplayColor": null,
-					"editorAlwaysShow": false,
-					"editorShowInWorld": true,
-					"editorCutLongValues": true,
-					"editorTextSuffix": null,
-					"editorTextPrefix": null,
-					"useForSmartColor": false,
-					"exportToToc": false,
-					"searchable": false,
-					"min": null,
-					"max": null,
-					"regex": null,
-					"acceptFileTypes": null,
-					"defaultOverride": null,
-					"textLanguageMode": null,
-					"symmetricalRef": false,
-					"autoChainRef": true,
-					"allowOutOfLevelRef": true,
-					"allowedRefs": "OnlySame",
-					"allowedRefsEntityUid": null,
-					"allowedRefTags": [],
-					"tilesetUid": null
 				}
 			]
 		},
@@ -12351,6 +12314,41 @@
 					"tilesetUid": null
 				}
 			]
+		},
+		{
+			"identifier": "Treebranch",
+			"uid": 1394,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 32,
+			"height": 32,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
+			"maxWidth": null,
+			"minHeight": null,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 0.08,
+			"lineOpacity": 0,
+			"hollow": false,
+			"color": "#FEE761",
+			"renderMode": "Tile",
+			"showName": true,
+			"tilesetId": 1395,
+			"tileRenderMode": "FitInside",
+			"tileRect": { "tilesetUid": 1395, "x": 0, "y": 0, "w": 32, "h": 32 },
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -12462,6 +12460,25 @@
 			"customData": [],
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "000", "averageColors": "a454a454a454" }
+		},
+		{
+			"__cWid": 1,
+			"__cHei": 1,
+			"identifier": "Treebranch",
+			"uid": 1395,
+			"relPath": "../treebranch.png",
+			"embedAtlas": null,
+			"pxWid": 32,
+			"pxHei": 32,
+			"tileGridSize": 32,
+			"spacing": 0,
+			"padding": 0,
+			"tags": [],
+			"tagsSourceEnumUid": null,
+			"enumTags": [],
+			"customData": [],
+			"savedSelections": [],
+			"cachedPixelData": { "opaqueTiles": "0", "averageColors": "8454" }
 		}
 	], "enums": [
 		{ "identifier": "LightColor", "uid": 159, "values": [
@@ -12469,7 +12486,7 @@
 			{ "id": "Purple", "tileRect": { "tilesetUid": 111, "x": 16, "y": 64, "w": 8, "h": 8 }, "color": 6830188 },
 			{ "id": "White", "tileRect": { "tilesetUid": 111, "x": 8, "y": 96, "w": 8, "h": 8 }, "color": 16777215 },
 			{ "id": "Blue", "tileRect": { "tilesetUid": 111, "x": 16, "y": 120, "w": 8, "h": 8 }, "color": 39387 },
-			{ "id": "Black", "tileRect": null, "color": 2631720 }
+			{ "id": "Black", "tileRect": null, "color": 2434341 }
 		], "iconTilesetUid": 111, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
 		{ "identifier": "CrystalColor", "uid": 1375, "values": [
 			{ "id": "Red", "tileRect": null, "color": 14813706 },
@@ -12692,8 +12709,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 1448,
 							"__worldY": 160
@@ -12732,8 +12748,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 1408,
 							"__worldY": 16
@@ -13857,8 +13872,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 3064,
 							"__worldY": 352
@@ -15034,8 +15048,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 3288,
 							"__worldY": 224
@@ -15058,8 +15071,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 3240,
 							"__worldY": 352
@@ -16230,8 +16242,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 896,
 							"__worldY": 168
@@ -16254,8 +16265,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 776,
 							"__worldY": 8
@@ -16307,6 +16317,22 @@
 							"fieldInstances": [],
 							"__worldX": 944,
 							"__worldY": 128
+						},
+						{
+							"__identifier": "Treebranch",
+							"__grid": [35,5],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 1395, "x": 0, "y": 0, "w": 32, "h": 32 },
+							"__smartColor": "#FEE761",
+							"iid": "0f5a63b0-1030-11f0-baa2-255110d11a73",
+							"width": 32,
+							"height": 32,
+							"defUid": 1394,
+							"px": [280,40],
+							"fieldInstances": [],
+							"__worldX": 920,
+							"__worldY": 40
 						}
 					]
 				},
@@ -17228,8 +17254,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 1088,
 							"__worldY": 8
@@ -17252,8 +17277,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 1016,
 							"__worldY": 8
@@ -18254,8 +18278,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 1768,
 							"__worldY": 160
@@ -18278,8 +18301,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 1696,
 							"__worldY": 8
@@ -19293,8 +19315,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 1600,
 							"__worldY": 224
@@ -20357,8 +20378,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 2016,
 							"__worldY": 288
@@ -20381,8 +20401,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 2000,
 							"__worldY": 288
@@ -21606,8 +21625,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 72,
 							"__worldY": 56
@@ -22748,8 +22766,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 3968,
 							"__worldY": 184
@@ -22772,8 +22789,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 3976,
 							"__worldY": 344
@@ -22796,8 +22812,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Blue", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Blue"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 4112,
 							"__worldY": 352
@@ -23875,8 +23890,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 2464,
 							"__worldY": 200
@@ -23899,8 +23913,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Pink", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Pink"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 2464,
 							"__worldY": 352
@@ -26660,8 +26673,7 @@
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Blue", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Blue"]
-								}] },
-								{ "__identifier": "platform_id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 1396, "realEditorValues": [] }
+								}] }
 							],
 							"__worldX": 3680,
 							"__worldY": 216
