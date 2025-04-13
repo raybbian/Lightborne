@@ -373,6 +373,7 @@ pub struct MovingPlatformBundle {
 }
 
 /// [System] that moves platforms during each [Update] step
+#[allow(clippy::too_many_arguments)]
 pub fn move_platforms(
     mut platform_q: Query<
         (
