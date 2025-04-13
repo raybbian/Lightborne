@@ -267,7 +267,7 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
         }
         path_curve_points.insert(0, false);
         let speed = *entity_instance.get_float_field("speed").unwrap();
-        let initial_state = PlatformState::Pause;
+        let initial_state = PlatformState::from(entity_instance.get_enum_field("DefaultState").unwrap());
         let width = entity_instance.width;
         let height = entity_instance.height;
         let curr_segment = path[0];
@@ -393,6 +393,8 @@ pub fn move_platforms(
         With<PlayerMarker>,
     >,
     levels_q: Query<(Entity, &GlobalTransform, &LevelIid)>,
+    parents: Query<&Parent>,
+    levels: Query<&LevelIid>,
     rapier_context: ReadDefaultRapierContext,
     current_level: Res<CurrentLevel>,
     time: Res<Time>,
@@ -464,9 +466,17 @@ pub fn move_platforms(
             transform.translation += Vec3::new(direction_vec.x, direction_vec.y, 0.0)
                 * platform.speed
                 * time.delta_secs();
+            
+            let mut new_entity = entity;
+            while let Ok(parent) = parents.get(new_entity) {
+                new_entity = parent.get();
+                if let Ok(_level_iid) = levels.get(new_entity) {
+                    break;
+                }
+            }
 
             for (_entity, global_level_transform, id) in levels_q.iter() {
-                if *id == current_level.level_iid {
+                if *id == *levels.get(new_entity).unwrap() {
                     let platform_translation =
                         global_transform.translation() - global_level_transform.translation();
                     platform.current_position = Vec2::new(
