@@ -77,18 +77,18 @@ impl Plugin for Occluder2dPipelinePlugin {
 /// Add to line lights and occluders to mark which occluders should occlude which line lights.
 /// An occluder will only occlude a line light if (line light's occluder mask) & (occluder
 /// occluder mask) is not zero.
-#[derive(Component, ExtractComponent, Clone, Copy)]
+#[derive(Component, ExtractComponent, Clone, Copy, PartialEq, Eq)]
 pub struct Occluder2dGroups(pub u32);
 
 impl Occluder2dGroups {
     pub const NONE: Self = Self(0);
     pub const ALL: Self = Self(!0);
 
-    pub fn group(layer: u32) -> Self {
+    pub fn _group(layer: u32) -> Self {
         Self(1 << layer)
     }
 
-    pub fn from_groups(layers: &[u32]) -> Self {
+    pub fn _from_groups(layers: &[u32]) -> Self {
         let mut mask = 0;
         for i in layers {
             mask |= 1 << i;
@@ -104,7 +104,7 @@ impl Default for Occluder2dGroups {
 }
 
 #[derive(Component)]
-#[require(Transform, Visibility)]
+#[require(Transform, Visibility, Occluder2dGroups)]
 pub struct Occluder2d {
     pub half_size: Vec2,
 }

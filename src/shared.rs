@@ -16,16 +16,27 @@ impl GroupLabel {
     pub const WHITE_RAY: Group = Group::GROUP_7;
     pub const STRAND: Group = Group::GROUP_8;
     pub const BLUE_RAY: Group = Group::GROUP_9;
+    pub const CRYSTAL_SHARD: Group = Group::GROUP_10;
+    pub const PLATFORM: Group = Group::GROUP_11;
+    pub const BLACK_RAY: Group = Group::GROUP_12;
     pub const ALL: Group = Group::from_bits_truncate(!0);
 }
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameState {
     Playing,
-    SwitchAnimation,
-    KillAnimation,
+    Animating,
     Paused,
     Ui,
+}
+
+#[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
+#[source(GameState = GameState::Animating)]
+pub enum AnimationState {
+    #[default]
+    Switch,
+    Respawn,
+    Shard,
 }
 
 #[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]

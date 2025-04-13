@@ -33,6 +33,7 @@ impl MergedTile for Wall {
                 GroupLabel::PLAYER_COLLIDER
                     | GroupLabel::LIGHT_RAY
                     | GroupLabel::WHITE_RAY
+                    | GroupLabel::BLACK_RAY
                     | GroupLabel::STRAND
                     | GroupLabel::BLUE_RAY,
             ),

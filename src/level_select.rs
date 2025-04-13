@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use bevy::asset::RenderAssetUsages;
-use bevy::audio::PlaybackMode;
 use bevy::image::{BevyDefault, TextureFormatPixelInfo};
 use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
@@ -11,11 +10,15 @@ use bevy_ecs_ldtk::prelude::LdtkFields;
 use bevy_ecs_ldtk::LevelIid;
 use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
 
-use crate::camera::{camera_position_from_level, handle_move_camera, CameraMoveEvent};
+use crate::camera::{
+    camera_position_from_level, handle_move_camera, CameraControlType, CameraMoveEvent,
+};
+use crate::config::Config;
 use crate::level::start_flag::StartFlag;
 use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
 use crate::player::PlayerMarker;
 use crate::shared::{GameState, UiState, LYRA_RESPAWN_EPSILON};
+use crate::sound::{BgmTrack, ChangeBgmEvent};
 
 pub struct LevelSelectPlugin;
 
@@ -23,10 +26,10 @@ const START_FLAG_IDENT: &str = "Start";
 const TERRAIN_LAYER_IDENT: &str = "Terrain";
 const ENTITY_LAYER_IDENT: &str = "Entities";
 const SENSOR_ENTITY_IDENT: &str = "Sensor";
-const SENSOR_COLOR_IDENT: &str = "light_color";
+const SENSOR_COLOR_IDENT: &str = "toggle_color";
 
 // [R, G, B, A] colors for level preview
-const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
+const LEVEL_PREVIEW_COLORS: [[u8; 4]; 17] = [
     [0, 0, 0, 255],       // intgrid 0
     [41, 54, 78, 255],    // intgrid 1
     [117, 158, 202, 255], // intgrid 2
@@ -43,12 +46,13 @@ const LEVEL_PREVIEW_COLORS: [[u8; 4]; 16] = [
     [0, 0, 0, 255],       // intgrid 13
     [0, 0, 0, 255],       // intgrid 14
     [115, 62, 57, 255],   // intgrid 15
+    [200, 200, 200, 255], // intgrid 16
 ];
 
 fn sensor_color_to_rgba(sensor_color: &str) -> [u8; 4] {
     match sensor_color {
-        "Red" => [255, 143, 212, 255],
-        "Green" => [255, 0, 0, 255],
+        "Pink" => [255, 143, 212, 255],
+        "Red" => [255, 0, 0, 255],
         "White" => [229, 229, 229, 255],
         "Blue" => [143, 225, 255, 255],
         _ => [0, 0, 0, 255],
@@ -61,15 +65,83 @@ struct LevelSelectUiMarker;
 #[derive(Component)]
 pub struct LevelPreviewMarker;
 
+#[derive(Component)]
+pub struct LevelPreviewLockedMarker;
+
 #[derive(Resource)]
 pub struct LevelPreviewStore(HashMap<String, (Vec2, Handle<Image>)>);
 
+// FIXME .0 is ldtk level index, .1 is index into the Levels.0 vector
 #[derive(Component)]
-pub struct LevelSelectButtonIndex(usize);
+pub struct LevelSelectButtonIndex(usize, usize);
+
+#[derive(PartialEq, Eq)]
+pub struct LevelSaveData {
+    level_id: String,
+    pub level_iid: LevelIid,
+    level_index: usize,
+    pub complete: bool,
+    pub locked: bool,
+}
+
+impl Ord for LevelSaveData {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.level_id.cmp(&other.level_id)
+    }
+}
+
+impl PartialOrd for LevelSaveData {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+#[derive(Resource)]
+pub struct Levels(pub Vec<LevelSaveData>);
+
+fn init_levels(
+    mut res_levels: ResMut<Levels>,
+    query_ldtk: Query<&LdtkProjectHandle>,
+    ldtk_assets: Res<Assets<LdtkProject>>,
+    config: Res<Config>,
+) {
+    if !res_levels.0.is_empty() {
+        return;
+    }
+    let Ok(ldtk_handle) = query_ldtk.get_single() else {
+        return;
+    };
+    let Ok(levels) = get_ldtk_level_data(ldtk_assets.into_inner(), ldtk_handle) else {
+        return;
+    };
+    // let mut sorted_levels = Vec::with_capacity(levels.len());
+    for (i, level) in levels.iter().enumerate() {
+        let level_id = level
+            .get_string_field("LevelId")
+            .expect("Levels should always have a level id!");
+        if level_id.is_empty() {
+            panic!("Level id for a level should not be empty!");
+        }
+        // FIXME: ignore all levels prefixed with .
+        if &level_id[0..1] == "." {
+            continue;
+        }
+        res_levels.0.push(LevelSaveData {
+            level_id: level_id.to_string(),
+            level_iid: LevelIid::new(level.iid.clone()),
+            level_index: i,
+            complete: config.debug_config.unlock_levels,
+            locked: !config.debug_config.unlock_levels,
+        });
+    }
+    res_levels.0.sort();
+    res_levels.0[0].locked = false;
+}
 
 impl Plugin for LevelSelectPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(LevelPreviewStore(HashMap::new()))
+            .insert_resource(Levels(Vec::new()))
             .add_systems(
                 PostUpdate,
                 switch_to_level_select.run_if(input_just_pressed(KeyCode::KeyL)),
@@ -77,6 +149,7 @@ impl Plugin for LevelSelectPlugin {
             .add_systems(
                 FixedUpdate,
                 (
+                    init_levels.before(spawn_level_select),
                     spawn_level_select.run_if(in_state(UiState::LevelSelect)),
                     despawn_level_select
                         .after(handle_move_camera)
@@ -97,36 +170,20 @@ fn switch_to_level_select(
 
 fn spawn_level_select(
     mut commands: Commands,
-    ldtk_assets: Res<Assets<LdtkProject>>,
-    query_ldtk: Query<&LdtkProjectHandle>,
     level_select_ui_query: Query<Entity, With<LevelSelectUiMarker>>,
     asset_server: Res<AssetServer>,
+    mut ev_change_bgm: EventWriter<ChangeBgmEvent>,
+    sorted_levels: Res<Levels>,
 ) {
     if level_select_ui_query.get_single().is_ok() {
         return;
     }
-    let Ok(ldtk_handle) = query_ldtk.get_single() else {
-        return;
-    };
-    let Ok(levels) = get_ldtk_level_data(ldtk_assets.into_inner(), ldtk_handle) else {
-        return;
-    };
-    let mut sorted_levels = Vec::with_capacity(levels.len());
-    for (i, level) in levels.iter().enumerate() {
-        let level_id = level
-            .get_string_field("LevelId")
-            .expect("Levels should always have a level id!");
-        if level_id.is_empty() {
-            panic!("Level id for a level should not be empty!");
-        }
-        sorted_levels.push((level_id, i));
-    }
-    sorted_levels.sort();
-
     let font = TextFont {
         font: asset_server.load("fonts/Munro.ttf"),
         ..default()
     };
+
+    ev_change_bgm.send(ChangeBgmEvent(BgmTrack::LevelSelect));
 
     commands
         .spawn((
@@ -142,11 +199,6 @@ fn spawn_level_select(
                 ..default()
             },
             BackgroundColor(Color::BLACK),
-            AudioPlayer::new(asset_server.load("music/main_menu.wav")),
-            PlaybackSettings {
-                mode: PlaybackMode::Loop,
-                ..default()
-            },
         ))
         .with_children(|parent| {
             parent.spawn((Text::new("Level Select"), font.clone().with_font_size(36.)));
@@ -162,7 +214,17 @@ fn spawn_level_select(
                     ..default()
                 })
                 .with_children(|parent| {
-                    for (level_id, index) in sorted_levels.iter() {
+                    for (
+                        i,
+                        LevelSaveData {
+                            level_id,
+                            level_iid: _,
+                            level_index: index,
+                            complete,
+                            locked,
+                        },
+                    ) in sorted_levels.0.iter().enumerate()
+                    {
                         parent
                             .spawn((
                                 Button,
@@ -176,11 +238,21 @@ fn spawn_level_select(
                                     align_items: AlignItems::Center,
                                     ..default()
                                 },
-                                BorderColor(Color::WHITE),
-                                LevelSelectButtonIndex(*index),
+                                BorderColor(if *complete {
+                                    Color::srgb(0.0, 1.0, 0.0)
+                                } else if !*locked {
+                                    Color::WHITE
+                                } else {
+                                    Color::srgb(1.0, 0.0, 0.0)
+                                }),
+                                LevelSelectButtonIndex(*index, i),
                             ))
                             .with_child((
-                                Text::new(level_id.to_string()),
+                                if *locked {
+                                    Text::new("LOCKED")
+                                } else {
+                                    Text::new(level_id.to_string())
+                                },
                                 font.clone().with_font_size(24.),
                             ));
                     }
@@ -194,7 +266,26 @@ fn spawn_level_select(
                     ..default()
                 },))
                 .with_children(|parent| {
-                    parent.spawn((LevelPreviewMarker, Node::default()));
+                    let lock = asset_server.load("lock.png");
+                    parent
+                        .spawn((LevelPreviewMarker, Node::default()))
+                        .with_children(|parent| {
+                            parent
+                                .spawn((Node {
+                                    width: Val::Percent(100.),
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    ..default()
+                                },))
+                                .with_child((
+                                    Node {
+                                        width: Val::Percent(50.),
+                                        ..default()
+                                    },
+                                    LevelPreviewLockedMarker,
+                                    ImageNode::new(lock).with_color(Color::srgba(1., 1., 1., 0.)),
+                                ));
+                        });
                 });
         });
 }
@@ -226,7 +317,12 @@ pub fn handle_level_selection(
     mut level_preview_store: ResMut<LevelPreviewStore>,
     mut assets: ResMut<Assets<Image>>,
     mut query_level_preview: Query<(Entity, Option<&mut ImageNode>), With<LevelPreviewMarker>>,
+    mut query_level_preview_locked: Query<
+        &mut ImageNode,
+        (With<LevelPreviewLockedMarker>, Without<LevelPreviewMarker>),
+    >,
     mut commands: Commands,
+    res_levels: Res<Levels>,
 ) {
     let Ok(ldtk_handle) = query_ldtk.get_single() else {
         return;
@@ -241,6 +337,9 @@ pub fn handle_level_selection(
         let level = &ldtk_levels[index.0];
         match *interaction {
             Interaction::Pressed => {
+                if res_levels.0[index.1].locked {
+                    return;
+                }
                 let Some(layers) = level.layer_instances.as_ref() else {
                     panic!("Layers not found! (This is probably because you are using the \"Separate level files\" option.)")
                 };
@@ -265,7 +364,10 @@ pub fn handle_level_selection(
                                     level_box_from_level(&ldtk_levels[index.0]),
                                     player_transform.translation.xy(),
                                 );
-                                ev_move_camera.send(CameraMoveEvent::Instant { to: camera_pos });
+                                ev_move_camera.send(CameraMoveEvent {
+                                    to: camera_pos,
+                                    variant: CameraControlType::Instant,
+                                });
 
                                 break 'loop_layers;
                             }
@@ -369,10 +471,28 @@ pub fn handle_level_selection(
                 else {
                     panic!("Could not find level preview");
                 };
+                let locked = res_levels.0[index.1].locked;
+                const LOCKED_LEVEL_PREVIEW_SCALE: f32 = 0.3;
+                let scaled_color = Color::srgba(
+                    LOCKED_LEVEL_PREVIEW_SCALE,
+                    LOCKED_LEVEL_PREVIEW_SCALE,
+                    LOCKED_LEVEL_PREVIEW_SCALE,
+                    1.0,
+                );
                 if let Some(mut level_preview_image_node) = level_preview_image_node {
                     level_preview_image_node.image = level_preview;
+                    if locked {
+                        level_preview_image_node.color = scaled_color
+                    } else {
+                        level_preview_image_node.color = Color::WHITE;
+                    }
                 } else {
-                    let image_node = ImageNode::new(level_preview);
+                    let mut image_node = ImageNode::new(level_preview);
+                    if locked {
+                        image_node.color = scaled_color;
+                    } else {
+                        image_node.color = Color::WHITE;
+                    }
                     commands.entity(level_preview_entity).insert((
                         image_node,
                         Node {
@@ -383,6 +503,15 @@ pub fn handle_level_selection(
                             ..default()
                         },
                     ));
+                }
+                let Ok(mut preview_locked_node) = query_level_preview_locked.get_single_mut()
+                else {
+                    return;
+                };
+                if locked {
+                    preview_locked_node.color = Color::WHITE;
+                } else {
+                    preview_locked_node.color = Color::srgba(1., 1., 1., 0.);
                 }
             }
             _ => {}

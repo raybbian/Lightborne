@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.15.0", features = ["dynamic_linking", "wav"] }
+bevy = { version = "0.15.0", features = ["wav", "mp3"] }
 bevy-inspector-egui = "0.29.1"
 bevy_ecs_ldtk = "0.11.0"
 bevy_ecs_tilemap = "0.15.0"
