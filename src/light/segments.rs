@@ -310,9 +310,11 @@ pub fn spawn_needed_segments(
         // lazily spawn segment entities until there are enough segments to display the light beam
         // path
         if !segment_cache.segments.contains_key(&entity) {
-            segment_cache.segments.insert(entity, (vec![], source.color));
+            segment_cache
+                .segments
+                .insert(entity, (vec![], source.color));
         }
-        
+
         while segment_cache.segments[&entity].0.len() < segments.min(LIGHT_MAX_SEGMENTS) {
             let id = commands
                 .spawn(LightSegmentBundle {
@@ -382,7 +384,7 @@ pub fn visually_sync_segments(
     for (entity, _source, pts) in q_light_sources.iter() {
         let pts = &pts.0;
         // use the light beam path to set the transform of the segments currently in the cache
-        
+
         for (i, segment) in segment_cache.segments[&entity].0.iter().enumerate() {
             let Ok((mut line_light, mut c_transform, mut c_visibility)) =
                 q_segments.get_mut(*segment)
