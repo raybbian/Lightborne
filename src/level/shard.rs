@@ -14,7 +14,10 @@ use crate::{
     light::LightColor,
     lighting::LineLight2d,
     player::{
-        light::{despawn_angle_indicator, should_shoot_light, PlayerLightInventory},
+        light::{
+            despawn_angle_increments_indicators, despawn_angle_indicator, should_shoot_light,
+            PlayerLightInventory,
+        },
         InputLocked, PlayerHurtMarker, PlayerMarker,
     },
     shared::{AnimationState, GameState, ResetLevel},
@@ -40,7 +43,11 @@ impl Plugin for CrystalShardPlugin {
             // manager resource
             .add_systems(
                 Update,
-                (despawn_angle_indicator, should_shoot_light::<false>)
+                (
+                    despawn_angle_indicator,
+                    despawn_angle_increments_indicators,
+                    should_shoot_light::<false>,
+                )
                     .run_if(on_event::<ShardAnimationEvent>),
             )
             .add_systems(
@@ -123,6 +130,7 @@ pub fn add_crystal_shard_sprites(
         LightColor::Green => 1,
         LightColor::Purple => 2,
         LightColor::White => 3,
+        LightColor::Black => 4,
     };
 
     for (shard_entity, shard) in q_shards.iter() {
@@ -223,7 +231,7 @@ impl FromWorld for ShardAnimationCallbacks {
 const SHARD_FADE_DURATION: Duration = Duration::from_millis(500);
 const SHARD_FADE_VOLUME: f32 = 0.1;
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn start_shard_animation(
     mut commands: Commands,
     cur_game_state: Res<State<GameState>>,
@@ -340,6 +348,7 @@ pub fn on_shard_zoom_in_finished(
         LightColor::Blue => "Blue light, formerly known as the light of harmony. I wonder what it'll do if I shoot it directly at the sensor above me?",
         LightColor::White => "A different feeling than before... could this color have a special property?",
         LightColor::Purple => "This one's even more powerful... I should be able to bounce this one more than once.",
+        LightColor::Black => "Devs Only!!!",
     };
 
     commands
@@ -380,6 +389,7 @@ pub fn on_shard_zoom_in_finished(
         ));
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn on_shard_text_read_finish(
     mut commands: Commands,
     mut ev_move_camera: EventWriter<CameraMoveEvent>,

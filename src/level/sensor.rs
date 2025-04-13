@@ -4,12 +4,18 @@ use bevy_rapier2d::prelude::*;
 use enum_map::EnumMap;
 
 use crate::{
-    level::{crystal::{CrystalIdent, CrystalToggleEvent}, platform::ChangePlatformStateEvent},
+    level::{
+        crystal::{CrystalIdent, CrystalToggleEvent},
+        platform::ChangePlatformStateEvent,
+    },
     light::segments::simulate_light_sources,
     lighting::LineLight2d,
 };
 
-use super::{crystal::CrystalColor, entity::FixedEntityBundle, LevelSystems, LightColor, platform::PlatformState};
+use super::{
+    crystal::CrystalColor, entity::FixedEntityBundle, platform::PlatformState, LevelSystems,
+    LightColor,
+};
 
 pub struct LightSensorPlugin;
 
@@ -111,7 +117,7 @@ impl From<&EntityInstance> for LightSensor {
 
         let platform_id = match entity_instance.get_int_field("platform_id") {
             Ok(platform_id) => *platform_id,
-            Err(_) => -1
+            Err(_) => -1,
         };
 
         LightSensor::new(toggle_ident, millis, platform_id)

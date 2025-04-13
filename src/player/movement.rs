@@ -104,7 +104,7 @@ pub fn move_player(
         ),
         With<PlayerMarker>,
     >,
-    keys: Res<ButtonInput<KeyCode>>
+    keys: Res<ButtonInput<KeyCode>>,
 ) {
     let Ok((mut controller, output, mut player, movement_locked)) = q_player.get_single_mut()
     else {
