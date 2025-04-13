@@ -467,12 +467,14 @@ pub fn move_platforms(
 
             for (_entity, global_level_transform, id) in levels_q.iter() {
                 if *id == current_level.level_iid {
-                    let platform_translation = global_transform.translation() - global_level_transform.translation();
+                    let platform_translation =
+                        global_transform.translation() - global_level_transform.translation();
                     platform.current_position = Vec2::new(
                         (platform_translation.x / BLOCK_WIDTH)
                             - (platform.width as f32 / 2.0 / BLOCK_WIDTH),
                         -(platform_translation.y / BLOCK_WIDTH)
-                            - (platform.height as f32 / 2.0 / BLOCK_WIDTH) + 23.0,
+                            - (platform.height as f32 / 2.0 / BLOCK_WIDTH)
+                            + 23.0,
                     );
                 }
             }
@@ -609,7 +611,9 @@ pub fn change_platform_state(
                     //println!("{:?} {:?}", platform.id, event.id);
                     //println!("{:?}", platform.path);
                     //println!("{:?}", platform.curr_segment);
-                    if platform.id == event.id && current_level.level_iid == *levels.get(new_entity).unwrap() {
+                    if platform.id == event.id
+                        && current_level.level_iid == *levels.get(new_entity).unwrap()
+                    {
                         //println!("Platform in level");
                         platform.curr_state = match platform.curr_state {
                             PlatformState::Play => PlatformState::Play,
@@ -634,7 +638,9 @@ pub fn change_platform_state(
                             break;
                         }
                     }
-                    if platform.id == event.id && current_level.level_iid == *levels.get(new_entity).unwrap() {
+                    if platform.id == event.id
+                        && current_level.level_iid == *levels.get(new_entity).unwrap()
+                    {
                         platform.curr_state = match platform.curr_state {
                             PlatformState::Play => PlatformState::Pause,
                             PlatformState::Pause => PlatformState::Pause,
@@ -652,7 +658,9 @@ pub fn change_platform_state(
                             break;
                         }
                     }
-                    if platform.id == event.id && current_level.level_iid == *levels.get(entity).unwrap() {
+                    if platform.id == event.id
+                        && current_level.level_iid == *levels.get(entity).unwrap()
+                    {
                         platform.curr_state = match platform.curr_state {
                             PlatformState::Play => {
                                 platform.has_activated = true;
