@@ -115,6 +115,22 @@ fn spawn_level_light_beams(
                 30.0,
                 0.0,
             ));
+        if source.both_directions {
+            let light_beam_source = LightBeamSource {
+                start_pos: ray_pos,
+                start_dir: -ray_dir,
+                time_traveled: 1000.0,
+                color: shoot_color,
+            };
+            commands
+                .spawn(light_beam_source)
+                .insert(PrevLightBeamPlayback::default())
+                .insert(LineLight2d::point(
+                    shoot_color.lighting_color().extend(1.0),
+                    30.0,
+                    0.0,
+                ));
+        }
     }
 }
 
@@ -149,6 +165,7 @@ pub struct LightBeamLDTKSource {
     pub position: IVec2,
     pub x_offset: f32,
     pub y_offset: f32,
+    pub both_directions: bool,
 }
 
 impl From<&bevy_ecs_ldtk::EntityInstance> for LightBeamLDTKSource {
@@ -161,11 +178,13 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for LightBeamLDTKSource {
         let x_offset = *entity_instance.get_float_field("XOffset").unwrap();
         let y_offset = *entity_instance.get_float_field("YOffset").unwrap();
         let direction = *entity_instance.get_point_field("Direction").unwrap();
+        let both_directions = *entity_instance.get_bool_field("BothDirections").unwrap();
         LightBeamLDTKSource {
             direction,
             position,
             x_offset,
             y_offset,
+            both_directions,
         }
     }
 }

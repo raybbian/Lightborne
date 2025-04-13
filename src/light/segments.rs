@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use bevy_rapier2d::prelude::*;
 use enum_map::EnumMap;
 
@@ -34,7 +34,7 @@ pub struct LightSegmentBundle {
 /// despawned every frame. See [`simulate_light_sources`] for details.
 #[derive(Resource, Default)]
 pub struct LightSegmentCache {
-    segments: EnumMap<LightColor, Vec<Entity>>,
+    segments: HashMap<Entity, (Vec<Entity>, LightColor)>,
 }
 
 /// Local variable for [`simulate_light_sources`] used to store the handle to the audio SFX
@@ -302,15 +302,19 @@ pub fn simulate_light_sources(
 
 pub fn spawn_needed_segments(
     mut commands: Commands,
-    q_light_sources: Query<(&LightBeamSource, &LightBeamPoints)>,
+    q_light_sources: Query<(Entity, &LightBeamSource, &LightBeamPoints)>,
     mut segment_cache: ResMut<LightSegmentCache>,
     light_render_data: Res<LightRenderData>,
 ) {
-    for (source, pts) in q_light_sources.iter() {
+    for (entity, mut source, pts) in q_light_sources.iter() {
         let segments = pts.0.len() - 1;
         // lazily spawn segment entities until there are enough segments to display the light beam
         // path
-        while segment_cache.segments[source.color].len() < segments.min(LIGHT_MAX_SEGMENTS) {
+        if !segment_cache.segments.contains_key(&entity) {
+            segment_cache.segments.insert(entity, (vec![], source.color));
+        }
+        
+        while segment_cache.segments[&entity].0.len() < segments.min(LIGHT_MAX_SEGMENTS) {
             let id = commands
                 .spawn(LightSegmentBundle {
                     segment: LightSegment {
@@ -361,13 +365,14 @@ pub fn spawn_needed_segments(
                     ),
                 ));
             }
-            segment_cache.segments[source.color].push(id);
+            segment_cache.segments.get_mut(&entity).unwrap().0.push(id);
+            //segment_cache.segments[&source.color].push(id);
         }
     }
 }
 
 pub fn visually_sync_segments(
-    q_light_sources: Query<(&LightBeamSource, &LightBeamPoints)>,
+    q_light_sources: Query<(Entity, &LightBeamSource, &LightBeamPoints)>,
     segment_cache: Res<LightSegmentCache>,
     mut q_segments: Query<(&mut LineLight2d, &mut Transform, &mut Visibility), With<LightSegment>>,
     q_light_segment_z: Query<&GlobalTransform, With<LightSegmentZMarker>>,
@@ -375,10 +380,11 @@ pub fn visually_sync_segments(
     let Ok(light_segment_z) = q_light_segment_z.get_single() else {
         return;
     };
-    for (source, pts) in q_light_sources.iter() {
+    for (entity, source, pts) in q_light_sources.iter() {
         let pts = &pts.0;
         // use the light beam path to set the transform of the segments currently in the cache
-        for (i, segment) in segment_cache.segments[source.color].iter().enumerate() {
+        
+        for (i, segment) in segment_cache.segments[&entity].0.iter().enumerate() {
             let Ok((mut line_light, mut c_transform, mut c_visibility)) =
                 q_segments.get_mut(*segment)
             else {
@@ -433,7 +439,7 @@ pub fn cleanup_light_sources(
     }
 
     segment_cache.segments.iter().for_each(|(_, items)| {
-        for &entity in items.iter() {
+        for &entity in items.0.iter() {
             let (mut transform, mut visibility) = q_segments
                 .get_mut(entity)
                 .expect("Segment should have visibility");
