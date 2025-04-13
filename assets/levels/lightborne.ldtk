@@ -12272,7 +12272,7 @@
 					"allowedRefsEntityUid": null,
 					"allowedRefTags": [],
 					"tilesetUid": null
-                },
+				},
 				{
 					"identifier": "BothDirections",
 					"doc": "If true, light source will be spawned both facing and opposite the direction vector.",
@@ -12406,7 +12406,13 @@
 			"padding": 0,
 			"tags": [],
 			"tagsSourceEnumUid": 159,
-			"enumTags": [ { "enumValueId": "Green", "tileIds": [104,105] }, { "enumValueId": "Purple", "tileIds": [83,84] }, { "enumValueId": "White", "tileIds": [] }, { "enumValueId": "Blue", "tileIds": [] } ],
+			"enumTags": [
+				{ "enumValueId": "Green", "tileIds": [104,105] },
+				{ "enumValueId": "Purple", "tileIds": [83,84] },
+				{ "enumValueId": "White", "tileIds": [] },
+				{ "enumValueId": "Blue", "tileIds": [] },
+				{ "enumValueId": "Black", "tileIds": [] }
+			],
 			"customData": [],
 			"savedSelections": [],
 			"cachedPixelData": {
@@ -12479,7 +12485,8 @@
 			{ "id": "Green", "tileRect": { "tilesetUid": 111, "x": 24, "y": 64, "w": 8, "h": 8 }, "color": 5097349 },
 			{ "id": "Purple", "tileRect": { "tilesetUid": 111, "x": 16, "y": 64, "w": 8, "h": 8 }, "color": 6830188 },
 			{ "id": "White", "tileRect": { "tilesetUid": 111, "x": 8, "y": 96, "w": 8, "h": 8 }, "color": 16777215 },
-			{ "id": "Blue", "tileRect": { "tilesetUid": 111, "x": 16, "y": 120, "w": 8, "h": 8 }, "color": 39387 }
+			{ "id": "Blue", "tileRect": { "tilesetUid": 111, "x": 16, "y": 120, "w": 8, "h": 8 }, "color": 39387 },
+			{ "id": "Black", "tileRect": null, "color": 2434341 }
 		], "iconTilesetUid": 111, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
 		{ "identifier": "CrystalColor", "uid": 1375, "values": [
 			{ "id": "Red", "tileRect": null, "color": 14813706 },
