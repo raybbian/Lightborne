@@ -562,7 +562,7 @@ pub fn reset_platforms(mut platform_q: Query<(&mut MovingPlatform, &mut Transfor
 
 /// function that casts a ray shape relative to the player
 #[allow(clippy::too_many_arguments)]
-fn cast_player_ray_shape(
+pub fn cast_player_ray_shape(
     rapier_context: &ReadDefaultRapierContext,
     player_transform: &Transform,
     x_offset: f32,

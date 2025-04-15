@@ -11784,7 +11784,7 @@
 					"exportToToc": false,
 					"searchable": false,
 					"min": 0,
-					"max": null,
+					"max": 24,
 					"regex": null,
 					"acceptFileTypes": null,
 					"defaultOverride": { "id": "V_Float", "params": [10] },
@@ -30620,7 +30620,7 @@
 										"params": ["8,12"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -30675,7 +30675,7 @@
 										"params": ["8,17"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -30730,7 +30730,7 @@
 										"params": ["8,7"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -30770,7 +30770,7 @@
 									"id": "V_String",
 									"params": ["8,22"]
 								} ] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -30825,7 +30825,7 @@
 										"params": ["8,2"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -30880,7 +30880,7 @@
 										"params": ["11,0"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -30920,7 +30920,7 @@
 									"id": "V_String",
 									"params": ["16,0"]
 								} ] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -30975,7 +30975,7 @@
 										"params": ["16,5"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31030,7 +31030,7 @@
 										"params": ["16,10"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31085,7 +31085,7 @@
 										"params": ["16,15"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31140,7 +31140,7 @@
 										"params": ["16,20"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31195,7 +31195,7 @@
 										"params": ["13,22"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 22, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [22] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 20, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [20] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": 6, "__tile": null, "defUid": 1326, "realEditorValues": [{ "id": "V_Int", "params": [6] }] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31314,7 +31314,7 @@
 										"params": ["23,13"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31369,7 +31369,7 @@
 										"params": ["23,8"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31424,7 +31424,7 @@
 										"params": ["31,9"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31479,7 +31479,7 @@
 										"params": ["31,4"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31534,7 +31534,7 @@
 										"params": ["23,3"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31589,7 +31589,7 @@
 										"params": ["25,0"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31644,7 +31644,7 @@
 										"params": ["30,0"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31699,7 +31699,7 @@
 										"params": ["31,14"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31754,7 +31754,7 @@
 										"params": ["31,19"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31809,7 +31809,7 @@
 										"params": ["29,22"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31864,7 +31864,7 @@
 										"params": ["24,22"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
@@ -31919,7 +31919,7 @@
 										"params": ["23,18"]
 									}
 								] },
-								{ "__identifier": "speed", "__type": "Float", "__value": 27, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [27] }] },
+								{ "__identifier": "speed", "__type": "Float", "__value": 24, "__tile": null, "defUid": 1322, "realEditorValues": [{ "id": "V_Float", "params": [24] }] },
 								{ "__identifier": "does_reverse", "__type": "Bool", "__value": false, "__tile": null, "defUid": 1325, "realEditorValues": [] },
 								{ "__identifier": "event_id", "__type": "Int", "__value": -2, "__tile": null, "defUid": 1326, "realEditorValues": [] },
 								{ "__identifier": "does_repeat", "__type": "Bool", "__value": true, "__tile": null, "defUid": 1327, "realEditorValues": [] },
