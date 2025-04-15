@@ -1,7 +1,10 @@
 use bevy::{math::vec2, prelude::*};
 use bevy_rapier2d::prelude::*;
 
-use crate::{animation::AnimationConfig, input::CursorWorldCoords, level::platform::cast_player_ray_shape, shared::GroupLabel};
+use crate::{
+    animation::AnimationConfig, input::CursorWorldCoords, level::platform::cast_player_ray_shape,
+    shared::GroupLabel,
+};
 
 use super::{light::PlayerLightInventory, movement::PlayerMovement, PlayerMarker};
 
@@ -129,7 +132,8 @@ pub fn set_animation(
     mut was_grounded: Local<bool>,
     rapier_context: ReadDefaultRapierContext<'_, '_>,
 ) {
-    let Ok((movement, mut config, mut animation, transform, output)) = q_player.get_single_mut() else {
+    let Ok((movement, mut config, mut animation, transform, output)) = q_player.get_single_mut()
+    else {
         return;
     };
 
