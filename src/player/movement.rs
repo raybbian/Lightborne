@@ -159,11 +159,8 @@ pub fn move_player(
         player.velocity.x += PLAYER_MOVE_VEL;
         moved = true;
     }
-    if keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight) {
-        player.sneaking = true;
-    } else {
-        player.sneaking = false;
-    }
+    
+    player.sneaking = keys.pressed(KeyCode::ShiftLeft) || keys.pressed(KeyCode::ShiftRight);
     let temp_max_h_vel =
     if player.sneaking {
         PLAYER_MAX_H_VEL / 2.
