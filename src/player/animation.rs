@@ -150,7 +150,7 @@ pub fn set_animation(
 
     let new_anim = if !output.grounded && output.effective_translation.y > 0.0 {
         PlayerAnimationType::Jump
-    } else if !output.grounded && !entity_below_player.is_some() {
+    } else if !output.grounded && entity_below_player.is_none() {
         PlayerAnimationType::Fall
     } else if output.grounded && !*was_grounded {
         PlayerAnimationType::Land
