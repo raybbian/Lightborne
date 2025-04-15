@@ -424,7 +424,7 @@ pub fn move_platforms(
         0.0,
         -10.0,
         16.0,
-        0.75,
+        1.75,
         Vec2::new(0.0, -1.0),
         GroupLabel::PLATFORM,
     );
