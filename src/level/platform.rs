@@ -8,7 +8,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    player::PlayerMarker,
+    player::{kill::KillPlayerEvent, PlayerMarker},
     shared::{GroupLabel, ResetLevel},
 };
 
@@ -159,7 +159,7 @@ impl MovingPlatform {
         direction: Vec2,
         platform_entity: Entity,
         platform_global_transform: &GlobalTransform,
-        ev_reset_level: &mut EventWriter<ResetLevel>,
+        ev_kill_player: &mut EventWriter<KillPlayerEvent>,
         time: &Res<Time>,
     ) {
         let (
@@ -178,7 +178,7 @@ impl MovingPlatform {
             && player_controller_output.grounded
             && direction_and_velocity.y < 0.0
         {
-            ev_reset_level.send(ResetLevel::Respawn);
+            ev_kill_player.send(KillPlayerEvent);
             return;
         }
 
@@ -187,7 +187,7 @@ impl MovingPlatform {
             if self.curr_state == PlatformState::Play {
                 // Crush player if platform moving player into ceiling
                 if direction.y > 0.0 && entity_above_player.is_some() {
-                    ev_reset_level.send(ResetLevel::Respawn);
+                    ev_kill_player.send(KillPlayerEvent);
                     return;
                 }
                 if (entity_left_of_player.is_none() || direction.x > 0.0)
@@ -226,11 +226,11 @@ impl MovingPlatform {
             if self.curr_state == PlatformState::Play {
                 if relative_horizontal.x < 0.0 {
                     if entity_right_of_player.is_some() {
-                        ev_reset_level.send(ResetLevel::Respawn);
+                        ev_kill_player.send(KillPlayerEvent);
                         return;
                     }
                 } else if entity_left_of_player.is_some() {
-                    ev_reset_level.send(ResetLevel::Respawn);
+                    ev_kill_player.send(KillPlayerEvent);
                     return;
                 }
                 // Offset player if they are clipping into the platform
@@ -399,7 +399,7 @@ pub fn move_platforms(
     levels: Query<&LevelIid>,
     rapier_context: ReadDefaultRapierContext,
     time: Res<Time>,
-    mut ev_reset_level: EventWriter<ResetLevel>,
+    mut ev_kill_player: EventWriter<KillPlayerEvent>,
 ) {
     let Ok(mut player) = player_q.get_single_mut() else {
         return;
@@ -498,7 +498,7 @@ pub fn move_platforms(
             direction_vec,
             entity,
             global_transform,
-            &mut ev_reset_level,
+            &mut ev_kill_player,
             &time,
         );
 
