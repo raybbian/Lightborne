@@ -15,6 +15,7 @@ use lighting::DeferredLightingPlugin;
 use particle::ParticlePlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
+use settings::SettingsPlugin;
 use shared::{AnimationState, GameState, ResetLevel, UiState};
 use sound::SoundPlugin;
 
@@ -30,6 +31,7 @@ mod lighting;
 mod particle;
 mod pause;
 mod player;
+mod settings;
 mod shared;
 mod sound;
 
@@ -68,6 +70,7 @@ fn main() {
         .add_plugins(ParticlePlugin)
         .add_plugins(PausePlugin)
         .add_plugins(LevelSelectPlugin)
+        .add_plugins(SettingsPlugin)
         .add_plugins(CameraPlugin)
         .insert_state(GameState::Ui)
         .add_sub_state::<UiState>()
