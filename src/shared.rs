@@ -22,6 +22,7 @@ pub enum GameState {
     Playing,
     Switching,
     Paused,
+    StartMenu,
 }
 
 #[derive(Event, PartialEq, Eq)]

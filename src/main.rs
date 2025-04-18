@@ -11,6 +11,7 @@ use level::LevelManagementPlugin;
 use light::LightManagementPlugin;
 use lighting::LightingPlugin;
 use pause::PausePlugin;
+use start_menu::StartMenuPlugin;
 use player::PlayerManagementPlugin;
 use shared::{GameState, ResetLevel};
 
@@ -24,6 +25,7 @@ mod lighting;
 mod pause;
 mod player;
 mod shared;
+mod start_menu;
 
 fn main() {
     App::new()
@@ -54,10 +56,11 @@ fn main() {
         .add_plugins(LevelManagementPlugin)
         .add_plugins(LightManagementPlugin)
         .add_plugins(PausePlugin)
+        .add_plugins(StartMenuPlugin)
         .add_plugins(CameraPlugin)
         .add_plugins(LightingPlugin)
         .add_plugins(DebugPlugin::default())
-        .insert_state(GameState::Playing)
+        .insert_state(GameState::StartMenu)
         .add_event::<ResetLevel>()
         .add_systems(Startup, init_cursor_world_coords)
         .add_systems(Update, update_cursor_world_coords)

@@ -9,6 +9,7 @@ use crate::{
         segments::{play_light_beam, PrevLightBeamPlayback},
         LightBeamSource, LightColor,
     },
+    start_menu::InputReady,
 };
 
 use super::PlayerMarker;
@@ -93,7 +94,12 @@ pub fn shoot_light(
     mut q_player: Query<(&Transform, &mut PlayerLightInventory), With<PlayerMarker>>,
     q_cursor: Query<&CursorWorldCoords>,
     asset_server: Res<AssetServer>,
+    mut input_ready: ResMut<InputReady>,
 ) {
+    if !input_ready.0 {
+        input_ready.0 = true;
+        return;
+    }
     let Ok((player_transform, mut player_inventory)) = q_player.get_single_mut() else {
         return;
     };
@@ -150,7 +156,11 @@ pub fn preview_light_path(
     q_player: Query<(&Transform, &PlayerLightInventory), With<PlayerMarker>>,
     q_cursor: Query<&CursorWorldCoords>,
     mut gizmos: Gizmos,
+    input_ready: Res<InputReady>,
 ) {
+    if !input_ready.0 {
+        return;
+    }
     let Ok(rapier_context) = q_rapier.get_single_mut() else {
         return;
     };
