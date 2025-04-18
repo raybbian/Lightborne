@@ -2,6 +2,7 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_rapier2d::prelude::*;
 
 use crate::level::LevelSystems;
+use crate::config::Config;
 
 use super::{not_input_locked, InputLocked, PlayerMarker};
 
@@ -77,6 +78,7 @@ pub fn crouch_player(
     mut q_player: Query<(&mut PlayerMovement, &mut Collider), With<PlayerMarker>>,
     //ButtonInput<KeyCode> resource (access resource)
     keys: Res<ButtonInput<KeyCode>>,
+    config: Res<Config>
 ) {
     // ensure only 1 candidate to match query; let Ok = pattern matching
     let Ok((mut player, mut _collider)) = q_player.get_single_mut() else {
@@ -84,11 +86,11 @@ pub fn crouch_player(
     };
 
     // TODO: fix colliders (both player and hurtbox)
-    if keys.just_pressed(KeyCode::KeyS) && !player.crouching {
+    if keys.just_pressed(config.controls_config.key_down) && !player.crouching {
         // decrease size by half
         player.crouching = true;
     }
-    if keys.just_released(KeyCode::KeyS) && player.crouching {
+    if keys.just_released(config.controls_config.key_down) && player.crouching {
         player.crouching = false;
     }
 }
@@ -105,6 +107,7 @@ pub fn move_player(
         With<PlayerMarker>,
     >,
     keys: Res<ButtonInput<KeyCode>>,
+    config: Res<Config>,
 ) {
     let Ok((mut controller, output, mut player, movement_locked)) = q_player.get_single_mut()
     else {
@@ -126,8 +129,8 @@ pub fn move_player(
     // grounded in the past COYOTE_TIME_TICKS
     if player.should_jump_ticks_remaining > 0 && player.coyote_time_ticks_remaining > 0 {
         player.jump_boost_ticks_remaining = JUMP_BOOST_TICKS;
-    } else if !check_pressed(KeyCode::Space)
-        && !check_pressed(KeyCode::KeyW)
+    } else if !check_pressed(config.controls_config.key_jump)
+        && !check_pressed(config.controls_config.key_up)
         && player.velocity.y > 0.
     {
         // Jump was cut
@@ -150,11 +153,11 @@ pub fn move_player(
     player.velocity.y = player.velocity.y.clamp(-PLAYER_MAX_Y_VEL, PLAYER_MAX_Y_VEL);
 
     let mut moved = false;
-    if check_pressed(KeyCode::KeyA) {
+    if check_pressed(config.controls_config.key_left) {
         player.velocity.x -= PLAYER_MOVE_VEL;
         moved = true;
     }
-    if check_pressed(KeyCode::KeyD) {
+    if check_pressed(config.controls_config.key_right) {
         player.velocity.x += PLAYER_MOVE_VEL;
         moved = true;
     }
