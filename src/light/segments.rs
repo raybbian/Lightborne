@@ -160,8 +160,9 @@ pub fn play_light_beam(
         }
 
         // if inside something???
+        let mut ignore_entity = true;
         if intersection.time_of_impact < 0.01 {
-            break;
+            ignore_entity = false;
         }
 
         playback.elapsed_time += intersection.time_of_impact;
@@ -175,7 +176,9 @@ pub fn play_light_beam(
 
         ray_pos = intersection.point;
         ray_dir = ray_dir.reflect(intersection.normal);
-        ray_qry = ray_qry.exclude_collider(entity);
+        if ignore_entity {
+            ray_qry = ray_qry.exclude_collider(entity);
+        }
 
         if black_ray_qry.get(entity).is_ok() {
             break;
@@ -235,7 +238,7 @@ pub fn simulate_light_sources(
 
                 let add_intersection = prev_x.is_none() || is_closer;
                 let remove_intersection = prev_x.is_some();
-                let play_sound = prev_x.is_none();
+                let play_sound = prev_x.is_none() && !is_same_intersection;
 
                 // handle remove before add because it could be the case that both are true
                 if remove_intersection {
@@ -245,6 +248,16 @@ pub fn simulate_light_sources(
                     }
                     prev_playback.intersections[i] = None;
                     source.time_traveled = prev_x.unwrap().time;
+
+                    // unhit all future lights as well
+                    for j in i + 1..prev_playback.intersections.len() {
+                        let Some(intersection) = prev_playback.intersections[j] else {
+                            continue;
+                        };
+                        if let Ok(mut sensor) = q_light_sensor.get_mut(intersection.entity) {
+                            sensor.hit_by[source.color] = false;
+                        }
+                    }
                 }
 
                 if add_intersection {

@@ -1,7 +1,10 @@
 use bevy::{math::vec2, prelude::*};
 use bevy_rapier2d::prelude::*;
 
-use crate::{animation::AnimationConfig, input::CursorWorldCoords};
+use crate::{
+    animation::AnimationConfig, input::CursorWorldCoords, level::platform::cast_player_ray_shape,
+    shared::GroupLabel,
+};
 
 use super::{light::PlayerLightInventory, movement::PlayerMovement, PlayerMarker};
 
@@ -121,19 +124,33 @@ pub fn set_animation(
             &PlayerMovement,
             &mut AnimationConfig,
             &mut PlayerAnimationType,
+            &Transform,
             &KinematicCharacterControllerOutput,
         ),
         With<PlayerMarker>,
     >,
     mut was_grounded: Local<bool>,
+    rapier_context: ReadDefaultRapierContext<'_, '_>,
 ) {
-    let Ok((movement, mut config, mut animation, output)) = q_player.get_single_mut() else {
+    let Ok((movement, mut config, mut animation, transform, output)) = q_player.get_single_mut()
+    else {
         return;
     };
 
+    let entity_below_player = cast_player_ray_shape(
+        &rapier_context,
+        transform,
+        0.0,
+        -11.0,
+        16.0,
+        2.0,
+        Vec2::new(0.0, -1.0),
+        GroupLabel::PLATFORM,
+    );
+
     let new_anim = if !output.grounded && output.effective_translation.y > 0.0 {
         PlayerAnimationType::Jump
-    } else if !output.grounded {
+    } else if !output.grounded && entity_below_player.is_none() {
         PlayerAnimationType::Fall
     } else if output.grounded && !*was_grounded {
         PlayerAnimationType::Land
@@ -155,5 +172,5 @@ pub fn set_animation(
             *config = AnimationConfig::from(new_anim);
         }
     }
-    *was_grounded = output.grounded;
+    *was_grounded = output.grounded || entity_below_player.is_some();
 }
