@@ -48,7 +48,8 @@ impl Plugin for PlayerKillPlugin {
             )
             .add_systems(
                 FixedUpdate,
-                start_kill_animation.run_if(on_event::<KillPlayerEvent>),
+                (start_kill_animation, play_death_sound_on_kill)
+                    .run_if(on_event::<KillPlayerEvent>),
             );
     }
 }
@@ -58,23 +59,37 @@ pub fn quick_reset(mut ev_kill_player: EventWriter<KillPlayerEvent>) {
     ev_kill_player.send(KillPlayerEvent);
 }
 
+pub fn play_death_sound_on_kill(
+    mut commands: Commands,
+    q_player: Query<Entity, With<PlayerMarker>>,
+    asset_server: Res<AssetServer>,
+) {
+    let Ok(player) = q_player.get_single() else {
+        return;
+    };
+    commands.entity(player).with_child((
+        AudioPlayer::new(asset_server.load("sfx/death.wav")),
+        PlaybackSettings::DESPAWN,
+    ));
+}
+
 /// [`System`] that runs on [`GameState::Respawning`]. Will turn the state back into playing
 /// immediately.
 pub fn reset_player_on_kill(
     mut commands: Commands,
     // angle marker despawn should realistically happen in a diff system?
-    mut q_player: Query<&mut Transform, With<PlayerMarker>>,
     q_angle_marker: Query<Entity, With<AngleMarker>>,
     mut ev_reset_level: EventReader<ResetLevel>,
     q_start_flag: Query<(&StartFlag, &EntityInstance)>,
     current_level: Res<CurrentLevel>,
     mut ev_move_camera: EventWriter<CameraMoveEvent>,
+    mut q_player: Query<&mut Transform, With<PlayerMarker>>,
 ) {
     // check that we recieved a ResetLevel event asking us to Respawn
     if !ev_reset_level.read().any(|x| *x == ResetLevel::Respawn) {
         return;
     }
-    let Ok(mut transform) = q_player.get_single_mut() else {
+    let Ok(mut player_transform) = q_player.get_single_mut() else {
         return;
     };
 
@@ -84,14 +99,17 @@ pub fn reset_player_on_kill(
 
     for (flag, instance) in q_start_flag.iter() {
         if current_level.level_iid == flag.level_iid {
-            transform.translation.x =
+            player_transform.translation.x =
                 instance.world_x.expect("Lightborne uses Free world layout") as f32;
-            transform.translation.y = -instance.world_y.expect("Lightborne uses Free world layout")
-                as f32
-                + LYRA_RESPAWN_EPSILON;
+            player_transform.translation.y =
+                -instance.world_y.expect("Lightborne uses Free world layout") as f32
+                    + LYRA_RESPAWN_EPSILON;
             // add small height so Lyra is not stuck into the floor
             ev_move_camera.send(CameraMoveEvent {
-                to: camera_position_from_level(current_level.level_box, transform.translation.xy()),
+                to: camera_position_from_level(
+                    current_level.level_box,
+                    player_transform.translation.xy(),
+                ),
                 variant: CameraControlType::Instant,
             });
             return;
@@ -125,12 +143,10 @@ pub fn reset_player_on_level_switch(
 
 /// Kills player upon touching a HURT_BOX
 pub fn kill_player_on_hurt_intersection(
-    mut commands: Commands,
     rapier_context: Query<&RapierContext>,
     q_player: Query<Entity, With<PlayerHurtMarker>>,
     q_hurt: Query<Entity, With<HurtMarker>>,
     mut ev_kill_player: EventWriter<KillPlayerEvent>,
-    asset_server: Res<AssetServer>,
 ) {
     let Ok(rapier) = rapier_context.get_single() else {
         return;
@@ -142,10 +158,6 @@ pub fn kill_player_on_hurt_intersection(
     for hurt in q_hurt.iter() {
         if rapier.intersection_pair(player, hurt) == Some(true) {
             ev_kill_player.send(KillPlayerEvent);
-            commands.entity(player).with_child((
-                AudioPlayer::new(asset_server.load("sfx/death.wav")),
-                PlaybackSettings::DESPAWN,
-            ));
             return;
         }
     }

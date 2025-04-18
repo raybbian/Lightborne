@@ -8,7 +8,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    player::PlayerMarker,
+    player::{kill::KillPlayerEvent, PlayerMarker},
     shared::{GroupLabel, ResetLevel},
 };
 
@@ -159,7 +159,7 @@ impl MovingPlatform {
         direction: Vec2,
         platform_entity: Entity,
         platform_global_transform: &GlobalTransform,
-        ev_reset_level: &mut EventWriter<ResetLevel>,
+        ev_kill_player: &mut EventWriter<KillPlayerEvent>,
         time: &Res<Time>,
     ) {
         let (
@@ -178,7 +178,7 @@ impl MovingPlatform {
             && player_controller_output.grounded
             && direction_and_velocity.y < 0.0
         {
-            ev_reset_level.send(ResetLevel::Respawn);
+            ev_kill_player.send(KillPlayerEvent);
             return;
         }
 
@@ -187,7 +187,7 @@ impl MovingPlatform {
             if self.curr_state == PlatformState::Play {
                 // Crush player if platform moving player into ceiling
                 if direction.y > 0.0 && entity_above_player.is_some() {
-                    ev_reset_level.send(ResetLevel::Respawn);
+                    ev_kill_player.send(KillPlayerEvent);
                     return;
                 }
                 if (entity_left_of_player.is_none() || direction.x > 0.0)
@@ -226,11 +226,11 @@ impl MovingPlatform {
             if self.curr_state == PlatformState::Play {
                 if relative_horizontal.x < 0.0 {
                     if entity_right_of_player.is_some() {
-                        ev_reset_level.send(ResetLevel::Respawn);
+                        ev_kill_player.send(KillPlayerEvent);
                         return;
                     }
                 } else if entity_left_of_player.is_some() {
-                    ev_reset_level.send(ResetLevel::Respawn);
+                    ev_kill_player.send(KillPlayerEvent);
                     return;
                 }
                 // Offset player if they are clipping into the platform
@@ -267,7 +267,8 @@ impl From<&bevy_ecs_ldtk::EntityInstance> for MovingPlatform {
         }
         path_curve_points.insert(0, false);
         let speed = *entity_instance.get_float_field("speed").unwrap();
-        let initial_state = PlatformState::Play;
+        let initial_state =
+            PlatformState::from(entity_instance.get_enum_field("DefaultState").unwrap());
         let width = entity_instance.width;
         let height = entity_instance.height;
         let curr_segment = path[0];
@@ -372,6 +373,7 @@ pub struct MovingPlatformBundle {
 }
 
 /// [System] that moves platforms during each [Update] step
+#[allow(clippy::too_many_arguments)]
 pub fn move_platforms(
     mut platform_q: Query<
         (
@@ -392,9 +394,12 @@ pub fn move_platforms(
         ),
         With<PlayerMarker>,
     >,
+    levels_q: Query<(Entity, &GlobalTransform, &LevelIid)>,
+    parents: Query<&Parent>,
+    levels: Query<&LevelIid>,
     rapier_context: ReadDefaultRapierContext,
     time: Res<Time>,
-    mut ev_reset_level: EventWriter<ResetLevel>,
+    mut ev_kill_player: EventWriter<KillPlayerEvent>,
 ) {
     let Ok(mut player) = player_q.get_single_mut() else {
         return;
@@ -419,7 +424,7 @@ pub fn move_platforms(
         0.0,
         -10.0,
         16.0,
-        0.75,
+        1.75,
         Vec2::new(0.0, -1.0),
         GroupLabel::PLATFORM,
     );
@@ -453,18 +458,37 @@ pub fn move_platforms(
     for (mut platform, mut transform, entity, global_transform) in platform_q.iter_mut() {
         // Calculate direction vector for platform motion (Depends on linear or circular motion)
         let direction_vec = platform.get_next_direction_vec(&time);
+        //print!("X: {:?}, {:?} ", platform.curr_segment.x, platform.current_position.x);
+        //println!("Y: {:?}, {:?}", platform.curr_segment.y, platform.current_position.y);
+        //println!("{:?}", direction_vec);
 
         // Only move platform if it is in the Play state
         if platform.curr_state == PlatformState::Play {
             transform.translation += Vec3::new(direction_vec.x, direction_vec.y, 0.0)
                 * platform.speed
                 * time.delta_secs();
-            platform.current_position = Vec2::new(
-                (global_transform.translation().x / BLOCK_WIDTH)
-                    - (platform.width as f32 / 2.0 / BLOCK_WIDTH),
-                -(global_transform.translation().y / BLOCK_WIDTH)
-                    - (platform.height as f32 / 2.0 / BLOCK_WIDTH),
-            );
+
+            let mut new_entity = entity;
+            while let Ok(parent) = parents.get(new_entity) {
+                new_entity = parent.get();
+                if let Ok(_level_iid) = levels.get(new_entity) {
+                    break;
+                }
+            }
+
+            for (_entity, global_level_transform, id) in levels_q.iter() {
+                if *id == *levels.get(new_entity).unwrap() {
+                    let platform_translation =
+                        global_transform.translation() - global_level_transform.translation();
+                    platform.current_position = Vec2::new(
+                        (platform_translation.x / BLOCK_WIDTH)
+                            - (platform.width as f32 / 2.0 / BLOCK_WIDTH),
+                        -(platform_translation.y / BLOCK_WIDTH)
+                            - (platform.height as f32 / 2.0 / BLOCK_WIDTH)
+                            + 23.0,
+                    );
+                }
+            }
         }
 
         // Adjust the position of the player to prevent intersection and to move player with platform
@@ -474,7 +498,7 @@ pub fn move_platforms(
             direction_vec,
             entity,
             global_transform,
-            &mut ev_reset_level,
+            &mut ev_kill_player,
             &time,
         );
 
@@ -532,12 +556,13 @@ pub fn reset_platforms(mut platform_q: Query<(&mut MovingPlatform, &mut Transfor
         platform.curr_segment_index = 1;
         platform.curr_state = platform.initial_state;
         platform.arc_time = 0.0;
+        platform.current_position = Vec2::new(platform.path[0].x as f32, platform.path[0].y as f32);
     }
 }
 
 /// function that casts a ray shape relative to the player
 #[allow(clippy::too_many_arguments)]
-fn cast_player_ray_shape(
+pub fn cast_player_ray_shape(
     rapier_context: &ReadDefaultRapierContext,
     player_transform: &Transform,
     x_offset: f32,
@@ -574,14 +599,33 @@ fn cast_player_ray_shape(
 /// [System] that checks for [ChangePlatformStateEvent] [Event] during each [Update] step and updates the platform's state accordingly
 pub fn change_platform_state(
     mut event_reader: EventReader<ChangePlatformStateEvent>,
-    mut platform_q: Query<(&mut MovingPlatform, &LevelIid)>,
+    mut platform_q: Query<(Entity, &mut MovingPlatform)>,
     current_level: Res<CurrentLevel>,
+    parents: Query<&Parent>,
+    levels: Query<&LevelIid>,
 ) {
     for event in event_reader.read() {
         match event.new_state {
             PlatformState::Play => {
-                for (mut platform, platform_level) in platform_q.iter_mut() {
-                    if platform.id == event.id && current_level.level_iid == *platform_level {
+                //println!("Platform found!");
+                for (entity, mut platform) in platform_q.iter_mut() {
+                    //println!("There is a platform");
+                    let mut new_entity = entity;
+                    while let Ok(parent) = parents.get(new_entity) {
+                        new_entity = parent.get();
+                        if let Ok(_level_iid) = levels.get(new_entity) {
+                            break;
+                        }
+                    }
+                    //println!("{:?}", levels.get(new_entity));
+                    //println!("{:?}", current_level.level_iid);
+                    //println!("{:?} {:?}", platform.id, event.id);
+                    //println!("{:?}", platform.path);
+                    //println!("{:?}", platform.curr_segment);
+                    if platform.id == event.id
+                        && current_level.level_iid == *levels.get(new_entity).unwrap()
+                    {
+                        //println!("Platform in level");
                         platform.curr_state = match platform.curr_state {
                             PlatformState::Play => PlatformState::Play,
                             PlatformState::Pause => PlatformState::Play,
@@ -597,8 +641,17 @@ pub fn change_platform_state(
                 }
             }
             PlatformState::Pause => {
-                for (mut platform, platform_level) in platform_q.iter_mut() {
-                    if platform.id == event.id && current_level.level_iid == *platform_level {
+                for (entity, mut platform) in platform_q.iter_mut() {
+                    let mut new_entity = entity;
+                    while let Ok(parent) = parents.get(new_entity) {
+                        new_entity = parent.get();
+                        if let Ok(_level_iid) = levels.get(new_entity) {
+                            break;
+                        }
+                    }
+                    if platform.id == event.id
+                        && current_level.level_iid == *levels.get(new_entity).unwrap()
+                    {
                         platform.curr_state = match platform.curr_state {
                             PlatformState::Play => PlatformState::Pause,
                             PlatformState::Pause => PlatformState::Pause,
@@ -608,8 +661,17 @@ pub fn change_platform_state(
                 }
             }
             PlatformState::Stop => {
-                for (mut platform, platform_level) in platform_q.iter_mut() {
-                    if platform.id == event.id && current_level.level_iid == *platform_level {
+                for (entity, mut platform) in platform_q.iter_mut() {
+                    let mut new_entity = entity;
+                    while let Ok(parent) = parents.get(new_entity) {
+                        new_entity = parent.get();
+                        if let Ok(_level_iid) = levels.get(new_entity) {
+                            break;
+                        }
+                    }
+                    if platform.id == event.id
+                        && current_level.level_iid == *levels.get(entity).unwrap()
+                    {
                         platform.curr_state = match platform.curr_state {
                             PlatformState::Play => {
                                 platform.has_activated = true;
