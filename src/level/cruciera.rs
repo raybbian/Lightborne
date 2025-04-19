@@ -28,6 +28,10 @@ impl Plugin for CrucieraPlugin {
                 lyra_cruciera_dialogue.run_if(in_state(AnimationState::CrucieraDialogue)),
             )
             .add_systems(
+                Update,
+                reset_cruciera_on_level_switch.in_set(LevelSystems::Reset),
+            )
+            .add_systems(
                 FixedUpdate,
                 check_start_cutscene.in_set(LevelSystems::Simulation),
             );
@@ -311,6 +315,13 @@ pub fn lyra_cruciera_dialogue(
     {
         *text = LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].1[0..text.len() + 1].into();
     }
+}
+
+pub fn reset_cruciera_on_level_switch(mut q_cruciera: Query<&mut Cruciera>) {
+    let Ok(mut cruciera) = q_cruciera.get_single_mut() else {
+        return;
+    };
+    cruciera.played_cutscene = false;
 }
 
 pub fn end_dialogue(

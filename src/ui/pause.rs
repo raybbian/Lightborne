@@ -18,6 +18,7 @@ impl Plugin for PausePlugin {
                 despawn_pause.run_if(not(in_state(GameState::Paused))),
                 spawn_cover.run_if(in_state(GameState::Ui)),
                 despawn_cover.run_if(not(in_state(GameState::Ui))),
+                resume_button,
             ),
         )
         .add_systems(
@@ -56,6 +57,9 @@ fn despawn_cover(mut commands: Commands, q_cover: Query<Entity, With<CoverMarker
 
 #[derive(Component)]
 pub struct PauseMarker;
+
+#[derive(Component)]
+pub struct PauseMenuResume;
 
 fn spawn_pause(
     mut commands: Commands,
@@ -108,9 +112,15 @@ fn spawn_pause(
                         Text::new("Paused"),
                         font.clone().with_font_size(48.),
                         Node {
-                            margin: UiRect::all(Val::Px(16.)),
+                            margin: UiRect::all(Val::Px(32.)),
                             ..default()
                         },
+                    ));
+                    parent.spawn((
+                        Text::new("Resume"),
+                        Button,
+                        PauseMenuResume,
+                        font.clone().with_font_size(36.),
                     ));
                     parent.spawn((
                         Text::new("Level Select"),
@@ -139,6 +149,32 @@ fn despawn_pause(mut commands: Commands, q_pause: Query<Entity, With<PauseMarker
         return;
     };
     commands.entity(pause_entity).despawn_recursive();
+}
+
+fn resume_button(
+    mut commands: Commands,
+    q_button: Query<&Interaction, (With<PauseMenuResume>, Changed<Interaction>)>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    asset_server: Res<AssetServer>,
+) {
+    for interaction in q_button.iter() {
+        match *interaction {
+            Interaction::Pressed => {
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load("sfx/click.wav")),
+                    PlaybackSettings::DESPAWN,
+                ));
+                next_game_state.set(GameState::Playing);
+            }
+            Interaction::Hovered => {
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load("sfx/hover.wav")),
+                    PlaybackSettings::DESPAWN,
+                ));
+            }
+            _ => {}
+        }
+    }
 }
 
 fn toggle_pause(state: Res<State<GameState>>, mut next_state: ResMut<NextState<GameState>>) {
