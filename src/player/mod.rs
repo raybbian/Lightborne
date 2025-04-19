@@ -7,7 +7,7 @@ use match_player::{
 };
 use strand::PlayerStrandPlugin;
 
-use crate::{animation::AnimationConfig, level::LevelSystems, lighting::LineLight2d};
+use crate::{animation::AnimationConfig, level::LevelSystems};
 
 use kill::PlayerKillPlugin;
 use light::{PlayerLightInventory, PlayerLightPlugin};
@@ -79,7 +79,7 @@ pub struct PlayerBundle {
     restitution: Restitution,
     player_movement: PlayerMovement,
     light_inventory: PlayerLightInventory,
-    point_lighting: LineLight2d,
+    // point_lighting: LineLight2d,
     animation_config: AnimationConfig,
     animation_type: PlayerAnimationType,
 }

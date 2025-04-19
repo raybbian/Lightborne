@@ -56,6 +56,7 @@ fn main() {
                     ..default()
                 }),
         )
+        .insert_resource(ClearColor(Color::NONE))
         .add_plugins(bevy_mod_debugdump::CommandLineArgs)
         .add_plugins(ConfigPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())

@@ -14,6 +14,7 @@ use bevy::prelude::ops::{cos, sin};
 use std::f32::consts::PI;
 
 use crate::{
+    camera::HIGHRES_LAYER,
     input::{update_cursor_world_coords, CursorWorldCoords},
     level::{mirror::Mirror, CurrentLevel, LevelSystems},
     light::{
@@ -132,6 +133,7 @@ pub fn spawn_angle_indicator(
             ..default()
         },
         AngleMarker,
+        HIGHRES_LAYER,
     ));
 }
 
@@ -165,6 +167,7 @@ pub fn spawn_angle_increments_indicators(
                 rotation: Quat::from_rotation_z(i as f32 * angle_increment),
                 ..default()
             },
+            HIGHRES_LAYER,
         ));
     }
 }
@@ -302,9 +305,10 @@ pub fn shoot_light(
             30.0,
             0.0,
         ))
+        .insert(HIGHRES_LAYER)
         .insert(source_sprite)
         .insert(source_transform)
-        .with_child(outer_source_sprite);
+        .with_child((outer_source_sprite, HIGHRES_LAYER));
 
     // Bevy's Mut or ResMut doesn't let you borrow multiple fields of a struct, so sometimes you
     // need to "reborrow" it to turn it into &mut. See https://bevy-cheatbook.github.io/pitfalls/split-borrows.html

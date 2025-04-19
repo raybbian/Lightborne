@@ -141,7 +141,11 @@ impl FromWorld for AmbientLight2dPipeline {
                                     dst_factor: BlendFactor::One,
                                     operation: BlendOperation::Add,
                                 },
-                                alpha: BlendComponent::OVER,
+                                alpha: BlendComponent {
+                                    src_factor: BlendFactor::One,
+                                    dst_factor: BlendFactor::Zero,
+                                    operation: BlendOperation::Add,
+                                },
                             }),
                             write_mask: ColorWrites::ALL,
                         })],

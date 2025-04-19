@@ -13,10 +13,15 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     let intensity = ambient_light.color.a;
     let color = ambient_light.color.rgb;
 
-    let base_color = textureSample(unlit_texture, unlit_sampler, in.uv).rgb;
-    let shaded_color = base_color * color * intensity;
+    let base_color = textureSample(unlit_texture, unlit_sampler, in.uv);
+    let shaded_color = base_color.rgb * color * intensity;
 
-    return vec4<f32>(shaded_color, 1.0);
+    // not sure why need this???
+    var alpha: f32 = 0.0;
+    if base_color.a > 0.0 {
+        alpha = 1.0;
+    }
+    return vec4<f32>(shaded_color, alpha);
 }
 
 

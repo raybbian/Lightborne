@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use enum_map::{enum_map, EnumMap};
 
-use crate::{level::LevelSystems, light::LightColor, player::PlayerMarker};
+use crate::{camera::HIGHRES_LAYER, level::LevelSystems, light::LightColor, player::PlayerMarker};
 
 use super::PlayerLightInventory;
 
@@ -67,6 +67,7 @@ pub fn add_light_indicator(
             Visibility::Visible,
             Transform::from_xyz(-10.0, 10.0, 0.0),
             LightIndicatorMarker,
+            HIGHRES_LAYER,
         ))
         .id();
 

@@ -4,7 +4,13 @@ use bevy::{
     core_pipeline::tonemapping::Tonemapping,
     ecs::system::SystemId,
     prelude::*,
-    render::{camera::ScalingMode, view::RenderLayers},
+    render::{
+        camera::{RenderTarget, ScalingMode},
+        render_resource::{
+            Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
+        },
+        view::RenderLayers,
+    },
 };
 use bevy_rapier2d::plugin::PhysicsSet;
 
@@ -33,7 +39,11 @@ impl Plugin for CameraPlugin {
             .add_systems(
                 Update,
                 (
-                    (handle_zoom_camera, handle_move_camera)
+                    (
+                        (handle_zoom_camera, handle_move_camera),
+                        apply_camera_snapping,
+                    )
+                        .chain()
                         .after(move_camera)
                         .after(switch_level),
                     handle_transition_camera,
@@ -56,9 +66,15 @@ pub struct MainCamera;
 #[derive(Component, Default)]
 pub struct BackgroundCamera;
 
-pub const CAMERA_WIDTH: f32 = 320.;
-pub const CAMERA_HEIGHT: f32 = 180.;
+pub const CAMERA_WIDTH: u32 = 320;
+pub const CAMERA_HEIGHT: u32 = 180;
 pub const CAMERA_ANIMATION_SECS: f32 = 0.4;
+
+pub const TERRAIN_LAYER: RenderLayers = RenderLayers::layer(0);
+pub const BACKGROUND_LAYER: RenderLayers = RenderLayers::layer(1);
+pub const HIGHRES_LAYER: RenderLayers = RenderLayers::layer(2);
+// pub const LYRA_LAYER: RenderLayers = RenderLayers::layer(3);
+pub const TRANSITION_LAYER: RenderLayers = RenderLayers::layer(5);
 
 #[derive(Component)]
 pub struct TransitionCamera;
@@ -66,7 +82,23 @@ pub struct TransitionCamera;
 #[derive(Component)]
 pub struct TransitionMeshMarker;
 
-pub const TRANSITION_CAMERA_LAYER: RenderLayers = RenderLayers::layer(5);
+#[derive(Component)]
+#[require(Transform)]
+pub struct CameraPixelOffset(Vec2);
+
+pub fn apply_camera_snapping(
+    q_camera: Query<&Transform, With<MainCamera>>,
+    mut q_match_camera: Query<(&mut Transform, &mut CameraPixelOffset), Without<MainCamera>>,
+) {
+    let Ok(main_camera_transform) = q_camera.get_single() else {
+        return;
+    };
+    for (mut transform, mut pixel_offset) in q_match_camera.iter_mut() {
+        pixel_offset.0 =
+            (main_camera_transform.translation.round() - main_camera_transform.translation).xy();
+        transform.translation = pixel_offset.0.extend(transform.translation.z);
+    }
+}
 
 /// [`Startup`] [`System`] that spawns the [`Camera2d`] in the world.
 ///
@@ -76,11 +108,13 @@ pub fn setup_camera(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut images: ResMut<Assets<Image>>,
+    asset_server: Res<AssetServer>,
 ) {
     let projection = OrthographicProjection {
         scaling_mode: ScalingMode::Fixed {
-            width: CAMERA_WIDTH,
-            height: CAMERA_HEIGHT,
+            width: CAMERA_WIDTH as f32,
+            height: CAMERA_HEIGHT as f32,
         },
         ..OrthographicProjection::default_2d()
     };
@@ -90,54 +124,103 @@ pub fn setup_camera(
         TransitionCamera,
         Camera {
             hdr: true,
-            order: 2,
+            order: 4,
             clear_color: ClearColorConfig::None,
             ..default()
         },
         projection.clone(),
         Transform::default(),
-        TRANSITION_CAMERA_LAYER,
+        TRANSITION_LAYER,
     ));
 
     commands.spawn((
-        Mesh2d(meshes.add(Rectangle::new(320.0, 180.0))),
+        Mesh2d(meshes.add(Rectangle::new(CAMERA_WIDTH as f32, CAMERA_HEIGHT as f32))),
         MeshMaterial2d(materials.add(Color::BLACK)),
         // send to narnia, should be moved by any animations using it
         Transform::from_xyz(10000.0, 10000.0, 0.0),
         TransitionMeshMarker,
-        TRANSITION_CAMERA_LAYER,
+        TRANSITION_LAYER,
     ));
 
-    commands.spawn((
-        Camera2d,
-        MainCamera,
-        AmbientLight2d {
-            color: Vec4::new(1.0, 1.0, 1.0, 0.4),
-        },
-        Camera {
-            hdr: true,
-            order: 1,
-            clear_color: ClearColorConfig::None,
-            ..default()
-        },
-        Tonemapping::TonyMcMapface,
-        // Bloom::default(),
-        projection.clone(),
-        Transform::default(),
-    ));
+    let main_camera = commands
+        .spawn((
+            Camera2d,
+            MainCamera,
+            Camera {
+                hdr: true,
+                order: 3, // must be after the lowres layers
+                clear_color: ClearColorConfig::None,
+                ..default()
+            },
+            Tonemapping::TonyMcMapface,
+            projection.clone(),
+            Transform::default(),
+            HIGHRES_LAYER,
+        ))
+        .id();
 
-    commands.spawn((
-        Camera2d,
-        BackgroundCamera,
-        Camera {
-            hdr: true, // If Cameras mix HDR and non-HDR, then weird ass stuff happens. Seems like
-            // https://github.com/bevyengine/bevy/pull/13419 was only a partial fix
-            ..default()
+    let canvas_size = Extent3d {
+        width: CAMERA_WIDTH as u32 + 2,
+        height: CAMERA_HEIGHT as u32 + 2,
+        ..default()
+    };
+
+    let mut terrain = Image {
+        texture_descriptor: TextureDescriptor {
+            label: None,
+            size: canvas_size,
+            dimension: TextureDimension::D2,
+            format: TextureFormat::Rgba16Float,
+            mip_level_count: 1,
+            sample_count: 1,
+            usage: TextureUsages::TEXTURE_BINDING
+                | TextureUsages::COPY_DST
+                | TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
         },
-        projection,
-        RenderLayers::layer(1),
-        Transform::default(),
-    ));
+        ..default()
+    };
+
+    terrain.resize(canvas_size);
+    let terrain_handle = images.add(terrain);
+
+    let pixel_projection = OrthographicProjection {
+        scaling_mode: ScalingMode::Fixed {
+            width: (CAMERA_WIDTH + 2) as f32,
+            height: (CAMERA_HEIGHT + 2) as f32,
+        },
+        ..OrthographicProjection::default_2d()
+    };
+
+    commands.entity(main_camera).with_children(|child| {
+        child
+            .spawn((
+                Camera2d,
+                // MatchMainCameraTransform::Nearest,
+                AmbientLight2d {
+                    color: Vec4::new(1.0, 1.0, 1.0, 0.4),
+                },
+                Camera {
+                    hdr: true,
+                    order: 1,
+                    target: RenderTarget::Image(terrain_handle.clone()),
+                    clear_color: ClearColorConfig::Custom(Color::NONE),
+                    ..default()
+                },
+                Tonemapping::TonyMcMapface,
+                CameraPixelOffset(Vec2::ZERO),
+                pixel_projection.clone(),
+                Transform::default(),
+                TERRAIN_LAYER,
+            ))
+            .with_child((Sprite::from_image(terrain_handle.clone()), HIGHRES_LAYER));
+
+        child.spawn((
+            Sprite::from_image(asset_server.load("levels/background.png")),
+            HIGHRES_LAYER,
+            Transform::from_xyz(0., 0., -5.),
+        ));
+    });
 }
 
 #[derive(Debug)]
@@ -201,13 +284,13 @@ pub fn handle_transition_camera(
             CameraTransition::SlideFromBlack => CameraAnimationInfo {
                 progress: Timer::new(event.duration, TimerMode::Once),
                 start: Vec3::new(0.0, 0.0, 0.0),
-                end: Vec3::new(0.0, -CAMERA_HEIGHT, 0.0),
+                end: Vec3::new(0.0, -(CAMERA_HEIGHT as f32), 0.0),
                 curve: EasingCurve::new(0.0, 1.0, event.ease_fn),
                 callback: event.callback,
             },
             CameraTransition::SlideToBlack => CameraAnimationInfo {
                 progress: Timer::new(event.duration, TimerMode::Once),
-                start: Vec3::new(0.0, CAMERA_HEIGHT, 0.0),
+                start: Vec3::new(0.0, CAMERA_HEIGHT as f32, 0.0),
                 end: Vec3::new(0.0, 0.0, 0.0),
                 curve: EasingCurve::new(0.0, 1.0, event.ease_fn),
                 callback: event.callback,
@@ -350,12 +433,12 @@ pub fn camera_position_from_level_with_scale(
     camera_scale: f32,
 ) -> Vec2 {
     let (x_min, x_max) = (
-        level_box.min.x + CAMERA_WIDTH * 0.5 * camera_scale,
-        level_box.max.x - CAMERA_WIDTH * 0.5 * camera_scale,
+        level_box.min.x + CAMERA_WIDTH as f32 * 0.5 * camera_scale,
+        level_box.max.x - CAMERA_WIDTH as f32 * 0.5 * camera_scale,
     );
     let (y_min, y_max) = (
-        level_box.min.y + CAMERA_HEIGHT * 0.5 * camera_scale,
-        level_box.max.y - CAMERA_HEIGHT * 0.5 * camera_scale,
+        level_box.min.y + CAMERA_HEIGHT as f32 * 0.5 * camera_scale,
+        level_box.max.y - CAMERA_HEIGHT as f32 * 0.5 * camera_scale,
     );
 
     Vec2::new(
