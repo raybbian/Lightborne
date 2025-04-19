@@ -71,9 +71,7 @@ pub const CAMERA_HEIGHT: u32 = 180;
 pub const CAMERA_ANIMATION_SECS: f32 = 0.4;
 
 pub const TERRAIN_LAYER: RenderLayers = RenderLayers::layer(0);
-pub const BACKGROUND_LAYER: RenderLayers = RenderLayers::layer(1);
 pub const HIGHRES_LAYER: RenderLayers = RenderLayers::layer(2);
-// pub const LYRA_LAYER: RenderLayers = RenderLayers::layer(3);
 pub const TRANSITION_LAYER: RenderLayers = RenderLayers::layer(5);
 
 #[derive(Component)]
@@ -124,7 +122,7 @@ pub fn setup_camera(
         TransitionCamera,
         Camera {
             hdr: true,
-            order: 4,
+            order: 2,
             clear_color: ClearColorConfig::None,
             ..default()
         },
@@ -148,7 +146,7 @@ pub fn setup_camera(
             MainCamera,
             Camera {
                 hdr: true,
-                order: 3, // must be after the lowres layers
+                order: 1, // must be after the lowres layers
                 clear_color: ClearColorConfig::None,
                 ..default()
             },
@@ -202,7 +200,7 @@ pub fn setup_camera(
                 },
                 Camera {
                     hdr: true,
-                    order: 1,
+                    order: 0,
                     target: RenderTarget::Image(terrain_handle.clone()),
                     clear_color: ClearColorConfig::Custom(Color::NONE),
                     ..default()
