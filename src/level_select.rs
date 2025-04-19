@@ -17,6 +17,7 @@ use crate::config::Config;
 use crate::level::start_flag::StartFlag;
 use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
 use crate::player::PlayerMarker;
+use crate::settings::SettingsButton;
 use crate::shared::{GameState, UiState, LYRA_RESPAWN_EPSILON};
 use crate::sound::{BgmTrack, ChangeBgmEvent};
 
@@ -287,6 +288,12 @@ fn spawn_level_select(
                                 ));
                         });
                 });
+            parent.spawn((
+                Text::new("Back"),
+                Button,
+                SettingsButton::Back, // FIXME: reuse settings button
+                font.clone().with_font_size(36.),
+            ));
         });
 }
 

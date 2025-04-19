@@ -55,6 +55,11 @@ impl Setting {
     }
 }
 
+#[derive(Component)]
+pub enum SettingsButton {
+    Back,
+}
+
 #[derive(Resource)]
 pub struct Settings(EnumMap<SettingName, Setting>);
 
@@ -105,7 +110,7 @@ impl Plugin for SettingsPlugin {
         .add_event::<RedrawSetting>()
         .add_event::<UpdateSetting>()
         .add_systems(
-            FixedUpdate,
+            Update,
             (
                 spawn_settings.run_if(in_state(UiState::Settings)),
                 handle_slider_buttons.run_if(in_state(UiState::Settings)),
@@ -115,6 +120,7 @@ impl Plugin for SettingsPlugin {
                 (redraw_setting, update_setting)
                     .after(handle_slider_buttons)
                     .run_if(in_state(UiState::Settings)),
+                handle_back_button,
             ),
         );
     }
@@ -193,7 +199,29 @@ fn spawn_settings(
                     ..default()
                 })
                 .add_children(&setting_nodes);
+            parent.spawn((
+                Text::new("Back"),
+                Button,
+                SettingsButton::Back,
+                font.clone().with_font_size(36.),
+            ));
         });
+}
+
+fn handle_back_button(
+    q_button: Query<(&Interaction, &SettingsButton), Changed<Interaction>>,
+    mut next_state: ResMut<NextState<UiState>>,
+) {
+    for (interaction, button_marker) in q_button.iter() {
+        if *interaction != Interaction::Pressed {
+            continue;
+        }
+        match button_marker {
+            SettingsButton::Back => {
+                next_state.set(UiState::StartMenu);
+            }
+        }
+    }
 }
 
 fn spawn_setting_children(

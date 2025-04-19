@@ -8,7 +8,7 @@ impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, spawn_start.run_if(in_state(UiState::StartMenu)))
             .add_systems(Update, exit_start.run_if(not(in_state(UiState::StartMenu))))
-            .add_systems(Update, start_game);
+            .add_systems(Update, start_game.run_if(in_state(UiState::StartMenu)));
     }
 }
 
@@ -16,7 +16,11 @@ impl Plugin for StartMenuPlugin {
 pub struct StartMenuMarker;
 
 #[derive(Component)]
-pub struct StartMenuButtonMarker;
+pub enum StartMenuButtonMarker {
+    Play,
+    Options,
+    Quit,
+}
 
 fn spawn_start(
     mut commands: Commands,
@@ -25,6 +29,11 @@ fn spawn_start(
 ) {
     if q_start_menu.get_single().is_ok() {
         return;
+    };
+
+    let font = TextFont {
+        font: asset_server.load("fonts/Outfit-Medium.ttf"),
+        ..default()
     };
 
     commands
@@ -36,19 +45,56 @@ fn spawn_start(
                 ..default()
             },
             ImageNode::from(asset_server.load("ui/start.png")).with_mode(NodeImageMode::Stretch),
+            BackgroundColor(Color::BLACK),
             StartMenuMarker,
         ))
-        .with_child((
-            Node {
-                width: Val::Px(120.),
-                height: Val::Px(60.),
-                top: Val::Percent(60.),
-                ..default()
-            },
-            ImageNode::from(asset_server.load("ui/start_button.png")),
-            Button,
-            StartMenuButtonMarker,
-        ));
+        .with_children(|container| {
+            container
+                .spawn((Node {
+                    width: Val::Percent(100.),
+                    height: Val::Percent(70.),
+                    top: Val::Percent(30.),
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    column_gap: Val::Px(16.),
+                    row_gap: Val::Px(16.),
+                    ..default()
+                },))
+                .with_child((
+                    Node {
+                        width: Val::Auto,
+                        height: Val::Auto,
+                        ..default()
+                    },
+                    font.clone().with_font_size(48.),
+                    Text::new("Play"),
+                    Button,
+                    StartMenuButtonMarker::Play,
+                ))
+                .with_child((
+                    Node {
+                        width: Val::Auto,
+                        height: Val::Auto,
+                        ..default()
+                    },
+                    font.clone().with_font_size(48.),
+                    Text::new("Options"),
+                    Button,
+                    StartMenuButtonMarker::Options,
+                ))
+                .with_child((
+                    Node {
+                        width: Val::Auto,
+                        height: Val::Auto,
+                        ..default()
+                    },
+                    font.clone().with_font_size(48.),
+                    Text::new("Quit"),
+                    Button,
+                    StartMenuButtonMarker::Quit,
+                ));
+        });
 }
 
 fn exit_start(mut commands: Commands, query: Query<Entity, With<StartMenuMarker>>) {
@@ -59,13 +105,42 @@ fn exit_start(mut commands: Commands, query: Query<Entity, With<StartMenuMarker>
 }
 
 fn start_game(
-    q_button: Query<&Interaction, (With<StartMenuButtonMarker>, Changed<Interaction>)>,
+    mut commands: Commands,
+    q_button: Query<(&Interaction, &StartMenuButtonMarker), Changed<Interaction>>,
     mut next_state: ResMut<NextState<UiState>>,
+    mut exit: EventWriter<AppExit>,
+    asset_server: Res<AssetServer>,
 ) {
-    let Ok(interaction) = &q_button.get_single() else {
-        return;
-    };
-    if **interaction == Interaction::Pressed {
-        next_state.set(UiState::LevelSelect);
+    for (interaction, button_marker) in q_button.iter() {
+        match *interaction {
+            Interaction::Pressed => {
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load("sfx/click.wav")),
+                    PlaybackSettings::DESPAWN,
+                ));
+
+                match button_marker {
+                    StartMenuButtonMarker::Play => {
+                        next_state.set(UiState::LevelSelect);
+                    }
+                    StartMenuButtonMarker::Options => {
+                        next_state.set(UiState::Settings);
+                    }
+                    StartMenuButtonMarker::Quit => {
+                        exit.send(AppExit::Success);
+                    }
+                }
+            }
+            Interaction::Hovered => {
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load("sfx/hover.wav")),
+                    PlaybackSettings::DESPAWN,
+                ));
+            }
+            _ => {}
+        }
+        if *interaction != Interaction::Pressed {
+            continue;
+        }
     }
 }
