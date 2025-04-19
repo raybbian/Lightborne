@@ -1,8 +1,8 @@
-use bevy::{input::common_conditions::input_just_pressed, prelude::*};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::level::LevelSystems;
 use crate::config::Config;
+use crate::level::LevelSystems;
 
 use super::{not_input_locked, InputLocked, PlayerMarker};
 
@@ -79,7 +79,7 @@ pub fn crouch_player(
     mut q_player: Query<(&mut PlayerMovement, &mut Collider), With<PlayerMarker>>,
     //ButtonInput<KeyCode> resource (access resource)
     keys: Res<ButtonInput<KeyCode>>,
-    config: Res<Config>
+    config: Res<Config>,
 ) {
     // ensure only 1 candidate to match query; let Ok = pattern matching
     let Ok((mut player, mut _collider)) = q_player.get_single_mut() else {
@@ -186,10 +186,7 @@ pub fn move_player(
     controller.translation = Some(player.velocity);
 }
 
-fn jump_key_pressed(
-    keys: Res<ButtonInput<KeyCode>>,
-    config: Res<Config>,
-) -> bool {
-    return keys.just_pressed(config.controls_config.key_jump) || 
-    keys.just_pressed(config.controls_config.key_up);
+fn jump_key_pressed(keys: Res<ButtonInput<KeyCode>>, config: Res<Config>) -> bool {
+    return keys.just_pressed(config.controls_config.key_jump)
+        || keys.just_pressed(config.controls_config.key_up);
 }

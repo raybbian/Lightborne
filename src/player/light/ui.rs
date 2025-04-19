@@ -110,6 +110,7 @@ pub fn spawn_light_icons(
                                 width: Val::Vw(5.),
                                 height: Val::Vw(5.),
                                 left: Val::Percent(-75.),
+                                top: Val::Percent(30.),
                                 justify_content: JustifyContent::Center,
                                 display: Display::Flex,
                                 align_items: AlignItems::Center,

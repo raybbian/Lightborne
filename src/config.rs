@@ -1,6 +1,6 @@
+use bevy::prelude::KeyCode;
 use bevy::prelude::*;
 use serde::Deserialize;
-use bevy::prelude::KeyCode;
 
 pub struct ConfigPlugin;
 
@@ -60,3 +60,4 @@ pub struct ControlsConfig {
     pub key_left: KeyCode,
     pub key_jump: KeyCode,
 }
+

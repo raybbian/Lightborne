@@ -4,11 +4,12 @@ level_path = "levels/lightborne.ldtk"
 
 [debug_config]
 ui = false
-unlock_levels = true
+unlock_levels = false
 
 [controls_config]
-key_up = KeyCode::KeyW
-key_down = KeyCode::KeyS
-key_right = KeyCode::KeyD
-key_left = KeyCode::KeyA
-key_jump = KeyCode::Space
+key_up = "KeyW"
+key_down = "KeyS"
+key_right = "KeyD"
+key_left = "KeyA"
+key_jump = "Space"
+
