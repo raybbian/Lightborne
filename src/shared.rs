@@ -37,6 +37,8 @@ pub enum AnimationState {
     Switch,
     Respawn,
     Shard,
+    Cruciera,
+    CrucieraDialogue,
 }
 
 #[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]

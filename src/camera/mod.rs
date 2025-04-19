@@ -18,6 +18,7 @@ use crate::{
     level::{switch_level, CurrentLevel, LevelSystems},
     lighting::AmbientLight2d,
     player::PlayerMarker,
+    shared::GameState,
 };
 
 /// The [`Plugin`] responsible for handling anything Camera related.
@@ -34,6 +35,7 @@ impl Plugin for CameraPlugin {
                 move_camera
                     .after(PhysicsSet::Writeback)
                     .after(switch_level)
+                    .run_if(not(in_state(GameState::Animating)))
                     .in_set(LevelSystems::Simulation),
             )
             .add_systems(

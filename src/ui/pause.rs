@@ -2,6 +2,8 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*, ui::widget:
 
 use crate::shared::GameState;
 
+use super::settings::SettingsButton;
+
 pub struct PausePlugin;
 
 impl Plugin for PausePlugin {
@@ -60,6 +62,10 @@ fn spawn_pause(
     if q_pause.get_single().is_ok() {
         return;
     }
+    let font = TextFont {
+        font: asset_server.load("fonts/Outfit-Medium.ttf"),
+        ..default()
+    };
     commands
         .spawn((
             Node {
@@ -71,15 +77,39 @@ fn spawn_pause(
             },
             PauseMarker,
         ))
-        .with_child((
-            Node {
-                width: Val::Percent(80.),
-                height: Val::Percent(80.),
-                ..default()
-            },
-            ImageNode::from(asset_server.load("ui/pause_menu.png"))
-                .with_mode(NodeImageMode::Stretch),
-        ));
+        .with_children(|container| {
+            container
+                .spawn((
+                    Node {
+                        width: Val::Percent(80.),
+                        height: Val::Percent(80.),
+                        justify_content: JustifyContent::SpaceBetween,
+                        padding: UiRect::all(Val::Percent(10.)),
+                        display: Display::Flex,
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    ImageNode::from(asset_server.load("ui/pause_menu.png"))
+                        .with_mode(NodeImageMode::Stretch),
+                ))
+                .with_children(|parent| {
+                    parent.spawn((Text::new("Paused"), font.clone().with_font_size(48.)));
+                    parent.spawn(Node {
+                        width: Val::Percent(50.),
+                        padding: UiRect::all(Val::Px(16.0)),
+                        height: Val::Percent(100.0),
+                        flex_direction: FlexDirection::Column,
+                        ..default()
+                    });
+                    parent.spawn((
+                        Text::new("Main Menu"),
+                        Button,
+                        SettingsButton::Back,
+                        font.clone().with_font_size(36.),
+                    ));
+                });
+        });
 }
 
 fn despawn_pause(mut commands: Commands, q_pause: Query<Entity, With<PauseMarker>>) {

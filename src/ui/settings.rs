@@ -212,7 +212,8 @@ fn handle_back_button(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     q_button: Query<(&Interaction, &SettingsButton), Changed<Interaction>>,
-    mut next_state: ResMut<NextState<UiState>>,
+    mut next_ui_state: ResMut<NextState<UiState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
 ) {
     for (interaction, button_marker) in q_button.iter() {
         match interaction {
@@ -223,7 +224,8 @@ fn handle_back_button(
                 ));
                 match button_marker {
                     SettingsButton::Back => {
-                        next_state.set(UiState::StartMenu);
+                        next_ui_state.set(UiState::StartMenu);
+                        next_game_state.set(GameState::Ui);
                     }
                 }
             }

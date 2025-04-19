@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
+use cruciera::CrucieraPlugin;
 use decoration::DecorationPlugin;
 use egg::EggPlugin;
 use enum_map::{enum_map, EnumMap};
@@ -29,6 +30,7 @@ use setup::LevelSetupPlugin;
 use start_flag::{init_start_marker, StartFlagBundle};
 use walls::{Wall, WallBundle};
 
+mod cruciera;
 pub mod crystal;
 mod decoration;
 mod egg;
@@ -60,6 +62,7 @@ impl Plugin for LevelManagementPlugin {
             .add_plugins(EggPlugin)
             .add_plugins(LevelCompletionPlugin)
             .add_plugins(DecorationPlugin)
+            .add_plugins(CrucieraPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
             .register_ldtk_entity::<StartFlagBundle>("Start")
@@ -96,13 +99,21 @@ impl Plugin for LevelManagementPlugin {
             )
             .configure_sets(
                 Update,
-                LevelSystems::Simulation
-                    .run_if(in_state(GameState::Playing).or(in_state(AnimationState::Shard))),
+                LevelSystems::Simulation.run_if(
+                    in_state(GameState::Playing)
+                        .or(in_state(AnimationState::Shard)) // FIXME: skull emoji
+                        .or(in_state(AnimationState::Cruciera))
+                        .or(in_state(AnimationState::CrucieraDialogue)),
+                ),
             )
             .configure_sets(
                 FixedUpdate,
-                LevelSystems::Simulation
-                    .run_if(in_state(GameState::Playing).or(in_state(AnimationState::Shard))),
+                LevelSystems::Simulation.run_if(
+                    in_state(GameState::Playing)
+                        .or(in_state(AnimationState::Shard)) // FIXME: skull emoji
+                        .or(in_state(AnimationState::Cruciera))
+                        .or(in_state(AnimationState::CrucieraDialogue)),
+                ),
             );
     }
 }
