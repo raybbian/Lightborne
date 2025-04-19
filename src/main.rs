@@ -4,7 +4,7 @@ use bevy::window::PresentMode;
 use bevy::{asset::AssetMetaCheck, diagnostic::LogDiagnosticsPlugin};
 use bevy_rapier2d::prelude::*;
 
-use camera::CameraPlugin;
+use camera::{CameraPlugin, HIGHRES_LAYER};
 use config::ConfigPlugin;
 use debug::DebugPlugin;
 use input::{init_cursor_world_coords, update_cursor_world_coords};
@@ -15,8 +15,10 @@ use lighting::DeferredLightingPlugin;
 use particle::ParticlePlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
+use settings::SettingsPlugin;
 use shared::{AnimationState, GameState, ResetLevel, UiState};
 use sound::SoundPlugin;
+use start_menu::StartMenuPlugin;
 
 mod animation;
 mod camera;
@@ -30,8 +32,10 @@ mod lighting;
 mod particle;
 mod pause;
 mod player;
+mod settings;
 mod shared;
 mod sound;
+mod start_menu;
 
 fn main() {
     App::new()
@@ -56,6 +60,15 @@ fn main() {
                     ..default()
                 }),
         )
+        .insert_resource(ClearColor(Color::NONE))
+        .insert_gizmo_config::<DefaultGizmoConfigGroup>(
+            DefaultGizmoConfigGroup,
+            GizmoConfig {
+                enabled: true,
+                render_layers: HIGHRES_LAYER,
+                ..Default::default()
+            },
+        )
         .add_plugins(bevy_mod_debugdump::CommandLineArgs)
         .add_plugins(ConfigPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
@@ -67,18 +80,16 @@ fn main() {
         .add_plugins(SoundPlugin)
         .add_plugins(ParticlePlugin)
         .add_plugins(PausePlugin)
+        .add_plugins(StartMenuPlugin)
         .add_plugins(LevelSelectPlugin)
+        .add_plugins(SettingsPlugin)
         .add_plugins(CameraPlugin)
+        .add_plugins(DebugPlugin::default())
         .insert_state(GameState::Ui)
         .add_sub_state::<UiState>()
         .add_sub_state::<AnimationState>()
-        .insert_state(UiState::LevelSelect)
+        .insert_state(UiState::StartMenu)
         .add_plugins(DeferredLightingPlugin)
-        .add_plugins(DebugPlugin {
-            // physics: true,
-            // ambiguity: true,
-            ..default()
-        })
         .add_event::<ResetLevel>()
         .add_systems(Startup, init_cursor_world_coords)
         .add_systems(Update, update_cursor_world_coords)

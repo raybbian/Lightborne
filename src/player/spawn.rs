@@ -2,7 +2,9 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{animation::AnimationConfig, lighting::LineLight2d, shared::GroupLabel};
+use crate::{
+    animation::AnimationConfig, camera::HIGHRES_LAYER, lighting::LineLight2d, shared::GroupLabel,
+};
 
 use super::{
     animation::{PlayerAnimationType, ANIMATION_FRAMES},
@@ -43,7 +45,6 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
             combine_rule: CoefficientCombineRule::Min,
         },
         light_inventory: PlayerLightInventory::default(),
-        point_lighting: LineLight2d::point(Vec4::new(1.0, 1.0, 1.0, 1.0), 50.0, 0.008),
         animation_type: PlayerAnimationType::Idle,
         animation_config: AnimationConfig::from(PlayerAnimationType::Idle),
     }
@@ -69,14 +70,17 @@ pub fn add_player_sensors(
     ));
 
     // insert sprite here because it depends on texture atlas which needs a resource
-    commands.entity(player).insert(Sprite {
-        image: asset_server.load("lyra_sheet.png"),
-        texture_atlas: Some(TextureAtlas {
-            layout: texture_atlas_layout,
-            index: 0,
-        }),
-        ..default()
-    });
+    commands.entity(player).insert((
+        Sprite {
+            image: asset_server.load("lyra_sheet.png"),
+            texture_atlas: Some(TextureAtlas {
+                layout: texture_atlas_layout,
+                index: 0,
+            }),
+            ..default()
+        },
+        HIGHRES_LAYER,
+    ));
 
     commands.entity(player).with_children(|parent| {
         parent
@@ -96,6 +100,11 @@ pub fn add_player_sensors(
                     | GroupLabel::TERRAIN
                     | GroupLabel::CRYSTAL_SHARD
                     | GroupLabel::PLATFORM,
+            ))
+            .insert(LineLight2d::point(
+                Vec4::new(1.0, 1.0, 1.0, 1.0),
+                40.0,
+                0.008,
             ));
     });
 }

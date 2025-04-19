@@ -448,7 +448,11 @@ pub fn build_occluder_2d_pipeline_descriptor(
                         dst_factor: BlendFactor::One,
                         operation: BlendOperation::Add,
                     },
-                    alpha: BlendComponent::REPLACE,
+                    alpha: BlendComponent {
+                        src_factor: BlendFactor::Zero,
+                        dst_factor: BlendFactor::One,
+                        operation: BlendOperation::Add,
+                    },
                 }),
                 write_mask: ColorWrites::ALL,
             })],
@@ -515,10 +519,18 @@ impl FromWorld for Occluder2dPipeline {
                 targets: vec![Some(ColorTargetState {
                     format: ViewTarget::TEXTURE_FORMAT_HDR,
                     blend: Some(BlendState {
-                        color: BlendComponent::REPLACE,
-                        alpha: BlendComponent::REPLACE,
+                        color: BlendComponent {
+                            src_factor: BlendFactor::Zero,
+                            dst_factor: BlendFactor::One,
+                            operation: BlendOperation::Add,
+                        },
+                        alpha: BlendComponent {
+                            src_factor: BlendFactor::Zero,
+                            dst_factor: BlendFactor::One,
+                            operation: BlendOperation::Add,
+                        },
                     }),
-                    write_mask: ColorWrites::ALPHA,
+                    write_mask: ColorWrites::ALL,
                 })],
             }),
             primitive: PrimitiveState::default(),

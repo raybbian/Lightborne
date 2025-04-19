@@ -6,6 +6,7 @@ use super::{
     BlackRayComponent, LightBeamSource, LightColor, LightSegmentZMarker, LIGHT_SPEED,
 };
 use crate::{
+    camera::HIGHRES_LAYER,
     level::{mirror::Mirror, sensor::LightSensor},
     lighting::LineLight2d,
     particle::spark::SparkExplosionEvent,
@@ -26,7 +27,6 @@ pub struct LightSegmentBundle {
     pub material: MeshMaterial2d<LightMaterial>,
     pub visibility: Visibility,
     pub transform: Transform,
-    pub line_light: LineLight2d,
 }
 
 /// [`Resource`] used to store [`Entity`] handles to the light segments so they aren't added and
@@ -95,7 +95,7 @@ pub struct PrevLightBeamPlayback {
     pub intersections: Vec<Option<LightBeamIntersection>>,
 }
 
-const LIGHT_MAX_SEGMENTS: usize = 10;
+const LIGHT_MAX_SEGMENTS: usize = 15;
 
 pub fn play_light_beam(
     rapier_context: &mut RapierContext,
@@ -146,7 +146,7 @@ pub fn play_light_beam(
 
     let mut i = 0;
     let mut extra_bounces_from_mirror = 0;
-    while i < num_segments + extra_bounces_from_mirror && i <= LIGHT_MAX_SEGMENTS {
+    while i < num_segments + extra_bounces_from_mirror && i < LIGHT_MAX_SEGMENTS {
         let Some((entity, intersection)) =
             rapier_context.cast_ray_and_get_normal(ray_pos, ray_dir, remaining_time, true, ray_qry)
         else {
@@ -330,20 +330,23 @@ pub fn spawn_needed_segments(
 
         while segment_cache.segments[&entity].0.len() < segments.min(LIGHT_MAX_SEGMENTS) {
             let id = commands
-                .spawn(LightSegmentBundle {
-                    segment: LightSegment {
-                        color: source.color,
+                .spawn((
+                    LightSegmentBundle {
+                        segment: LightSegment {
+                            color: source.color,
+                        },
+                        mesh: light_render_data.mesh.clone(),
+                        material: light_render_data.material_map[source.color].clone(),
+                        visibility: Visibility::Hidden,
+                        transform: Transform::default(),
                     },
-                    mesh: light_render_data.mesh.clone(),
-                    material: light_render_data.material_map[source.color].clone(),
-                    visibility: Visibility::Hidden,
-                    transform: Transform::default(),
-                    line_light: LineLight2d {
-                        color: source.color.lighting_color().extend(1.0),
-                        half_length: 10.0,
-                        radius: 20.0,
-                        volumetric_intensity: 0.008,
-                    },
+                    HIGHRES_LAYER,
+                ))
+                .with_child(LineLight2d {
+                    color: source.color.lighting_color().extend(1.0),
+                    half_length: 10.0,
+                    radius: 20.0,
+                    volumetric_intensity: 0.008,
                 })
                 .id();
             // White beams need colliders
@@ -388,7 +391,8 @@ pub fn spawn_needed_segments(
 pub fn visually_sync_segments(
     q_light_sources: Query<(Entity, &LightBeamSource, &LightBeamPoints)>,
     segment_cache: Res<LightSegmentCache>,
-    mut q_segments: Query<(&mut LineLight2d, &mut Transform, &mut Visibility), With<LightSegment>>,
+    mut q_segments: Query<(&Children, &mut Transform, &mut Visibility), With<LightSegment>>,
+    mut q_line_lights: Query<&mut LineLight2d>,
     q_light_segment_z: Query<&GlobalTransform, With<LightSegmentZMarker>>,
 ) {
     let Ok(light_segment_z) = q_light_segment_z.get_single() else {
@@ -399,11 +403,17 @@ pub fn visually_sync_segments(
         // use the light beam path to set the transform of the segments currently in the cache
 
         for (i, segment) in segment_cache.segments[&entity].0.iter().enumerate() {
-            let Ok((mut line_light, mut c_transform, mut c_visibility)) =
-                q_segments.get_mut(*segment)
+            let Ok((children, mut c_transform, mut c_visibility)) = q_segments.get_mut(*segment)
             else {
                 panic!("Segment doesn't have transform or visibility!");
             };
+            let Some(line_light_entity) = children.first() else {
+                panic!("Segment doesn't have line light!");
+            };
+            let Ok(mut line_light) = q_line_lights.get_mut(*line_light_entity) else {
+                panic!("Segment doesn't have line light!");
+            };
+
             if i + 1 < pts.len() && pts[i].distance(pts[i + 1]) > 0.1 {
                 let midpoint = pts[i]
                     .midpoint(pts[i + 1])

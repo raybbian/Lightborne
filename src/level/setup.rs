@@ -1,13 +1,13 @@
 use crate::config::Config;
 use crate::shared::GameState;
-use bevy::{prelude::*, render::view::RenderLayers};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 pub struct LevelSetupPlugin;
 
 impl Plugin for LevelSetupPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(LevelSelection::index(8))
+        app.insert_resource(LevelSelection::index(17))
             .insert_resource(LdtkSettings {
                 level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
                     load_level_neighbors: true,
@@ -30,8 +30,4 @@ pub fn setup_level(
         ..Default::default()
     });
     next_game_state.set(GameState::Ui);
-    commands.spawn((
-        Sprite::from_image(asset_server.load("levels/background.png")),
-        RenderLayers::layer(1),
-    ));
 }
