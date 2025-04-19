@@ -316,7 +316,10 @@ pub fn handle_level_selection(
     mut current_level: ResMut<CurrentLevel>,
     mut level_preview_store: ResMut<LevelPreviewStore>,
     mut assets: ResMut<Assets<Image>>,
-    mut query_level_preview: Query<(Entity, Option<&mut ImageNode>), With<LevelPreviewMarker>>,
+    mut query_level_preview: Query<
+        (Entity, Option<(&mut ImageNode, &mut Node)>),
+        With<LevelPreviewMarker>,
+    >,
     mut query_level_preview_locked: Query<
         &mut ImageNode,
         (With<LevelPreviewLockedMarker>, Without<LevelPreviewMarker>),
@@ -466,7 +469,7 @@ pub fn handle_level_selection(
                         (level_dims, new_handle)
                     }
                 };
-                let Ok((level_preview_entity, level_preview_image_node)) =
+                let Ok((level_preview_entity, level_preview_nodes)) =
                     query_level_preview.get_single_mut()
                 else {
                     panic!("Could not find level preview");
@@ -479,13 +482,16 @@ pub fn handle_level_selection(
                     LOCKED_LEVEL_PREVIEW_SCALE,
                     1.0,
                 );
-                if let Some(mut level_preview_image_node) = level_preview_image_node {
+                if let Some((mut level_preview_image_node, mut level_preview_node)) =
+                    level_preview_nodes
+                {
                     level_preview_image_node.image = level_preview;
                     if locked {
                         level_preview_image_node.color = scaled_color
                     } else {
                         level_preview_image_node.color = Color::WHITE;
                     }
+                    level_preview_node.aspect_ratio = Some(level_dims.x / level_dims.y);
                 } else {
                     let mut image_node = ImageNode::new(level_preview);
                     if locked {
