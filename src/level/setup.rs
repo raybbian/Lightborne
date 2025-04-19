@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::shared::GameState;
-use bevy::{prelude::*, render::view::RenderLayers};
+use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
 pub struct LevelSetupPlugin;
@@ -30,8 +30,4 @@ pub fn setup_level(
         ..Default::default()
     });
     next_game_state.set(GameState::Ui);
-    commands.spawn((
-        Sprite::from_image(asset_server.load("levels/background.png")),
-        RenderLayers::layer(1),
-    ));
 }
