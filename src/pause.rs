@@ -52,9 +52,9 @@ fn show_pause<const SHOW: bool>(mut query: Query<&mut Visibility, With<PauseMark
 }
 
 fn toggle_pause(state: Res<State<GameState>>, mut next_state: ResMut<NextState<GameState>>) {
-    next_state.set(match state.get() {
-        GameState::Paused => GameState::Playing,
-        GameState::Playing => GameState::Paused,
-        _ => state.get().clone(),
-    })
+    match state.get() {
+        GameState::Paused => next_state.set(GameState::Playing),
+        GameState::Playing => next_state.set(GameState::Paused),
+        _ => {}
+    }
 }

@@ -138,17 +138,18 @@ fn fade_bgm(
     mut commands: Commands,
     mut audio_sink: Query<(&mut AudioSink, Entity, &mut Fade, &FadeSettings)>,
     time: Res<Time>,
+    global_volume: Res<GlobalVolume>,
 ) {
     for (audio, entity, mut fade, fade_settings) in audio_sink.iter_mut() {
         fade.timer.tick(time.delta());
         let progress = fade.timer.elapsed_secs() / fade.timer.duration().as_secs_f32();
-        audio.set_volume(fade.from.lerp(fade.to, progress));
+        audio.set_volume(fade.from.lerp(fade.to, progress) * global_volume.volume.get());
         if !fade.timer.just_finished() {
             continue;
         }
 
         // make sure its actually the end vol
-        audio.set_volume(fade.to);
+        audio.set_volume(fade.to * global_volume.volume.get());
 
         match fade_settings {
             FadeSettings::Continue => {

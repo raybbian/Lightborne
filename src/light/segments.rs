@@ -95,7 +95,7 @@ pub struct PrevLightBeamPlayback {
     pub intersections: Vec<Option<LightBeamIntersection>>,
 }
 
-const LIGHT_MAX_SEGMENTS: usize = 10;
+const LIGHT_MAX_SEGMENTS: usize = 15;
 
 pub fn play_light_beam(
     rapier_context: &mut RapierContext,
@@ -146,7 +146,7 @@ pub fn play_light_beam(
 
     let mut i = 0;
     let mut extra_bounces_from_mirror = 0;
-    while i < num_segments + extra_bounces_from_mirror && i <= LIGHT_MAX_SEGMENTS {
+    while i < num_segments + extra_bounces_from_mirror && i < LIGHT_MAX_SEGMENTS {
         let Some((entity, intersection)) =
             rapier_context.cast_ray_and_get_normal(ray_pos, ray_dir, remaining_time, true, ray_qry)
         else {

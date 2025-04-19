@@ -44,6 +44,8 @@ pub enum AnimationState {
 pub enum UiState {
     #[default]
     LevelSelect,
+    Settings,
+    StartMenu,
 }
 
 #[derive(Event, PartialEq, Eq)]
