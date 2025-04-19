@@ -24044,22 +24044,6 @@
 							"fieldInstances": [],
 							"__worldX": 3192,
 							"__worldY": 328
-						},
-						{
-							"__identifier": "Lantern2",
-							"__grid": [29,13],
-							"__pivot": [0.5,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#DE9320",
-							"iid": "b12d6d80-1030-11f0-b2b8-7d6f1f9eee5e",
-							"width": 11,
-							"height": 12,
-							"defUid": 1389,
-							"px": [236,104],
-							"fieldInstances": [],
-							"__worldX": 3116,
-							"__worldY": 288
 						}
 					]
 				},
