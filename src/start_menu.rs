@@ -23,7 +23,7 @@ fn spawn_start(
     asset_server: Res<AssetServer>,
     q_start_menu: Query<Entity, With<StartMenuMarker>>,
 ) {
-    if let Ok(_) = q_start_menu.get_single() {
+    if q_start_menu.get_single().is_ok() {
         return;
     };
 
@@ -65,10 +65,7 @@ fn start_game(
     let Ok(interaction) = &q_button.get_single() else {
         return;
     };
-    match interaction {
-        Interaction::Pressed => {
-            next_state.set(UiState::LevelSelect);
-        }
-        _ => {}
+    if **interaction == Interaction::Pressed {
+        next_state.set(UiState::LevelSelect);
     }
 }
