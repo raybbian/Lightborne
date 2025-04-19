@@ -57,8 +57,8 @@ fn spawn_start(
                     flex_direction: FlexDirection::Column,
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
-                    column_gap: Val::Px(16.),
-                    row_gap: Val::Px(16.),
+                    column_gap: Val::Percent(4.),
+                    row_gap: Val::Percent(4.),
                     ..default()
                 },))
                 .with_child((
@@ -138,9 +138,6 @@ fn start_game(
                 ));
             }
             _ => {}
-        }
-        if *interaction != Interaction::Pressed {
-            continue;
         }
     }
 }

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{level_select::Levels, player::PlayerHurtMarker, shared::GroupLabel};
+use crate::{player::PlayerHurtMarker, shared::GroupLabel, ui::level_select::Levels};
 
 use super::CurrentLevel;
 

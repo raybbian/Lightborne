@@ -17,9 +17,9 @@ use crate::config::Config;
 use crate::level::start_flag::StartFlag;
 use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
 use crate::player::PlayerMarker;
-use crate::settings::SettingsButton;
 use crate::shared::{GameState, UiState, LYRA_RESPAWN_EPSILON};
 use crate::sound::{BgmTrack, ChangeBgmEvent};
+use crate::ui::settings::SettingsButton;
 
 pub struct LevelSelectPlugin;
 
@@ -180,7 +180,7 @@ fn spawn_level_select(
         return;
     }
     let font = TextFont {
-        font: asset_server.load("fonts/Munro.ttf"),
+        font: asset_server.load("fonts/Outfit-Medium.ttf"),
         ..default()
     };
 
@@ -202,7 +202,7 @@ fn spawn_level_select(
             BackgroundColor(Color::BLACK),
         ))
         .with_children(|parent| {
-            parent.spawn((Text::new("Level Select"), font.clone().with_font_size(36.)));
+            parent.spawn((Text::new("Level Select"), font.clone().with_font_size(48.)));
             parent
                 .spawn(Node {
                     width: Val::Percent(100.),
@@ -333,6 +333,7 @@ pub fn handle_level_selection(
     >,
     mut commands: Commands,
     res_levels: Res<Levels>,
+    asset_server: Res<AssetServer>,
 ) {
     let Ok(ldtk_handle) = query_ldtk.get_single() else {
         return;
@@ -347,6 +348,10 @@ pub fn handle_level_selection(
         let level = &ldtk_levels[index.0];
         match *interaction {
             Interaction::Pressed => {
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load("sfx/click.wav")),
+                    PlaybackSettings::DESPAWN,
+                ));
                 if res_levels.0[index.1].locked {
                     return;
                 }

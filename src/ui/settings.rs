@@ -145,7 +145,7 @@ fn spawn_settings(
         return;
     }
     let font = TextFont {
-        font: asset_server.load("fonts/Munro.ttf"),
+        font: asset_server.load("fonts/Outfit-Medium.ttf"),
         ..default()
     };
 
@@ -188,7 +188,7 @@ fn spawn_settings(
             Interaction::None,
         ))
         .with_children(|parent| {
-            parent.spawn((Text::new("Settings"), font.clone().with_font_size(36.)));
+            parent.spawn((Text::new("Settings"), font.clone().with_font_size(48.)));
             parent
                 .spawn(Node {
                     width: Val::Percent(50.),
@@ -209,17 +209,31 @@ fn spawn_settings(
 }
 
 fn handle_back_button(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     q_button: Query<(&Interaction, &SettingsButton), Changed<Interaction>>,
     mut next_state: ResMut<NextState<UiState>>,
 ) {
     for (interaction, button_marker) in q_button.iter() {
-        if *interaction != Interaction::Pressed {
-            continue;
-        }
-        match button_marker {
-            SettingsButton::Back => {
-                next_state.set(UiState::StartMenu);
+        match interaction {
+            Interaction::Pressed => {
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load("sfx/click.wav")),
+                    PlaybackSettings::DESPAWN,
+                ));
+                match button_marker {
+                    SettingsButton::Back => {
+                        next_state.set(UiState::StartMenu);
+                    }
+                }
             }
+            Interaction::Hovered => {
+                commands.spawn((
+                    AudioPlayer::new(asset_server.load("sfx/hover.wav")),
+                    PlaybackSettings::DESPAWN,
+                ));
+            }
+            _ => {}
         }
     }
 }
@@ -310,6 +324,8 @@ fn despawn_settings(
 
 #[allow(clippy::type_complexity)]
 fn handle_slider_buttons(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     interaction_query: Query<
         (&Interaction, &SliderButton, &SettingName),
         (Changed<Interaction>, With<Button>),
@@ -320,6 +336,10 @@ fn handle_slider_buttons(
 ) {
     for (interaction, slider_button, setting_name) in interaction_query.iter() {
         if interaction == &Interaction::Pressed {
+            commands.spawn((
+                AudioPlayer::new(asset_server.load("sfx/click.wav")),
+                PlaybackSettings::DESPAWN,
+            ));
             let setting = &mut settings.0[*setting_name];
             let SettingVariant::Slider {
                 ref mut value,

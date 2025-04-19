@@ -16,11 +16,11 @@ use crate::{
     camera::{
         camera_position_from_level, CameraControlType, CameraMoveEvent, CAMERA_ANIMATION_SECS,
     },
-    level_select::handle_level_selection,
     light::LightColor,
     player::{LdtkPlayerBundle, PlayerMarker},
     shared::{AnimationState, GameState, ResetLevel},
     sound::{BgmTrack, ChangeBgmEvent},
+    ui::level_select::handle_level_selection,
 };
 use crystal::CrystalPlugin;
 use entity::SpikeBundle;

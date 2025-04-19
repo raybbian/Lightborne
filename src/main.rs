@@ -9,16 +9,16 @@ use config::ConfigPlugin;
 use debug::DebugPlugin;
 use input::{init_cursor_world_coords, update_cursor_world_coords};
 use level::LevelManagementPlugin;
-use level_select::LevelSelectPlugin;
 use light::LightManagementPlugin;
 use lighting::DeferredLightingPlugin;
 use particle::ParticlePlugin;
 use pause::PausePlugin;
 use player::PlayerManagementPlugin;
-use settings::SettingsPlugin;
 use shared::{AnimationState, GameState, ResetLevel, UiState};
 use sound::SoundPlugin;
-use start_menu::StartMenuPlugin;
+use ui::level_select::LevelSelectPlugin;
+use ui::settings::SettingsPlugin;
+use ui::start_menu::StartMenuPlugin;
 
 mod animation;
 mod camera;
@@ -26,16 +26,14 @@ mod config;
 mod debug;
 mod input;
 mod level;
-mod level_select;
 mod light;
 mod lighting;
 mod particle;
 mod pause;
 mod player;
-mod settings;
 mod shared;
 mod sound;
-mod start_menu;
+mod ui;
 
 fn main() {
     App::new()
