@@ -159,13 +159,8 @@ fn spawn_settings(
                     },
                     SettingParentMarker(SettingName::from_usize(i)),
                 ))
-                .with_children(|mut parent| {
-                    spawn_setting_children(
-                        &mut parent,
-                        SettingName::from_usize(i),
-                        &settings,
-                        &font,
-                    );
+                .with_children(|parent| {
+                    spawn_setting_children(parent, SettingName::from_usize(i), &settings, &font);
                 })
                 .id()
         })
@@ -233,7 +228,7 @@ fn spawn_setting_children(
                     },
                     Button,
                     font.clone().with_font_size(24.0),
-                    settings_index.clone(),
+                    settings_index,
                     BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
                 );
                 parent.spawn((
@@ -256,7 +251,7 @@ fn spawn_setting_children(
                         ..default()
                     },))
                     .with_child((
-                        Text::new(format!("{}{}", value.value.to_string(), unit)),
+                        Text::new(format!("{}{}", value.value, unit)),
                         font.clone().with_font_size(24.0),
                     ));
 
@@ -285,6 +280,7 @@ fn despawn_settings(
     commands.entity(entity).despawn_recursive();
 }
 
+#[allow(clippy::type_complexity)]
 fn handle_slider_buttons(
     interaction_query: Query<
         (&Interaction, &SliderButton, &SettingName),
@@ -295,22 +291,19 @@ fn handle_slider_buttons(
     mut update_ev: EventWriter<UpdateSetting>,
 ) {
     for (interaction, slider_button, setting_name) in interaction_query.iter() {
-        match interaction {
-            Interaction::Pressed => {
-                let setting = &mut settings.0[*setting_name];
-                let SettingVariant::Slider {
-                    ref mut value,
-                    ref range,
-                    ..
-                } = setting.variant;
+        if interaction == &Interaction::Pressed {
+            let setting = &mut settings.0[*setting_name];
+            let SettingVariant::Slider {
+                ref mut value,
+                ref range,
+                ..
+            } = setting.variant;
 
-                value.value += slider_button.0;
-                value.value = value.value.clamp(*range.start(), *range.end());
+            value.value += slider_button.0;
+            value.value = value.value.clamp(*range.start(), *range.end());
 
-                redraw_ev.send(RedrawSetting(*setting_name));
-                update_ev.send(UpdateSetting(*setting_name));
-            }
-            _ => {}
+            redraw_ev.send(RedrawSetting(*setting_name));
+            update_ev.send(UpdateSetting(*setting_name));
         }
     }
 }
