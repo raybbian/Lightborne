@@ -38,7 +38,7 @@ impl Plugin for PlayerMovementPlugin {
             Update,
             queue_jump
                 .run_if(not_input_locked)
-                .run_if(input_just_pressed(KeyCode::Space).or(input_just_pressed(KeyCode::KeyW)))
+                .run_if(jump_key_pressed)
                 .before(move_player)
                 .in_set(LevelSystems::Simulation),
         )
@@ -184,4 +184,12 @@ pub fn move_player(
     player.coyote_time_ticks_remaining -= 1;
 
     controller.translation = Some(player.velocity);
+}
+
+fn jump_key_pressed(
+    keys: Res<ButtonInput<KeyCode>>,
+    config: Res<Config>,
+) -> bool {
+    return keys.just_pressed(config.controls_config.key_jump) || 
+    keys.just_pressed(config.controls_config.key_up);
 }
