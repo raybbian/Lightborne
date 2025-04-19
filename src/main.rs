@@ -4,7 +4,7 @@ use bevy::window::PresentMode;
 use bevy::{asset::AssetMetaCheck, diagnostic::LogDiagnosticsPlugin};
 use bevy_rapier2d::prelude::*;
 
-use camera::CameraPlugin;
+use camera::{CameraPlugin, HIGHRES_LAYER};
 use config::ConfigPlugin;
 use debug::DebugPlugin;
 use input::{init_cursor_world_coords, update_cursor_world_coords};
@@ -61,6 +61,14 @@ fn main() {
                 }),
         )
         .insert_resource(ClearColor(Color::NONE))
+        .insert_gizmo_config::<DefaultGizmoConfigGroup>(
+            DefaultGizmoConfigGroup::default(),
+            GizmoConfig {
+                enabled: true,
+                render_layers: HIGHRES_LAYER,
+                ..Default::default()
+            },
+        )
         .add_plugins(bevy_mod_debugdump::CommandLineArgs)
         .add_plugins(ConfigPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
