@@ -299,7 +299,6 @@ pub fn handle_level_selection(
         (Changed<Interaction>, With<Button>),
     >,
     mut next_game_state: ResMut<NextState<GameState>>,
-    mut next_ui_state: ResMut<NextState<UiState>>,
     ldtk_assets: Res<Assets<LdtkProject>>,
     query_ldtk: Query<&LdtkProjectHandle>,
     mut query_player: Query<&mut Transform, (With<PlayerMarker>, Without<StartFlag>)>,
@@ -374,7 +373,6 @@ pub fn handle_level_selection(
                     }
                 }
 
-                next_ui_state.set(UiState::None);
                 next_game_state.set(GameState::Playing);
 
                 // Set the current level_iid to an empty string so we don't trigger the camera transition (skull emoji)

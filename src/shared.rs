@@ -46,7 +46,6 @@ pub enum AnimationState {
 #[source(GameState = GameState::Ui)]
 pub enum UiState {
     #[default]
-    None,
     LevelSelect,
     Settings,
     StartMenu,
