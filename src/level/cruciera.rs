@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{cmp::Ordering, time::Duration};
 
 use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
@@ -117,6 +117,7 @@ impl FromWorld for CrucieraCallbacks {
     }
 }
 
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 pub fn check_start_cutscene(
     mut commands: Commands,
     mut q_cruciera: Query<(&GlobalTransform, &mut Cruciera)>,
@@ -255,6 +256,7 @@ pub static LYRA_CRUCIERA_DIALOGUE: [(bool, &str); 8] = [
     (false, "It may be a good chance for you to experience the full power of a goddess.")
 ];
 
+#[allow(clippy::too_many_arguments)]
 pub fn lyra_cruciera_dialogue(
     mut commands: Commands,
     mut q_dialogue_text: Query<&mut Text, With<DialogueTextMarker>>,
@@ -273,7 +275,7 @@ pub fn lyra_cruciera_dialogue(
         .get_single_mut()
         .expect("Dialogue image should exist!");
 
-    if *timer == None {
+    if (*timer).is_none() {
         *timer = Some(Timer::new(Duration::from_millis(20), TimerMode::Repeating));
 
         // FIXME: copied reinit
@@ -285,25 +287,32 @@ pub fn lyra_cruciera_dialogue(
     }
 
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
-        if text.len() < LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].1.len() {
-            //if animating the text rn, display it fully
-            *text = LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].1.into();
-        } else if text.len() == LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].1.len() {
-            // if done animating, move on to next
-            if callbacks.cur_dialogue + 1 >= LYRA_CRUCIERA_DIALOGUE.len() {
-                // if done with all text, end the dialogue
-                next_anim_state.set(AnimationState::Cruciera);
-                commands.run_system(callbacks.end_dialogue);
-            } else {
-                // otherwise, keep running the dialogue runner
-                callbacks.cur_dialogue += 1;
-                *text = "".into();
-                image.image = if LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].0 {
-                    asset_server.load("dialogue-box-lyra-neutral.png")
+        match text
+            .len()
+            .cmp(&LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].1.len())
+        {
+            Ordering::Less => {
+                //if animating the text rn, display it fully
+                *text = LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].1.into();
+            }
+            Ordering::Equal => {
+                // if done animating, move on to next
+                if callbacks.cur_dialogue + 1 >= LYRA_CRUCIERA_DIALOGUE.len() {
+                    // if done with all text, end the dialogue
+                    next_anim_state.set(AnimationState::Cruciera);
+                    commands.run_system(callbacks.end_dialogue);
                 } else {
-                    asset_server.load("dialogue-box-cruciera.png")
+                    // otherwise, keep running the dialogue runner
+                    callbacks.cur_dialogue += 1;
+                    *text = "".into();
+                    image.image = if LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].0 {
+                        asset_server.load("dialogue-box-lyra-neutral.png")
+                    } else {
+                        asset_server.load("dialogue-box-cruciera.png")
+                    }
                 }
             }
+            _ => {}
         }
         return;
     }

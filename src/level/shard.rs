@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{cmp::Ordering, time::Duration};
 
 use bevy::{ecs::system::SystemId, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
@@ -397,7 +397,7 @@ pub fn shard_dialogue(
         return;
     };
 
-    if *timer == None {
+    if (*timer).is_none() {
         *timer = Some(Timer::new(Duration::from_millis(20), TimerMode::Repeating));
     }
 
@@ -410,12 +410,16 @@ pub fn shard_dialogue(
     };
 
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
-        if text.len() < shard_text.len() {
-            //if animating the text rn, display it fully
-            *text = shard_text.into();
-        } else if text.len() == shard_text.len() {
-            next_anim_state.set(AnimationState::Shard);
-            commands.run_system(callbacks.cb[1]);
+        match text.len().cmp(&shard_text.len()) {
+            Ordering::Less => {
+                //if animating the text rn, display it fully
+                *text = shard_text.into();
+            }
+            Ordering::Equal => {
+                next_anim_state.set(AnimationState::Shard);
+                commands.run_system(callbacks.cb[1]);
+            }
+            _ => {}
         }
         return;
     }
