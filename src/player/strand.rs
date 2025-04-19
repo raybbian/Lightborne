@@ -3,9 +3,43 @@ use std::ops::Range;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
-use crate::{player::match_player::MatchPlayerPixel, shared::GroupLabel};
+use crate::{
+    animation::AnimationConfig, level::LevelSystems, player::match_player::MatchPlayerPixel,
+    shared::GroupLabel,
+};
 
-use super::{match_player::MatchPlayerZ, PlayerMarker};
+use super::{
+    animation::{set_animation, PlayerAnimationType},
+    kill::reset_player_on_kill,
+    match_player::MatchPlayerZ,
+    PlayerMarker,
+};
+
+pub struct PlayerStrandPlugin;
+
+impl Plugin for PlayerStrandPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            // LOL to reset strand on reset just simulate them a bunch
+            (update_strand, update_strand, update_strand, update_strand)
+                .after(reset_player_on_kill)
+                .in_set(LevelSystems::Reset),
+        )
+        .add_systems(
+            PreUpdate,
+            add_player_hair_and_cloth.in_set(LevelSystems::Processing),
+        )
+        .add_systems(
+            FixedUpdate,
+            (
+                update_strand,
+                update_player_strand_offsets.after(set_animation),
+            )
+                .in_set(LevelSystems::Simulation),
+        );
+    }
+}
 
 #[derive(Component)]
 /// [`Component`] representing one node in a chain of strands, used to simulate hair and clothes.
@@ -267,15 +301,20 @@ pub enum PlayerRootStrandType {
 pub fn update_player_strand_offsets(
     mut strands: Query<(&mut Strand, &PlayerRootStrandType)>,
     // currently queries for nothing, could be changed to query for a e.g. a Direction component.
-    player: Query<(), With<PlayerMarker>>,
+    player: Query<(&PlayerAnimationType, &Sprite, &AnimationConfig), With<PlayerMarker>>,
 ) {
-    let Ok(()) = player.get_single() else { return }; // update this to read player state, e.g. player direction.
+    let Ok((anim_type, sprite, anim_config)) = player.get_single() else {
+        return;
+    }; // update this to read player state, e.g. player direction.
     for (mut strand, ty) in strands.iter_mut() {
         strand.offset = match ty {
             // update these to dynamically reflect player state, e.g. setting the Hair strand's offset to (2.0, 3.0) when facing left.
-            PlayerRootStrandType::Hair => Vec2::new(-2.0, 3.0),
-            PlayerRootStrandType::LeftCloth => Vec2::new(-3.0, -5.0),
-            PlayerRootStrandType::RightCloth => Vec2::new(5.0, -5.0),
+            PlayerRootStrandType::Hair => anim_type.hair_offset(anim_config.cur_index),
+            PlayerRootStrandType::LeftCloth => anim_type.left_cloth_offset(anim_config.cur_index),
+            PlayerRootStrandType::RightCloth => anim_type.right_cloth_offset(anim_config.cur_index),
         };
+        if sprite.flip_x {
+            strand.offset.x *= -1.0;
+        }
     }
 }

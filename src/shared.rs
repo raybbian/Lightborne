@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+pub const LYRA_RESPAWN_EPSILON: f32 = 3.0;
+
 /// Labels used for rapier_2d [`CollisionGroups`]
 pub struct GroupLabel;
 
@@ -14,19 +16,42 @@ impl GroupLabel {
     pub const WHITE_RAY: Group = Group::GROUP_7;
     pub const STRAND: Group = Group::GROUP_8;
     pub const BLUE_RAY: Group = Group::GROUP_9;
+    pub const CRYSTAL_SHARD: Group = Group::GROUP_10;
+    pub const PLATFORM: Group = Group::GROUP_11;
+    pub const BLACK_RAY: Group = Group::GROUP_12;
     pub const ALL: Group = Group::from_bits_truncate(!0);
 }
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameState {
     Playing,
-    Switching,
+    Animating,
     Paused,
+    Ui,
+}
+
+#[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
+#[source(GameState = GameState::Animating)]
+pub enum AnimationState {
+    #[default]
+    Switch,
+    Respawn,
+    Shard,
+}
+
+#[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
+#[source(GameState = GameState::Ui)]
+pub enum UiState {
+    #[default]
+    LevelSelect,
     StartMenu,
 }
 
 #[derive(Event, PartialEq, Eq)]
 pub enum ResetLevel {
+    /// Sent to run systems that reset the player state on respawn. If you are trying to kill the
+    /// player, use `KillPlayerEvent` instead
     Respawn,
+    /// Sent to run systems that reset the level state on level switch
     Switching,
 }

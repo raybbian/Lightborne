@@ -23,7 +23,6 @@ impl Default for Config {
     fn default() -> Self {
         Config {
             level_config: LevelConfig {
-                level_index: 9,
                 level_path: "levels/lightborne.ldtk".into(),
             },
             debug_config: DebugConfig::default(),
@@ -34,10 +33,10 @@ impl Default for Config {
 #[derive(Deserialize, Default)]
 pub struct DebugConfig {
     pub ui: bool,
+    pub unlock_levels: bool,
 }
 
 #[derive(Deserialize)]
 pub struct LevelConfig {
-    pub level_index: usize,
     pub level_path: String,
 }

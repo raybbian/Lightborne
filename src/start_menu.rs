@@ -1,29 +1,32 @@
 use bevy::{prelude::*, ui::widget::NodeImageMode};
 
-use crate::shared::GameState;
+use crate::shared::UiState;
 
 pub struct StartMenuPlugin;
 
 impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_start)
-            .add_systems(OnExit(GameState::StartMenu), exit_start)
-            .add_systems(Update, start_game)
-            .insert_resource(InputReady(false));
+        app.add_systems(Update, spawn_start.run_if(in_state(UiState::StartMenu)))
+            .add_systems(Update, exit_start.run_if(not(in_state(UiState::StartMenu))))
+            .add_systems(Update, start_game);
     }
 }
 
 #[derive(Component)]
-pub struct StartMarker;
+pub struct StartMenuMarker;
 
 #[derive(Component)]
-pub struct StartButtonMarker;
+pub struct StartMenuButtonMarker;
 
-#[derive(Resource)]
-pub struct InputReady(pub bool); 
+fn spawn_start(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    q_start_menu: Query<Entity, With<StartMenuMarker>>,
+) {
+    if let Ok(_) = q_start_menu.get_single() {
+        return;
+    };
 
-fn spawn_start(mut commands: Commands, asset_server: Res<AssetServer>, mut input_ready: ResMut<InputReady>) {
-    input_ready.0 = false;
     commands
         .spawn((
             Node {
@@ -33,7 +36,7 @@ fn spawn_start(mut commands: Commands, asset_server: Res<AssetServer>, mut input
                 ..default()
             },
             ImageNode::from(asset_server.load("ui/start.png")).with_mode(NodeImageMode::Stretch),
-            StartMarker,
+            StartMenuMarker,
         ))
         .with_child((
             Node {
@@ -44,11 +47,11 @@ fn spawn_start(mut commands: Commands, asset_server: Res<AssetServer>, mut input
             },
             ImageNode::from(asset_server.load("ui/start_button.png")),
             Button,
-            StartButtonMarker,
+            StartMenuButtonMarker,
         ));
 }
 
-fn exit_start(mut commands: Commands, query: Query<Entity, With<StartMarker>>) {
+fn exit_start(mut commands: Commands, query: Query<Entity, With<StartMenuMarker>>) {
     let Ok(entity) = query.get_single() else {
         return;
     };
@@ -56,15 +59,15 @@ fn exit_start(mut commands: Commands, query: Query<Entity, With<StartMarker>>) {
 }
 
 fn start_game(
-    q_button: Query<&Interaction, (With<StartButtonMarker>, Changed<Interaction>)>,
-    mut next_state: ResMut<NextState<GameState>>,
+    q_button: Query<&Interaction, (With<StartMenuButtonMarker>, Changed<Interaction>)>,
+    mut next_state: ResMut<NextState<UiState>>,
 ) {
     let Ok(interaction) = &q_button.get_single() else {
         return;
     };
     match interaction {
         Interaction::Pressed => {
-            next_state.set(GameState::Playing);
+            next_state.set(UiState::LevelSelect);
         }
         _ => {}
     }

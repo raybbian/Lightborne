@@ -1,25 +1,46 @@
 use std::time::Duration;
 
 use bevy::{ecs::system::SystemId, prelude::*};
-use bevy_ecs_ldtk::{prelude::*, systems::process_ldtk_levels};
-use sensor::{color_sensors, reset_light_sensors, update_light_sensors, LightSensorBundle};
+use bevy_ecs_ldtk::{ldtk::Level, prelude::*, systems::process_ldtk_levels, LevelIid};
+use decoration::DecorationPlugin;
+use egg::EggPlugin;
+use enum_map::{enum_map, EnumMap};
+use level_completion::LevelCompletionPlugin;
+use merge_tile::spawn_merged_tiles;
+use mirror::MirrorPlugin;
+use semisolid::SemiSolidPlugin;
+use sensor::LightSensorPlugin;
+use shard::CrystalShardPlugin;
 
 use crate::{
-    camera::{MoveCameraEvent, CAMERA_ANIMATION_SECS, CAMERA_HEIGHT, CAMERA_WIDTH},
-    light::{segments::simulate_light_sources, LightColor},
+    camera::{
+        camera_position_from_level, CameraControlType, CameraMoveEvent, CAMERA_ANIMATION_SECS,
+    },
+    level_select::handle_level_selection,
+    light::LightColor,
     player::{LdtkPlayerBundle, PlayerMarker},
-    shared::{GameState, ResetLevel},
+    shared::{AnimationState, GameState, ResetLevel},
+    sound::{BgmTrack, ChangeBgmEvent},
 };
 use crystal::CrystalPlugin;
-use entity::{SemiSolidPlatformBundle, SpikeBundle};
+use entity::SpikeBundle;
+use platform::PlatformPlugin;
 use setup::LevelSetupPlugin;
 use start_flag::{init_start_marker, StartFlagBundle};
-use walls::{spawn_wall_collision, WallBundle};
+use walls::{Wall, WallBundle};
 
 pub mod crystal;
+mod decoration;
+mod egg;
 pub mod entity;
+mod level_completion;
+mod merge_tile;
+pub mod mirror;
+pub mod platform;
+mod semisolid;
 pub mod sensor;
 mod setup;
+pub mod shard;
 pub mod start_flag;
 mod walls;
 
@@ -31,25 +52,31 @@ impl Plugin for LevelManagementPlugin {
         app.add_plugins(LdtkPlugin)
             .add_plugins(LevelSetupPlugin)
             .add_plugins(CrystalPlugin)
+            .add_plugins(PlatformPlugin)
+            .add_plugins(CrystalShardPlugin)
+            .add_plugins(LightSensorPlugin)
+            .add_plugins(SemiSolidPlugin)
+            .add_plugins(MirrorPlugin)
+            .add_plugins(EggPlugin)
+            .add_plugins(LevelCompletionPlugin)
+            .add_plugins(DecorationPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
-            .register_ldtk_entity::<LightSensorBundle>("Sensor")
             .register_ldtk_entity::<StartFlagBundle>("Start")
             .register_ldtk_int_cell_for_layer::<WallBundle>("Terrain", 1)
             .register_ldtk_int_cell_for_layer::<SpikeBundle>("Terrain", 2)
-            .register_ldtk_int_cell_for_layer::<SemiSolidPlatformBundle>("Terrain", 15)
             .add_systems(
                 PreUpdate,
-                (spawn_wall_collision, init_start_marker, color_sensors)
-                    .in_set(LevelSystems::Processing),
+                (spawn_merged_tiles::<Wall>, init_start_marker).in_set(LevelSystems::Processing),
             )
-            .add_systems(Update, reset_light_sensors.run_if(on_event::<ResetLevel>))
             .add_systems(
                 FixedUpdate,
                 (
                     switch_level,
-                    update_light_sensors.after(simulate_light_sources),
-                ),
+                    set_bgm_from_current_level.in_set(LevelSystems::Simulation),
+                )
+                    .chain()
+                    .after(handle_level_selection),
             )
             .configure_sets(
                 PreUpdate,
@@ -57,31 +84,65 @@ impl Plugin for LevelManagementPlugin {
             )
             .configure_sets(
                 Update,
-                LevelSystems::Simulation.run_if(in_state(GameState::Playing)),
+                LevelSystems::Reset
+                    .run_if(on_event::<ResetLevel>)
+                    .before(LevelSystems::Simulation),
             )
             .configure_sets(
                 FixedUpdate,
-                LevelSystems::Simulation.run_if(in_state(GameState::Playing)),
+                LevelSystems::Reset
+                    .run_if(on_event::<ResetLevel>)
+                    .before(LevelSystems::Simulation),
+            )
+            .configure_sets(
+                Update,
+                LevelSystems::Simulation
+                    .run_if(in_state(GameState::Playing).or(in_state(AnimationState::Shard))),
+            )
+            .configure_sets(
+                FixedUpdate,
+                LevelSystems::Simulation
+                    .run_if(in_state(GameState::Playing).or(in_state(AnimationState::Shard))),
             );
     }
 }
 
 /// [`Resource`] that holds the `level_iid` of the current level.
-#[derive(Default, Resource)]
+#[derive(Default, Debug, Resource)]
 pub struct CurrentLevel {
     pub level_iid: LevelIid,
-    pub level_entity: Option<Entity>,
-    pub world_box: Rect,
-    pub allowed_colors: Vec<LightColor>,
+    pub level_box: Rect,
+    pub allowed_colors: EnumMap<LightColor, bool>,
 }
 
 /// [`SystemSet`] used to distinguish different types of systems
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum LevelSystems {
-    /// Systems used to simulate game logic in [`Update`]
+    /// Systems used to simulate game logic
     Simulation,
     /// Systems used to process Ldtk Entities after they spawn in [`PreUpdate`]
     Processing,
+    /// Systems used to clean up the level when the room switches or the player respawns
+    Reset,
+}
+
+pub fn get_ldtk_level_data<'ldtk>(
+    ldtk_assets: &'ldtk Assets<LdtkProject>,
+    ldtk_handle: &LdtkProjectHandle,
+) -> Result<&'ldtk Vec<Level>, String> {
+    let Some(ldtk_project) = ldtk_assets.get(ldtk_handle) else {
+        return Err("Failed to get LdtkProject asset!".into());
+    };
+    Ok(&ldtk_project.json_data().levels)
+}
+
+pub fn level_box_from_level(level: &Level) -> Rect {
+    Rect::new(
+        level.world_x as f32,
+        -level.world_y as f32,
+        (level.world_x + level.px_wid) as f32,
+        (-level.world_y - level.px_hei) as f32,
+    )
 }
 
 /// [`System`] that will run on [`Update`] to check if the Player has moved to another level. If
@@ -89,62 +150,47 @@ pub enum LevelSystems {
 /// handling code will send a LevelSwitch event that will notify other systems to cleanup the
 /// levels.
 #[allow(clippy::too_many_arguments)]
-fn switch_level(
+pub fn switch_level(
     q_player: Query<&Transform, With<PlayerMarker>>,
-    q_level: Query<(Entity, &LevelIid)>,
     mut level_selection: ResMut<LevelSelection>,
     ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_anim_state: ResMut<NextState<AnimationState>>,
     mut current_level: ResMut<CurrentLevel>,
     on_level_switch_finish_cb: Local<OnFinishLevelSwitchCallback>,
-    mut ev_move_camera: EventWriter<MoveCameraEvent>,
+    mut ev_move_camera: EventWriter<CameraMoveEvent>,
     mut ev_level_switch: EventWriter<ResetLevel>,
 ) {
-    let Ok(transform) = q_player.get_single() else {
+    let Ok(player_transform) = q_player.get_single() else {
         return;
     };
-    for (entity, level_iid) in q_level.iter() {
-        let ldtk_project = ldtk_project_assets
-            .get(ldtk_projects.single())
-            .expect("Project should be loaded if level has spawned");
+    let Ok(ldtk_handle) = ldtk_projects.get_single() else {
+        return;
+    };
+    let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_project_assets.into_inner(), ldtk_handle) else {
+        return;
+    };
+    for level in ldtk_levels {
+        let level_box = level_box_from_level(level);
 
-        let level = ldtk_project
-            .get_raw_level_by_iid(&level_iid.to_string())
-            .expect("Spawned level should exist in Ldtk project");
-
-        let world_box = Rect::new(
-            level.world_x as f32,
-            -level.world_y as f32,
-            (level.world_x + level.px_wid) as f32,
-            (-level.world_y - level.px_hei) as f32,
-        );
-
-        if world_box.contains(transform.translation.xy()) {
-            if current_level.level_iid != *level_iid {
+        if level_box.contains(player_transform.translation.xy()) {
+            if current_level.level_iid.as_str() != level.iid {
                 // relies on camera to reset the state back to switching??
                 if !current_level.level_iid.to_string().is_empty() {
-                    next_game_state.set(GameState::Switching);
+                    next_game_state.set(GameState::Animating);
+                    next_anim_state.set(AnimationState::Switch);
 
-                    let (x_min, x_max) = (
-                        world_box.min.x + CAMERA_WIDTH * 0.5,
-                        world_box.max.x - CAMERA_WIDTH * 0.5,
-                    );
-                    let (y_min, y_max) = (
-                        world_box.min.y + CAMERA_HEIGHT * 0.5,
-                        world_box.max.y - CAMERA_HEIGHT * 0.5,
-                    );
-
-                    let new_pos = Vec2::new(
-                        transform.translation.x.max(x_min).min(x_max),
-                        transform.translation.y.max(y_min).min(y_max),
-                    );
-
-                    ev_move_camera.send(MoveCameraEvent::Animated {
-                        to: new_pos,
-                        duration: Duration::from_secs_f32(CAMERA_ANIMATION_SECS),
-                        callback: Some(on_level_switch_finish_cb.0),
-                        curve: EasingCurve::new(0.0, 1.0, EaseFunction::SineInOut),
+                    ev_move_camera.send(CameraMoveEvent {
+                        to: camera_position_from_level(
+                            level_box,
+                            player_transform.translation.xy(),
+                        ),
+                        variant: CameraControlType::Animated {
+                            duration: Duration::from_secs_f32(CAMERA_ANIMATION_SECS),
+                            callback: Some(on_level_switch_finish_cb.0),
+                            ease_fn: EaseFunction::SineInOut,
+                        },
                     });
                 } else {
                     ev_level_switch.send(ResetLevel::Switching);
@@ -156,13 +202,16 @@ fn switch_level(
                     .map(|color_str| color_str.into())
                     .collect::<Vec<LightColor>>();
 
-                *current_level = CurrentLevel {
-                    level_iid: level_iid.clone(),
-                    level_entity: Some(entity),
-                    world_box,
-                    allowed_colors,
+                let allowed_colors_map = enum_map! {
+                    val => allowed_colors.contains(&val),
                 };
-                *level_selection = LevelSelection::iid(level_iid.to_string());
+
+                *current_level = CurrentLevel {
+                    level_iid: LevelIid::new(level.iid.clone()),
+                    level_box,
+                    allowed_colors: allowed_colors_map,
+                };
+                *level_selection = LevelSelection::iid(current_level.level_iid.clone());
             }
             break;
         }
@@ -183,4 +232,40 @@ pub fn on_finish_level_switch(
 ) {
     next_game_state.set(GameState::Playing);
     ev_reset_level.send(ResetLevel::Switching);
+}
+
+// FIXME: temp code with lots of copied stuff to impl audio changing
+pub fn set_bgm_from_current_level(
+    current_level: Res<CurrentLevel>,
+    mut ev_change_bgm: EventWriter<ChangeBgmEvent>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+) {
+    let Ok(ldtk_handle) = ldtk_projects.get_single() else {
+        return;
+    };
+    let Ok(ldtk_levels) = get_ldtk_level_data(ldtk_project_assets.into_inner(), ldtk_handle) else {
+        return;
+    };
+    let cur_id = ldtk_levels.iter().find_map(|level| {
+        let level_id = level
+            .get_string_field("LevelId")
+            .expect("Levels should always have a level id!");
+        if level_id.is_empty() {
+            panic!("Level id for a level should not be empty!");
+        }
+        if level.iid == current_level.level_iid.as_str() {
+            return Some(level_id);
+        }
+        None
+    });
+
+    let new_bgm = match cur_id {
+        Some(val) if &val[0..1] == "2" || &val[0..1] == "1" => BgmTrack::MustntStop,
+        Some(val) if &val[0..1] == "3" => BgmTrack::Cutscene1Draft,
+        Some(val) if &val[0..1] == "4" => BgmTrack::LightInTheDark,
+        _ => BgmTrack::None,
+    };
+
+    ev_change_bgm.send(ChangeBgmEvent(new_bgm));
 }

@@ -7,12 +7,11 @@ use bevy::{
 use bevy_ecs_ldtk::LevelIid;
 use bevy_inspector_egui::{
     bevy_egui::{EguiContext, EguiPlugin},
-    bevy_inspector::ui_for_entity_with_children,
     egui,
 };
 use bevy_rapier2d::render::RapierDebugRenderPlugin;
 
-use crate::{config::Config, level::CurrentLevel};
+use crate::config::Config;
 
 pub struct DebugPlugin {
     pub physics: bool,
@@ -60,6 +59,18 @@ impl Plugin for DebugPlugin {
                     ..default()
                 });
             });
+            app.edit_schedule(FixedPreUpdate, |schedule| {
+                schedule.set_build_settings(ScheduleBuildSettings {
+                    ambiguity_detection: LogLevel::Warn,
+                    ..default()
+                });
+            });
+            app.edit_schedule(FixedPostUpdate, |schedule| {
+                schedule.set_build_settings(ScheduleBuildSettings {
+                    ambiguity_detection: LogLevel::Warn,
+                    ..default()
+                });
+            });
         }
     }
 }
@@ -88,14 +99,16 @@ pub fn debug_ui(world: &mut World) {
         return;
     };
     let mut egui_context = egui_context.clone();
-    let Some(level_entity) = world.resource::<CurrentLevel>().level_entity else {
-        return;
-    };
+    // TODO: put this back in?
+    // let Some(level_entity) = world.resource::<CurrentLevel>().level_entity else {
+    //     return;
+    // };
 
     egui::Window::new("UI").show(egui_context.get_mut(), |ui| {
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.heading("Current Level");
-            ui_for_entity_with_children(world, level_entity, ui);
+            // TODO: put this back in?
+            // ui_for_entity_with_children(world, level_entity, ui);
 
             ui.heading("Loaded Levels");
             let mut query = world.query::<&LevelIid>();
