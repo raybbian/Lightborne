@@ -224,8 +224,8 @@ pub fn setup_dialogue_box(
                         padding: UiRect::new(
                             Val::Px(200.),
                             Val::Px(200.),
-                            Val::Px(16.),
-                            Val::Px(16.),
+                            Val::Px(32.),
+                            Val::Px(32.),
                         ),
                         ..default()
                     },
@@ -245,16 +245,38 @@ pub fn setup_dialogue_box(
     next_anim_state.set(AnimationState::CrucieraDialogue);
 }
 
-pub static LYRA_CRUCIERA_DIALOGUE: [(bool, &str); 8] = [
-    (true, "Did you call for me, Lady Cruciera?"),
-    (false, "Indeed I have, young Lyra. I have one final job for you."),
-    (true, "A job? What would you like me to do, Lady Cruciera?"),
-    (false, "I ask that you bring back the Divine Prism we have granted those... foolish humans down below"),
-    (true, "You wish for me to retrieve the Divine Prism? But I thought that it was a gift to those humans?"),
-    (false, "It was. But their greed has split the Prism into pieces and have sent the shards scattering across the realm."),
-    (false, "I am far too busy to retrieve it myself, thus the task falls upon you, young Lyra."),
-    (false, "It may be a good chance for you to experience the full power of a goddess.")
+#[derive(Clone, Copy)]
+pub enum DialoguePortrait {
+    LyraNeutral,
+    LyraHappy,
+    LyraSad,
+    Cruciera,
+}
+
+pub static LYRA_CRUCIERA_DIALOGUE: [(DialoguePortrait, &str); 11] = [
+    (DialoguePortrait::LyraNeutral, "Did you call for me, Lady Cruciera?"),
+    (DialoguePortrait::Cruciera, "Indeed I have, young Lyra. I have one final job for you."),
+    (DialoguePortrait::LyraHappy, "A job? What would you like me to do, Lady Cruciera?"),
+    (DialoguePortrait::Cruciera, "I ask that you bring back the Divine Prism we have granted those... foolish humans down below."),
+    (DialoguePortrait::LyraSad, "You wish for me to retrieve the Divine Prism? But I thought that it was a gift to the humans? Without it, they'll be misguided..."),
+    (DialoguePortrait::Cruciera, "It was a gift, but they were misguided even with it in their possession."),
+    (DialoguePortrait::Cruciera, "Their greed has split the Prism into pieces, and such pieces have been scattered across their realm."),
+    (DialoguePortrait::Cruciera, "The task falls upon you, young Lyra. Those who corrupted such a relic don't deserve to keep it."),
+    (DialoguePortrait::LyraNeutral, "Very well, Lady Cruciera. I'll try my best to retrieve the pieces."),
+    (DialoguePortrait::Cruciera, "It won't be as easy as you think, but it will be a good chance for you to experience the full power of a goddess."),
+    (DialoguePortrait::Cruciera, "The prism is strong, yet volatile. Harness its powers well and pass its trials - that is the only way you will understand the true meaning of responsibility."),
 ];
+
+impl From<DialoguePortrait> for String {
+    fn from(value: DialoguePortrait) -> Self {
+        match value {
+            DialoguePortrait::LyraSad => "dialogue-box-lyra-sad.png".to_string(),
+            DialoguePortrait::LyraHappy => "dialogue-box-lyra-happy.png".to_string(),
+            DialoguePortrait::LyraNeutral => "dialogue-box-lyra-neutral.png".to_string(),
+            DialoguePortrait::Cruciera => "dialogue-box-cruciera.png".to_string(),
+        }
+    }
+}
 
 #[allow(clippy::too_many_arguments)]
 pub fn lyra_cruciera_dialogue(
@@ -280,11 +302,9 @@ pub fn lyra_cruciera_dialogue(
         *timer = Some(Timer::new(Duration::from_millis(20), TimerMode::Repeating));
 
         // FIXME: copied reinit
-        image.image = if LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].0 {
-            asset_server.load("dialogue-box-lyra-neutral.png")
-        } else {
-            asset_server.load("dialogue-box-cruciera.png")
-        }
+        image.image = asset_server.load(String::from(
+            LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].0,
+        ))
     }
 
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter])
@@ -308,11 +328,9 @@ pub fn lyra_cruciera_dialogue(
                     // otherwise, keep running the dialogue runner
                     callbacks.cur_dialogue += 1;
                     *text = "".into();
-                    image.image = if LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].0 {
-                        asset_server.load("dialogue-box-lyra-neutral.png")
-                    } else {
-                        asset_server.load("dialogue-box-cruciera.png")
-                    }
+                    image.image = asset_server.load(String::from(
+                        LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].0,
+                    ));
                 }
             }
             _ => {}

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use bevy::asset::RenderAssetUsages;
 use bevy::image::{BevyDefault, TextureFormatPixelInfo};
-use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use bevy_ecs_ldtk::ldtk::{FieldValue, Type};
@@ -10,9 +9,7 @@ use bevy_ecs_ldtk::prelude::LdtkFields;
 use bevy_ecs_ldtk::LevelIid;
 use bevy_ecs_ldtk::{prelude::LdtkProject, LdtkProjectHandle};
 
-use crate::camera::{
-    camera_position_from_level, handle_move_camera, CameraControlType, CameraMoveEvent,
-};
+use crate::camera::{camera_position_from_level, CameraControlType, CameraMoveEvent};
 use crate::config::Config;
 use crate::level::start_flag::StartFlag;
 use crate::level::{get_ldtk_level_data, level_box_from_level, CurrentLevel};
@@ -144,29 +141,15 @@ impl Plugin for LevelSelectPlugin {
         app.insert_resource(LevelPreviewStore(HashMap::new()))
             .insert_resource(Levels(Vec::new()))
             .add_systems(
-                PostUpdate,
-                switch_to_level_select.run_if(input_just_pressed(KeyCode::KeyL)),
-            )
-            .add_systems(
-                FixedUpdate,
+                Update,
                 (
                     init_levels.before(spawn_level_select),
                     spawn_level_select.run_if(in_state(UiState::LevelSelect)),
-                    despawn_level_select
-                        .after(handle_move_camera)
-                        .run_if(not(in_state(UiState::LevelSelect))),
+                    despawn_level_select.run_if(not(in_state(UiState::LevelSelect))),
                     handle_level_selection.run_if(in_state(UiState::LevelSelect)),
                 ),
             );
     }
-}
-
-fn switch_to_level_select(
-    mut next_ui_state: ResMut<NextState<UiState>>,
-    mut next_game_state: ResMut<NextState<GameState>>,
-) {
-    next_game_state.set(GameState::Ui);
-    next_ui_state.set(UiState::LevelSelect);
 }
 
 fn spawn_level_select(
@@ -316,6 +299,7 @@ pub fn handle_level_selection(
         (Changed<Interaction>, With<Button>),
     >,
     mut next_game_state: ResMut<NextState<GameState>>,
+    mut next_ui_state: ResMut<NextState<UiState>>,
     ldtk_assets: Res<Assets<LdtkProject>>,
     query_ldtk: Query<&LdtkProjectHandle>,
     mut query_player: Query<&mut Transform, (With<PlayerMarker>, Without<StartFlag>)>,
@@ -390,7 +374,9 @@ pub fn handle_level_selection(
                     }
                 }
 
+                next_ui_state.set(UiState::None);
                 next_game_state.set(GameState::Playing);
+
                 // Set the current level_iid to an empty string so we don't trigger the camera transition (skull emoji)
                 current_level.level_iid = LevelIid::new("");
                 break 'loop_interactions;

@@ -1,7 +1,6 @@
 use std::ops::RangeInclusive;
 
 use bevy::audio::Volume;
-use bevy::input::common_conditions::input_just_pressed;
 use bevy::prelude::*;
 use enum_map::{enum_map, Enum, EnumMap};
 
@@ -102,36 +101,24 @@ fn init_settings() -> Settings {
 
 impl Plugin for SettingsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            PostUpdate,
-            switch_to_settings.run_if(input_just_pressed(KeyCode::Comma)),
-        )
-        .insert_resource(init_settings())
-        .add_event::<RedrawSetting>()
-        .add_event::<UpdateSetting>()
-        .add_systems(
-            Update,
-            (
-                spawn_settings.run_if(in_state(UiState::Settings)),
-                handle_slider_buttons.run_if(in_state(UiState::Settings)),
-                despawn_settings
-                    .after(handle_move_camera)
-                    .run_if(not(in_state(UiState::Settings))),
-                (redraw_setting, update_setting)
-                    .after(handle_slider_buttons)
-                    .run_if(in_state(UiState::Settings)),
-                handle_back_button,
-            ),
-        );
+        app.insert_resource(init_settings())
+            .add_event::<RedrawSetting>()
+            .add_event::<UpdateSetting>()
+            .add_systems(
+                Update,
+                (
+                    spawn_settings.run_if(in_state(UiState::Settings)),
+                    handle_slider_buttons.run_if(in_state(UiState::Settings)),
+                    despawn_settings
+                        .after(handle_move_camera)
+                        .run_if(not(in_state(UiState::Settings))),
+                    (redraw_setting, update_setting)
+                        .after(handle_slider_buttons)
+                        .run_if(in_state(UiState::Settings)),
+                    handle_back_button,
+                ),
+            );
     }
-}
-
-fn switch_to_settings(
-    mut next_ui_state: ResMut<NextState<UiState>>,
-    mut next_game_state: ResMut<NextState<GameState>>,
-) {
-    next_game_state.set(GameState::Ui);
-    next_ui_state.set(UiState::Settings);
 }
 
 fn spawn_settings(

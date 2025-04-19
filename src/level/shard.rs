@@ -358,8 +358,8 @@ pub fn on_shard_zoom_in_finished(
                         padding: UiRect::new(
                             Val::Px(200.),
                             Val::Px(200.),
-                            Val::Px(16.),
-                            Val::Px(16.),
+                            Val::Px(32.),
+                            Val::Px(32.),
                         ),
                         ..default()
                     },
@@ -404,8 +404,8 @@ pub fn shard_dialogue(
 
     let shard_text = match shard_color {
         LightColor::Green => "Oh good, the first piece of the Divine Prism. This should let me shoot a bouncing light beam.",
-        LightColor::Blue => "Blue light, formerly known as the light of harmony. I wonder what it'll do if I shoot it directly at the sensor above me?",
-        LightColor::White => "A different feeling than before... could this color have a special property?",
+        LightColor::Blue => "Blue light, formerly known as the light of harmony. Could this one shoot through the active blue crystals above me?",
+        LightColor::White => "A different feeling than before... could this color have a special reflective properties?",
         LightColor::Purple => "This one's even more powerful... I should be able to bounce this one more than once.",
         LightColor::Black => "Devs Only!!!",
     };
