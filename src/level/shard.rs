@@ -9,7 +9,7 @@ use crate::{
     animation::AnimationConfig,
     camera::{
         camera_position_from_level, camera_position_from_level_with_scale, CameraControlType,
-        CameraMoveEvent, CameraZoomEvent, MainCamera,
+        CameraMoveEvent, CameraZoomEvent,
     },
     light::LightColor,
     lighting::LineLight2d,
@@ -49,6 +49,10 @@ impl Plugin for CrystalShardPlugin {
                     should_shoot_light::<false>,
                 )
                     .run_if(on_event::<ShardAnimationEvent>),
+            )
+            .add_systems(
+                Update,
+                shard_dialogue.run_if(in_state(AnimationState::ShardDialogue)),
             )
             .add_systems(
                 Update,
@@ -310,38 +314,92 @@ pub fn start_shard_animation(
 }
 
 #[derive(Component)]
-pub struct ShardUiMarker;
+pub struct ShardBoxMarker;
+
+#[derive(Component)]
+pub struct ShardTextMarker;
+
+#[derive(Component)]
+pub struct ShardImageMarker;
 
 pub fn on_shard_zoom_in_finished(
     mut commands: Commands,
-    mut ev_zoom_camera: EventWriter<CameraMoveEvent>,
-    q_camera: Query<(Entity, &GlobalTransform), With<MainCamera>>,
-    shard_anim_cbs: Res<ShardAnimationCallbacks>,
     asset_server: Res<AssetServer>,
+    mut next_anim_state: ResMut<NextState<AnimationState>>,
 ) {
-    let (main_camera, camera_transform) = q_camera
-        .get_single()
-        .expect("Main camera should not die during shard transition");
-
-    let (_, shard_color) = shard_anim_cbs
-        .for_shard
-        .expect("Shard animation should be for a shard");
-
-    // zoom the camera position to the same spot for 5 seconds, showing text and waiting for the
-    // sfx to finish
-    ev_zoom_camera.send(CameraMoveEvent {
-        to: camera_transform.translation().xy(),
-        variant: CameraControlType::Animated {
-            duration: Duration::from_millis(5000),
-            ease_fn: EaseFunction::SineInOut,
-            callback: Some(shard_anim_cbs.cb[1]),
-        },
-    });
-
     let font = TextFont {
-        font: asset_server.load("fonts/Munro.ttf"),
+        font: asset_server.load("fonts/Outfit-Medium.ttf"),
         ..default()
     };
+
+    commands
+        .spawn((
+            Node {
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
+                padding: UiRect::all(Val::Px(32.)),
+                display: Display::Flex,
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            ShardBoxMarker,
+        ))
+        .with_children(|container| {
+            container
+                .spawn((
+                    Node {
+                        width: Val::Percent(100.),
+                        max_width: Val::Px(1280.),
+                        height: Val::Auto,
+                        aspect_ratio: Some(2775. / 630.), // FIXME: magic values!
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        padding: UiRect::new(
+                            Val::Px(200.),
+                            Val::Px(200.),
+                            Val::Px(16.),
+                            Val::Px(16.),
+                        ),
+                        ..default()
+                    },
+                    ShardImageMarker,
+                    ImageNode::new(asset_server.load("dialogue-box-lyra-happy.png")),
+                ))
+                .with_children(|text_box| {
+                    text_box.spawn((
+                        Node::default(),
+                        font.clone().with_font_size(24.),
+                        TextLayout::new_with_justify(JustifyText::Center),
+                        Text::new(""),
+                        ShardTextMarker,
+                    ));
+                });
+        });
+    next_anim_state.set(AnimationState::ShardDialogue);
+}
+
+// FIXME: copied LOL
+pub fn shard_dialogue(
+    mut commands: Commands,
+    mut q_shard_text: Query<&mut Text, With<ShardTextMarker>>,
+    keys: Res<ButtonInput<KeyCode>>,
+    callbacks: ResMut<ShardAnimationCallbacks>,
+    mut timer: Local<Option<Timer>>,
+    time: Res<Time>,
+    mut next_anim_state: ResMut<NextState<AnimationState>>,
+) {
+    let mut text = q_shard_text
+        .get_single_mut()
+        .expect("Shard dialogue text should exist!");
+
+    let Some((_, shard_color)) = callbacks.for_shard else {
+        return;
+    };
+
+    if *timer == None {
+        *timer = Some(Timer::new(Duration::from_millis(20), TimerMode::Repeating));
+    }
 
     let shard_text = match shard_color {
         LightColor::Green => "Oh good, the first piece of the Divine Prism. This should let me shoot a bouncing light beam.",
@@ -351,42 +409,22 @@ pub fn on_shard_zoom_in_finished(
         LightColor::Black => "Devs Only!!!",
     };
 
-    commands
-        .spawn((
-            Node {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                display: Display::Flex,
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::End,
-                ..default()
-            },
-            Visibility::Visible,
-            ShardUiMarker,
-            // spawn underneath the level select UI
-            GlobalZIndex(-1),
-            // show underneath screen transitions
-            TargetCamera(main_camera),
-        ))
-        .with_child(Node {
-            width: Val::Percent(100.0),
-            height: Val::Auto,
-            display: Display::Flex,
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..default()
-        })
-        .with_child((
-            Node {
-                width: Val::Auto,
-                height: Val::Auto,
-                margin: UiRect::all(Val::Px(24.)),
-                ..default()
-            },
-            Text::new(shard_text),
-            TextLayout::new_with_justify(JustifyText::Center),
-            font.clone().with_font_size(36.),
-        ));
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
+        if text.len() < shard_text.len() {
+            //if animating the text rn, display it fully
+            *text = shard_text.into();
+        } else if text.len() == shard_text.len() {
+            next_anim_state.set(AnimationState::Shard);
+            commands.run_system(callbacks.cb[1]);
+        }
+        return;
+    }
+
+    timer.as_mut().unwrap().tick(time.delta());
+    // normal function call, animate text and then  update it
+    if text.len() < shard_text.len() && timer.as_ref().unwrap().just_finished() {
+        *text = shard_text[0..text.len() + 1].into();
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -396,9 +434,9 @@ pub fn on_shard_text_read_finish(
     mut ev_zoom_camera: EventWriter<CameraZoomEvent>,
     mut current_level: ResMut<CurrentLevel>,
     mut q_player: Query<(&GlobalTransform, &mut PlayerLightInventory), With<PlayerMarker>>,
-    q_shard_text: Query<Entity, With<ShardUiMarker>>,
+    q_shard_text: Query<Entity, With<ShardBoxMarker>>,
     shard_anim_cbs: Res<ShardAnimationCallbacks>,
-    q_bgm: Query<Entity, (With<BgmMarker>, Without<ShardUiMarker>)>,
+    q_bgm: Query<Entity, (With<BgmMarker>, Without<ShardBoxMarker>)>,
 ) {
     let (player_transform, mut player_light_inventory) = q_player
         .get_single_mut()

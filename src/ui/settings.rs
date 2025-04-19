@@ -192,7 +192,7 @@ fn spawn_settings(
             parent
                 .spawn(Node {
                     width: Val::Percent(50.),
-                    padding: UiRect::all(Val::Px(16.0)),
+                    padding: UiRect::all(Val::Px(32.0)),
                     height: Val::Percent(100.0),
                     flex_direction: FlexDirection::Column,
 
@@ -224,8 +224,8 @@ fn handle_back_button(
                 ));
                 match button_marker {
                     SettingsButton::Back => {
-                        next_ui_state.set(UiState::StartMenu);
                         next_game_state.set(GameState::Ui);
+                        next_ui_state.set(UiState::StartMenu);
                     }
                 }
             }

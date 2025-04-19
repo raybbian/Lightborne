@@ -1,6 +1,9 @@
 use bevy::{prelude::*, ui::widget::NodeImageMode};
 
-use crate::shared::UiState;
+use crate::{
+    shared::{GameState, UiState},
+    sound::{BgmTrack, ChangeBgmEvent},
+};
 
 pub struct StartMenuPlugin;
 
@@ -8,7 +11,7 @@ impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, spawn_start.run_if(in_state(UiState::StartMenu)))
             .add_systems(Update, exit_start.run_if(not(in_state(UiState::StartMenu))))
-            .add_systems(Update, start_game.run_if(in_state(UiState::StartMenu)));
+            .add_systems(Update, start_game);
     }
 }
 
@@ -26,6 +29,7 @@ fn spawn_start(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     q_start_menu: Query<Entity, With<StartMenuMarker>>,
+    mut ev_change_bgm: EventWriter<ChangeBgmEvent>,
 ) {
     if q_start_menu.get_single().is_ok() {
         return;
@@ -35,6 +39,8 @@ fn spawn_start(
         font: asset_server.load("fonts/Outfit-Medium.ttf"),
         ..default()
     };
+
+    ev_change_bgm.send(ChangeBgmEvent(BgmTrack::LevelSelect));
 
     commands
         .spawn((
@@ -107,7 +113,8 @@ fn exit_start(mut commands: Commands, query: Query<Entity, With<StartMenuMarker>
 fn start_game(
     mut commands: Commands,
     q_button: Query<(&Interaction, &StartMenuButtonMarker), Changed<Interaction>>,
-    mut next_state: ResMut<NextState<UiState>>,
+    mut next_ui_state: ResMut<NextState<UiState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     mut exit: EventWriter<AppExit>,
     asset_server: Res<AssetServer>,
 ) {
@@ -119,12 +126,13 @@ fn start_game(
                     PlaybackSettings::DESPAWN,
                 ));
 
+                next_game_state.set(GameState::Ui);
                 match button_marker {
                     StartMenuButtonMarker::Play => {
-                        next_state.set(UiState::LevelSelect);
+                        next_ui_state.set(UiState::LevelSelect);
                     }
                     StartMenuButtonMarker::Options => {
-                        next_state.set(UiState::Settings);
+                        next_ui_state.set(UiState::Settings);
                     }
                     StartMenuButtonMarker::Quit => {
                         exit.send(AppExit::Success);

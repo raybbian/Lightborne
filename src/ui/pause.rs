@@ -1,8 +1,11 @@
 use bevy::{input::common_conditions::input_just_pressed, prelude::*, ui::widget::NodeImageMode};
 
-use crate::shared::GameState;
+use crate::{
+    shared::GameState,
+    sound::{BgmTrack, ChangeBgmEvent},
+};
 
-use super::settings::SettingsButton;
+use super::{settings::SettingsButton, start_menu::StartMenuButtonMarker};
 
 pub struct PausePlugin;
 
@@ -58,14 +61,19 @@ fn spawn_pause(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     q_pause: Query<Entity, With<PauseMarker>>,
+    mut ev_change_bgm: EventWriter<ChangeBgmEvent>,
 ) {
     if q_pause.get_single().is_ok() {
         return;
     }
+
     let font = TextFont {
         font: asset_server.load("fonts/Outfit-Medium.ttf"),
         ..default()
     };
+
+    ev_change_bgm.send(ChangeBgmEvent(BgmTrack::None));
+
     commands
         .spawn((
             Node {
@@ -83,25 +91,33 @@ fn spawn_pause(
                     Node {
                         width: Val::Percent(80.),
                         height: Val::Percent(80.),
-                        justify_content: JustifyContent::SpaceBetween,
-                        padding: UiRect::all(Val::Percent(10.)),
+                        justify_content: JustifyContent::Center,
+                        padding: UiRect::all(Val::Percent(20.)),
                         display: Display::Flex,
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
+                        column_gap: Val::Percent(6.0),
+                        row_gap: Val::Percent(6.0),
                         ..default()
                     },
                     ImageNode::from(asset_server.load("ui/pause_menu.png"))
                         .with_mode(NodeImageMode::Stretch),
                 ))
                 .with_children(|parent| {
-                    parent.spawn((Text::new("Paused"), font.clone().with_font_size(48.)));
-                    parent.spawn(Node {
-                        width: Val::Percent(50.),
-                        padding: UiRect::all(Val::Px(16.0)),
-                        height: Val::Percent(100.0),
-                        flex_direction: FlexDirection::Column,
-                        ..default()
-                    });
+                    parent.spawn((
+                        Text::new("Paused"),
+                        font.clone().with_font_size(48.),
+                        Node {
+                            margin: UiRect::all(Val::Px(16.)),
+                            ..default()
+                        },
+                    ));
+                    parent.spawn((
+                        Text::new("Level Select"),
+                        Button,
+                        StartMenuButtonMarker::Play,
+                        font.clone().with_font_size(36.),
+                    ));
                     parent.spawn((
                         Text::new("Main Menu"),
                         Button,

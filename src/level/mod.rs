@@ -102,6 +102,7 @@ impl Plugin for LevelManagementPlugin {
                 LevelSystems::Simulation.run_if(
                     in_state(GameState::Playing)
                         .or(in_state(AnimationState::Shard)) // FIXME: skull emoji
+                        .or(in_state(AnimationState::ShardDialogue))
                         .or(in_state(AnimationState::Cruciera))
                         .or(in_state(AnimationState::CrucieraDialogue)),
                 ),
@@ -111,6 +112,7 @@ impl Plugin for LevelManagementPlugin {
                 LevelSystems::Simulation.run_if(
                     in_state(GameState::Playing)
                         .or(in_state(AnimationState::Shard)) // FIXME: skull emoji
+                        .or(in_state(AnimationState::ShardDialogue))
                         .or(in_state(AnimationState::Cruciera))
                         .or(in_state(AnimationState::CrucieraDialogue)),
                 ),

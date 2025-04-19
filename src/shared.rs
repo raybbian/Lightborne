@@ -37,6 +37,7 @@ pub enum AnimationState {
     Switch,
     Respawn,
     Shard,
+    ShardDialogue, // FIXME: copied to shit LOL
     Cruciera,
     CrucieraDialogue,
 }

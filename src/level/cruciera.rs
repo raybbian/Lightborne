@@ -217,8 +217,8 @@ pub fn setup_dialogue_box(
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
                         padding: UiRect::new(
-                            Val::Px(160.),
-                            Val::Px(160.),
+                            Val::Px(200.),
+                            Val::Px(200.),
                             Val::Px(16.),
                             Val::Px(16.),
                         ),
@@ -280,7 +280,7 @@ pub fn lyra_cruciera_dialogue(
         }
     }
 
-    if keys.just_pressed(KeyCode::Space) {
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
         if text.len() < LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].1.len() {
             //if animating the text rn, display it fully
             *text = LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].1.into();
