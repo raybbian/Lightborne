@@ -384,6 +384,7 @@ pub fn shard_dialogue(
     mut commands: Commands,
     mut q_shard_text: Query<&mut Text, With<ShardTextMarker>>,
     keys: Res<ButtonInput<KeyCode>>,
+    mouse: Res<ButtonInput<MouseButton>>,
     callbacks: ResMut<ShardAnimationCallbacks>,
     mut timer: Local<Option<Timer>>,
     time: Res<Time>,
@@ -409,7 +410,9 @@ pub fn shard_dialogue(
         LightColor::Black => "Devs Only!!!",
     };
 
-    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter])
+        || mouse.just_pressed(MouseButton::Left)
+    {
         match text.len().cmp(&shard_text.len()) {
             Ordering::Less => {
                 //if animating the text rn, display it fully

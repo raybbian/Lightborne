@@ -262,6 +262,7 @@ pub fn lyra_cruciera_dialogue(
     mut q_dialogue_text: Query<&mut Text, With<DialogueTextMarker>>,
     mut q_dialogue_image: Query<&mut ImageNode, With<DialogueImageMarker>>,
     keys: Res<ButtonInput<KeyCode>>,
+    mouse: Res<ButtonInput<MouseButton>>,
     mut callbacks: ResMut<CrucieraCallbacks>,
     mut timer: Local<Option<Timer>>,
     time: Res<Time>,
@@ -286,7 +287,9 @@ pub fn lyra_cruciera_dialogue(
         }
     }
 
-    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter])
+        || mouse.just_pressed(MouseButton::Left)
+    {
         match text
             .len()
             .cmp(&LYRA_CRUCIERA_DIALOGUE[callbacks.cur_dialogue].1.len())

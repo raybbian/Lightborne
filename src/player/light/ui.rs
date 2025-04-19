@@ -44,6 +44,11 @@ pub fn spawn_light_icons(
         LightColor::Black => asset_server.load("ui/black_light_icon.png"),
     };
 
+    let font = TextFont {
+        font: asset_server.load("fonts/Outfit-Medium.ttf"),
+        ..default()
+    };
+
     // better way to get ID of child?
     let mut container: Option<Entity> = None;
     commands
@@ -80,6 +85,13 @@ pub fn spawn_light_icons(
 
     let mut spawn_and_get_icon_id = |val: LightColor| {
         let mut icon: Option<Entity> = None;
+        let text = match val {
+            LightColor::Green => "1",
+            LightColor::Purple => "2",
+            LightColor::White => "3",
+            LightColor::Blue => "4",
+            _ => "",
+        };
         commands
             .entity(container.unwrap())
             .with_children(|container| {
@@ -92,6 +104,20 @@ pub fn spawn_light_icons(
                                 height: Val::Vw(5.),
                                 ..default()
                             },
+                        ))
+                        .with_child((
+                            Node {
+                                width: Val::Vw(5.),
+                                height: Val::Vw(5.),
+                                left: Val::Percent(-75.),
+                                justify_content: JustifyContent::Center,
+                                display: Display::Flex,
+                                align_items: AlignItems::Center,
+                                ..default()
+                            },
+                            TextLayout::new_with_justify(JustifyText::Center),
+                            Text::new(text),
+                            font.clone().with_font_size(24.),
                         ))
                         .id(),
                 );

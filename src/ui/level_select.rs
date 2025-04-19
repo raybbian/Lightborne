@@ -250,7 +250,7 @@ fn spawn_level_select(
                             ))
                             .with_child((
                                 if *locked {
-                                    Text::new("LOCKED")
+                                    Text::new("-")
                                 } else {
                                     Text::new(level_id.to_string())
                                 },
