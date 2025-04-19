@@ -158,8 +158,8 @@ pub fn setup_camera(
         .id();
 
     let canvas_size = Extent3d {
-        width: CAMERA_WIDTH as u32 + 2,
-        height: CAMERA_HEIGHT as u32 + 2,
+        width: CAMERA_WIDTH + 2,
+        height: CAMERA_HEIGHT + 2,
         ..default()
     };
 

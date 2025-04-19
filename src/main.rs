@@ -62,7 +62,7 @@ fn main() {
         )
         .insert_resource(ClearColor(Color::NONE))
         .insert_gizmo_config::<DefaultGizmoConfigGroup>(
-            DefaultGizmoConfigGroup::default(),
+            DefaultGizmoConfigGroup,
             GizmoConfig {
                 enabled: true,
                 render_layers: HIGHRES_LAYER,
