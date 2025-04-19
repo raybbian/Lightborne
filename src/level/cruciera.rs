@@ -320,7 +320,7 @@ pub fn end_dialogue(
     current_level: ResMut<CurrentLevel>,
     q_player: Query<&GlobalTransform, With<PlayerMarker>>,
     q_dialogue_box: Query<Entity, With<DialogueBoxMarker>>,
-    callbacks: Res<CrucieraCallbacks>,
+    mut callbacks: ResMut<CrucieraCallbacks>,
 ) {
     let dialogue_box = q_dialogue_box
         .get_single()
@@ -350,6 +350,7 @@ pub fn end_dialogue(
             callback: None,
         },
     });
+    callbacks.cur_dialogue = 0;
 }
 
 pub fn reset_state(

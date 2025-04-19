@@ -96,8 +96,8 @@ fn spawn_pause(
                         display: Display::Flex,
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
-                        column_gap: Val::Percent(6.0),
-                        row_gap: Val::Percent(6.0),
+                        column_gap: Val::Px(32.0),
+                        row_gap: Val::Px(32.0),
                         ..default()
                     },
                     ImageNode::from(asset_server.load("ui/pause_menu.png"))
@@ -116,6 +116,12 @@ fn spawn_pause(
                         Text::new("Level Select"),
                         Button,
                         StartMenuButtonMarker::Play,
+                        font.clone().with_font_size(36.),
+                    ));
+                    parent.spawn((
+                        Text::new("Settings"),
+                        Button,
+                        StartMenuButtonMarker::Settings,
                         font.clone().with_font_size(36.),
                     ));
                     parent.spawn((

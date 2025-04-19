@@ -21,7 +21,7 @@ pub struct StartMenuMarker;
 #[derive(Component)]
 pub enum StartMenuButtonMarker {
     Play,
-    Options,
+    Settings,
     Quit,
 }
 
@@ -63,8 +63,8 @@ fn spawn_start(
                     flex_direction: FlexDirection::Column,
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
-                    column_gap: Val::Percent(4.),
-                    row_gap: Val::Percent(4.),
+                    column_gap: Val::Px(32.0),
+                    row_gap: Val::Px(32.0),
                     ..default()
                 },))
                 .with_child((
@@ -85,9 +85,9 @@ fn spawn_start(
                         ..default()
                     },
                     font.clone().with_font_size(48.),
-                    Text::new("Options"),
+                    Text::new("Settings"),
                     Button,
-                    StartMenuButtonMarker::Options,
+                    StartMenuButtonMarker::Settings,
                 ))
                 .with_child((
                     Node {
@@ -131,7 +131,7 @@ fn start_game(
                     StartMenuButtonMarker::Play => {
                         next_ui_state.set(UiState::LevelSelect);
                     }
-                    StartMenuButtonMarker::Options => {
+                    StartMenuButtonMarker::Settings => {
                         next_ui_state.set(UiState::Settings);
                     }
                     StartMenuButtonMarker::Quit => {
