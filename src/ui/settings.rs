@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use enum_map::{enum_map, Enum, EnumMap};
 
 use crate::camera::handle_move_camera;
+use crate::level::speedrun::SpeedrunTimer;
 use crate::shared::{GameState, UiState};
 use crate::sound::{BgmTrack, ChangeBgmEvent};
 
@@ -39,6 +40,9 @@ pub enum SettingVariant {
         range: RangeInclusive<f32>,
         unit: String,
     },
+    Toggle {
+        value: SettingValue<bool>,
+    },
 }
 
 impl Setting {
@@ -49,6 +53,15 @@ impl Setting {
                 value: SettingValue::from_default(value),
                 range,
                 unit,
+            },
+        }
+    }
+
+    fn new_toggle(name: String, value: bool) -> Self {
+        Self {
+            name,
+            variant: SettingVariant::Toggle {
+                value: SettingValue::from_default(value),
             },
         }
     }
@@ -68,6 +81,9 @@ pub struct SettingsIndex(usize);
 #[derive(Component, Debug, Clone)]
 pub struct SliderButton(f32);
 
+#[derive(Component, Debug, Clone)]
+pub struct ToggleButton;
+
 #[derive(Component)]
 pub struct SettingParentMarker(SettingName);
 
@@ -80,6 +96,7 @@ pub struct UpdateSetting(SettingName);
 #[derive(Component, Debug, Clone, PartialEq, Eq, Copy, Enum)]
 pub enum SettingName {
     Volume,
+    SpeedrunTimer,
 }
 
 fn init_settings() -> Settings {
@@ -95,7 +112,11 @@ fn init_settings() -> Settings {
             100.0,
             0.0..=100.0,
             "%".to_owned(),
-        )
+        ),
+        SettingName::SpeedrunTimer => Setting::new_toggle(
+            "Speedrun Timer".to_owned(),
+            false,
+        ),
     })
 }
 
@@ -108,7 +129,8 @@ impl Plugin for SettingsPlugin {
                 Update,
                 (
                     spawn_settings.run_if(in_state(UiState::Settings)),
-                    handle_slider_buttons.run_if(in_state(UiState::Settings)),
+                    (handle_slider_buttons, handle_toggle_buttons)
+                        .run_if(in_state(UiState::Settings)),
                     despawn_settings
                         .after(handle_move_camera)
                         .run_if(not(in_state(UiState::Settings))),
@@ -245,6 +267,25 @@ fn spawn_setting_children(
             ..default()
         })
         .with_children(|parent| match &setting.variant {
+            SettingVariant::Toggle { value } => {
+                parent
+                    .spawn((
+                        Node {
+                            width: Val::Px(60.0),
+                            display: Display::Flex,
+                            flex_direction: FlexDirection::Row,
+                            justify_content: JustifyContent::Center,
+                            ..default()
+                        },
+                        Button,
+                        settings_index,
+                        ToggleButton,
+                    ))
+                    .with_child((
+                        Text::new(if value.value { "On" } else { "Off" }),
+                        font.clone().with_font_size(24.0),
+                    ));
+            }
             SettingVariant::Slider { value, unit, .. } => {
                 let slider_button_bundle = (
                     Node {
@@ -312,6 +353,38 @@ fn despawn_settings(
 }
 
 #[allow(clippy::type_complexity)]
+fn handle_toggle_buttons(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    interaction_query: Query<
+        (&Interaction, &SettingName),
+        (Changed<Interaction>, With<Button>, With<ToggleButton>),
+    >,
+    mut settings: ResMut<Settings>,
+    mut redraw_ev: EventWriter<RedrawSetting>,
+    mut update_ev: EventWriter<UpdateSetting>,
+) {
+    for (interaction, setting_name) in interaction_query.iter() {
+        if interaction == &Interaction::Pressed {
+            commands.spawn((
+                AudioPlayer::new(asset_server.load("sfx/click.wav")),
+                PlaybackSettings::DESPAWN,
+            ));
+
+            let setting = &mut settings.0[*setting_name];
+            let SettingVariant::Toggle { ref mut value, .. } = setting.variant else {
+                continue;
+            };
+
+            value.value = !value.value;
+
+            redraw_ev.send(RedrawSetting(*setting_name));
+            update_ev.send(UpdateSetting(*setting_name));
+        }
+    }
+}
+
+#[allow(clippy::type_complexity)]
 fn handle_slider_buttons(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -334,7 +407,10 @@ fn handle_slider_buttons(
                 ref mut value,
                 ref range,
                 ..
-            } = setting.variant;
+            } = setting.variant
+            else {
+                continue;
+            };
 
             value.value += slider_button.0;
             value.value = value.value.clamp(*range.start(), *range.end());
@@ -353,7 +429,7 @@ fn redraw_setting(
     asset_server: Res<AssetServer>,
 ) {
     let font = TextFont {
-        font: asset_server.load("fonts/Munro.ttf"),
+        font: asset_server.load("fonts/Outfit-Medium.ttf"),
         ..default()
     };
     for RedrawSetting(settings_index) in ev.read() {
@@ -377,13 +453,22 @@ fn update_setting(
     mut ev: EventReader<UpdateSetting>,
     settings: Res<Settings>,
     mut global_volume: ResMut<GlobalVolume>,
+    mut speedrun_timer: ResMut<SpeedrunTimer>,
 ) {
     for UpdateSetting(setting_name) in ev.read() {
-        let setting = &settings.0[SettingName::Volume];
+        let setting = &settings.0[*setting_name];
         match setting_name {
             SettingName::Volume => {
-                let SettingVariant::Slider { ref value, .. } = setting.variant;
+                let SettingVariant::Slider { ref value, .. } = setting.variant else {
+                    continue;
+                };
                 global_volume.volume = Volume::new(value.value / 100.0);
+            }
+            SettingName::SpeedrunTimer => {
+                let SettingVariant::Toggle { ref value, .. } = setting.variant else {
+                    continue;
+                };
+                speedrun_timer.enabled = value.value;
             }
         }
     }

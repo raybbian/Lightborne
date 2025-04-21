@@ -12,6 +12,7 @@ use mirror::MirrorPlugin;
 use semisolid::SemiSolidPlugin;
 use sensor::LightSensorPlugin;
 use shard::CrystalShardPlugin;
+use speedrun::SpeedrunTimerPlugin;
 
 use crate::{
     camera::{
@@ -43,6 +44,7 @@ mod semisolid;
 pub mod sensor;
 mod setup;
 pub mod shard;
+pub mod speedrun;
 pub mod start_flag;
 mod walls;
 
@@ -63,6 +65,7 @@ impl Plugin for LevelManagementPlugin {
             .add_plugins(LevelCompletionPlugin)
             .add_plugins(DecorationPlugin)
             .add_plugins(CrucieraPlugin)
+            .add_plugins(SpeedrunTimerPlugin)
             .init_resource::<CurrentLevel>()
             .register_ldtk_entity::<LdtkPlayerBundle>("Lyra")
             .register_ldtk_entity::<StartFlagBundle>("Start")
