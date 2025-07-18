@@ -182,7 +182,7 @@ pub fn sensor_point_light(entity_instance: &EntityInstance) -> LineLight2d {
             .to_vec3()
             .extend(0.5),
         35.0,
-        0.008,
+        0.02,
     )
 }
 

@@ -305,7 +305,7 @@ pub fn shoot_light(
         .insert(source_transform)
         .with_child((outer_source_sprite, HIGHRES_LAYER))
         .with_child((
-            LineLight2d::point(shoot_color.lighting_color().extend(1.0), 30.0, 0.0),
+            LineLight2d::point(shoot_color.lighting_color().extend(1.0), 30.0, 0.02),
             TERRAIN_LAYER,
         ));
 

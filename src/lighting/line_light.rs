@@ -374,9 +374,9 @@ impl FromWorld for LineLight2dPipeline {
                                     operation: BlendOperation::Add,
                                 },
                                 alpha: BlendComponent {
-                                    src_factor: BlendFactor::Zero,
+                                    src_factor: BlendFactor::One,
                                     dst_factor: BlendFactor::One,
-                                    operation: BlendOperation::Add,
+                                    operation: BlendOperation::Max,
                                 },
                             }),
                             write_mask: ColorWrites::ALL,

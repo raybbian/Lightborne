@@ -93,7 +93,7 @@ pub fn setup_cruciera(
             HIGHRES_LAYER,
         ))
         .with_child((
-            LineLight2d::point(Vec4::new(1.0, 0.2, 0.2, 0.8), 40., 0.008),
+            LineLight2d::point(Vec4::new(1.0, 0.2, 0.2, 0.8), 40., 0.015),
             TERRAIN_LAYER,
         ));
 }

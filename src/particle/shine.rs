@@ -88,7 +88,7 @@ pub fn adjust_crystal_shine_lights(
         match light {
             None => {
                 commands.entity(entity).insert((
-                    LineLight2d::point(Vec4::new(1.0, 1.0, 1.0, 0.0), 15.0, 0.005),
+                    LineLight2d::point(Vec4::new(1.0, 1.0, 1.0, 0.0), 15.0, 0.01),
                     Occluder2dGroups::NONE,
                 ));
             }

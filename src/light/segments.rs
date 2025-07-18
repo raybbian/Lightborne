@@ -346,7 +346,7 @@ pub fn spawn_needed_segments(
                     color: source.color.lighting_color().extend(1.0),
                     half_length: 10.0,
                     radius: 20.0,
-                    volumetric_intensity: 0.008,
+                    volumetric_intensity: 0.04,
                 })
                 .id();
             // White beams need colliders

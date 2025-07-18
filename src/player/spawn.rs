@@ -104,7 +104,7 @@ pub fn add_player_sensors(
             .insert(LineLight2d::point(
                 Vec4::new(1.0, 1.0, 1.0, 1.0),
                 40.0,
-                0.008,
+                0.015,
             ));
     });
 }
