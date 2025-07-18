@@ -60,4 +60,3 @@ pub struct ControlsConfig {
     pub key_left: KeyCode,
     pub key_jump: KeyCode,
 }
-
