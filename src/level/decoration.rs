@@ -37,7 +37,7 @@ pub struct LdtkLantern2Bundle {
 }
 
 pub fn lantern_light(_: &EntityInstance) -> LineLight2d {
-    LineLight2d::point(Vec4::new(1.0, 0.8627, 0.7176, 1.0), 50.0, 0.02)
+    LineLight2d::point(Vec4::new(1.0, 0.8627, 0.7176, 1.0), 50.0, 0.015)
 }
 
 #[derive(Component, Default)]
