@@ -143,6 +143,17 @@ impl Plugin for SettingsPlugin {
     }
 }
 
+const CONTROLS: [(&str, &str); 8] = [
+    ("Restart", "R"),
+    ("Jump", "Space"),
+    ("Movement", "WASD"),
+    ("Sneak", "Control"),
+    ("Snap Angles", "Shift"),
+    ("Aim Light", "Left Click (Press)"),
+    ("Shoot Light", "Left Click (Release)"),
+    ("Cancel Shoot Light", "Right Click"),
+];
+
 fn spawn_settings(
     mut commands: Commands,
     level_select_ui_query: Query<Entity, With<SettingsUiMarker>>,
@@ -180,6 +191,24 @@ fn spawn_settings(
                 .id()
         })
         .collect::<Vec<_>>();
+
+    let controls_nodes = CONTROLS.map(|(action, control)| {
+        commands
+            .spawn(Node {
+                width: Val::Percent(100.0),
+                height: Val::Auto,
+                display: Display::Flex,
+                flex_direction: FlexDirection::Row,
+                justify_content: JustifyContent::SpaceBetween,
+                ..default()
+            })
+            .with_children(|parent| {
+                parent.spawn((Text::new(action), font.clone().with_font_size(24.0)));
+                parent.spawn((Text::new(control), font.clone().with_font_size(24.0)));
+            })
+            .id()
+    });
+
     commands
         .spawn((
             SettingsUiMarker,
@@ -203,11 +232,20 @@ fn spawn_settings(
                     width: Val::Percent(50.),
                     padding: UiRect::all(Val::Px(32.0)),
                     height: Val::Percent(100.0),
+                    row_gap: Val::Px(6.),
                     flex_direction: FlexDirection::Column,
-
                     ..default()
                 })
-                .add_children(&setting_nodes);
+                .add_children(&setting_nodes)
+                .with_child((
+                    Node {
+                        margin: UiRect::vertical(Val::Px(24.)),
+                        ..default()
+                    },
+                    Text::new("Controls (Fixed)"),
+                    font.clone().with_font_size(36.),
+                ))
+                .add_children(&controls_nodes);
             parent.spawn((
                 Text::new("Back"),
                 Button,

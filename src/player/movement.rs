@@ -187,6 +187,6 @@ pub fn move_player(
 }
 
 fn jump_key_pressed(keys: Res<ButtonInput<KeyCode>>, config: Res<Config>) -> bool {
-    return keys.just_pressed(config.controls_config.key_jump)
-        || keys.just_pressed(config.controls_config.key_up);
+    keys.just_pressed(config.controls_config.key_jump)
+        || keys.just_pressed(config.controls_config.key_up)
 }

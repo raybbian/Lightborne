@@ -379,6 +379,7 @@ pub fn on_shard_zoom_in_finished(
     next_anim_state.set(AnimationState::ShardDialogue);
 }
 
+#[allow(clippy::too_many_arguments)]
 // FIXME: copied LOL
 pub fn shard_dialogue(
     mut commands: Commands,
