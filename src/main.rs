@@ -33,6 +33,7 @@ mod player;
 mod shared;
 mod sound;
 mod ui;
+mod utils;
 
 fn main() {
     App::new()

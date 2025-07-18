@@ -1,7 +1,6 @@
 use bevy::{prelude::*, time::Stopwatch};
-use hhmmss::Hhmmss;
 
-use crate::shared::GameState;
+use crate::{shared::GameState, utils::hhmmss::Hhmmss};
 
 pub struct SpeedrunTimerPlugin;
 
