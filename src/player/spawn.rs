@@ -3,7 +3,7 @@ use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    animation::AnimationConfig, camera::HIGHRES_LAYER, lighting::LineLight2d, shared::GroupLabel,
+    animation::AnimationConfig, camera::LYRA_LAYER, lighting::LineLight2d, shared::GroupLabel,
 };
 
 use super::{
@@ -51,7 +51,7 @@ pub fn init_player_bundle(_: &EntityInstance) -> PlayerBundle {
 }
 
 /// [`System`] that spawns the player's hurtbox [`Collider`] as a child entity.
-pub fn add_player_sensors(
+pub fn update_player_entity(
     mut commands: Commands,
     q_player: Query<Entity, Added<PlayerMarker>>,
     asset_server: Res<AssetServer>,
@@ -79,7 +79,7 @@ pub fn add_player_sensors(
             }),
             ..default()
         },
-        HIGHRES_LAYER,
+        LYRA_LAYER,
     ));
 
     commands.entity(player).with_children(|parent| {

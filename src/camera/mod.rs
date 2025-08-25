@@ -73,6 +73,7 @@ pub const CAMERA_HEIGHT: u32 = 180;
 pub const CAMERA_ANIMATION_SECS: f32 = 0.4;
 
 pub const TERRAIN_LAYER: RenderLayers = RenderLayers::layer(0);
+pub const LYRA_LAYER: RenderLayers = RenderLayers::layer(1);
 pub const HIGHRES_LAYER: RenderLayers = RenderLayers::layer(2);
 pub const TRANSITION_LAYER: RenderLayers = RenderLayers::layer(5);
 
@@ -124,7 +125,7 @@ pub fn setup_camera(
         TransitionCamera,
         Camera {
             hdr: true,
-            order: 2,
+            order: 3,
             clear_color: ClearColorConfig::None,
             ..default()
         },
@@ -148,7 +149,7 @@ pub fn setup_camera(
             MainCamera,
             Camera {
                 hdr: true,
-                order: 1, // must be after the lowres layers
+                order: 2, // must be after the lowres layers
                 clear_color: ClearColorConfig::None,
                 ..default()
             },
@@ -165,7 +166,7 @@ pub fn setup_camera(
         ..default()
     };
 
-    let mut terrain = Image {
+    let mut canvas = Image {
         texture_descriptor: TextureDescriptor {
             label: None,
             size: canvas_size,
@@ -181,8 +182,9 @@ pub fn setup_camera(
         ..default()
     };
 
-    terrain.resize(canvas_size);
-    let terrain_handle = images.add(terrain);
+    canvas.resize(canvas_size);
+    let terrain_handle = images.add(canvas.clone());
+    let lyra_handle = images.add(canvas.clone());
 
     let pixel_projection = OrthographicProjection {
         scaling_mode: ScalingMode::Fixed {
@@ -196,7 +198,6 @@ pub fn setup_camera(
         child
             .spawn((
                 Camera2d,
-                // MatchMainCameraTransform::Nearest,
                 AmbientLight2d {
                     color: Vec4::new(1.0, 1.0, 1.0, 0.4),
                 },
@@ -214,6 +215,28 @@ pub fn setup_camera(
                 TERRAIN_LAYER,
             ))
             .with_child((Sprite::from_image(terrain_handle.clone()), HIGHRES_LAYER));
+
+        child
+            .spawn((
+                Camera2d,
+                Camera {
+                    hdr: true,
+                    order: 0,
+                    target: RenderTarget::Image(lyra_handle.clone()),
+                    clear_color: ClearColorConfig::Custom(Color::NONE),
+                    ..default()
+                },
+                Tonemapping::TonyMcMapface,
+                CameraPixelOffset(Vec2::ZERO),
+                pixel_projection.clone(),
+                Transform::default(),
+                LYRA_LAYER,
+            ))
+            .with_child((
+                Sprite::from_image(lyra_handle.clone()),
+                HIGHRES_LAYER,
+                Transform::from_xyz(0., 0., 5.),
+            ));
 
         child.spawn((
             Sprite::from_image(asset_server.load("levels/background.png")),

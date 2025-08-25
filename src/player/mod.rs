@@ -2,9 +2,7 @@ use animation::{flip_player_direction, set_animation, PlayerAnimationType};
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 use bevy_rapier2d::prelude::*;
-use match_player::{
-    post_update_match_player_pixel, pre_update_match_player_pixel, update_match_player_z,
-};
+use match_player::update_match_player_z;
 use strand::PlayerStrandPlugin;
 
 use crate::{animation::AnimationConfig, level::LevelSystems};
@@ -12,7 +10,7 @@ use crate::{animation::AnimationConfig, level::LevelSystems};
 use kill::PlayerKillPlugin;
 use light::{PlayerLightInventory, PlayerLightPlugin};
 use movement::{PlayerMovement, PlayerMovementPlugin};
-use spawn::{add_player_sensors, init_player_bundle};
+use spawn::{init_player_bundle, update_player_entity};
 
 mod animation;
 pub mod kill;
@@ -33,10 +31,8 @@ impl Plugin for PlayerManagementPlugin {
             .add_plugins(PlayerStrandPlugin)
             .add_systems(
                 PreUpdate,
-                add_player_sensors.in_set(LevelSystems::Processing),
+                update_player_entity.in_set(LevelSystems::Processing),
             )
-            .add_systems(PreUpdate, pre_update_match_player_pixel)
-            .add_systems(PostUpdate, post_update_match_player_pixel)
             .add_systems(Update, update_match_player_z)
             .add_systems(
                 FixedUpdate,

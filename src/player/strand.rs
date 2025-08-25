@@ -4,8 +4,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 use crate::{
-    animation::AnimationConfig, camera::HIGHRES_LAYER, level::LevelSystems,
-    player::match_player::MatchPlayerPixel, shared::GroupLabel,
+    animation::AnimationConfig, camera::LYRA_LAYER, level::LevelSystems, shared::GroupLabel,
 };
 
 use super::{
@@ -257,13 +256,12 @@ pub fn add_player_strand(
                     i as u32,
                     physics,
                 ),
-                MatchPlayerPixel(default()),
                 Transform::default(),
                 InheritedVisibility::default(),
                 MatchPlayerZ {
                     offset: player_offset.z,
                 },
-                HIGHRES_LAYER,
+                LYRA_LAYER,
             ))
             .with_children(|parent| {
                 for (layer_i, &layer) in strand_layer_group.assets.iter().enumerate() {
@@ -272,7 +270,7 @@ pub fn add_player_strand(
                     );
 
                     parent.spawn((
-                        HIGHRES_LAYER,
+                        LYRA_LAYER,
                         Sprite::from_image(asset_server.load(layer)),
                         layer_transform,
                     ));
