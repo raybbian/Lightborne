@@ -22010,10 +22010,10 @@
 							"height": 8,
 							"defUid": 1407,
 							"px": [144,144],
-							"fieldInstances": [{ "__identifier": "Text", "__type": "String", "__value": "Hitting a red sensor will toggle the red crystals. Hitting a pink sensor will toggle pink crystals.", "__tile": null, "defUid": 1408, "realEditorValues": [{
+							"fieldInstances": [{ "__identifier": "Text", "__type": "String", "__value": "The sensor's color corresponds to the color of the crystals it will toggle. For example, a red sensor will toggle red crystals!", "__tile": null, "defUid": 1408, "realEditorValues": [{
 								"id": "V_String",
 								"params": [
-									"Hitting a red sensor will toggle the red crystals. Hitting a pink sensor will toggle pink crystals."
+									"The sensor's color corresponds to the color of the crystals it will toggle. For example, a red sensor will toggle red crystals!"
 								]
 							}] }],
 							"__worldX": 464,
@@ -24062,9 +24062,9 @@
 					"params": ["Purple"]
 				} ] },
 				{ "__identifier": "LevelName", "__type": "String", "__value": "", "__tile": null, "defUid": 1365, "realEditorValues": [] },
-				{ "__identifier": "LevelId", "__type": "String", "__value": "2H", "__tile": null, "defUid": 1366, "realEditorValues": [{
+				{ "__identifier": "LevelId", "__type": "String", "__value": "2G", "__tile": null, "defUid": 1366, "realEditorValues": [{
 					"id": "V_String",
-					"params": ["2H"]
+					"params": ["2G"]
 				}] }
 			],
 			"layerInstances": [
@@ -25295,6 +25295,27 @@
 							"fieldInstances": [],
 							"__worldX": 944,
 							"__worldY": 0
+						},
+						{
+							"__identifier": "StaticTooltip",
+							"__grid": [30,17],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#124E89",
+							"iid": "b0c012e0-5e50-11f0-b4f7-bfb2cbf0bd48",
+							"width": 8,
+							"height": 8,
+							"defUid": 1407,
+							"px": [240,136],
+							"fieldInstances": [{ "__identifier": "Text", "__type": "String", "__value": "Chose the wrong color light beam to shoot? Right click while holding left click to cancel your shot.", "__tile": null, "defUid": 1408, "realEditorValues": [{
+								"id": "V_String",
+								"params": [
+									"Chose the wrong color light beam to shoot? Right click while holding left click to cancel your shot."
+								]
+							}] }],
+							"__worldX": 880,
+							"__worldY": 136
 						}
 					]
 				},
@@ -28513,9 +28534,9 @@
 					"params": ["Blue"]
 				} ] },
 				{ "__identifier": "LevelName", "__type": "String", "__value": "", "__tile": null, "defUid": 1365, "realEditorValues": [] },
-				{ "__identifier": "LevelId", "__type": "String", "__value": "4C", "__tile": null, "defUid": 1366, "realEditorValues": [{
+				{ "__identifier": "LevelId", "__type": "String", "__value": "4B", "__tile": null, "defUid": 1366, "realEditorValues": [{
 					"id": "V_String",
-					"params": ["4C"]
+					"params": ["4B"]
 				}] }
 			],
 			"layerInstances": [
