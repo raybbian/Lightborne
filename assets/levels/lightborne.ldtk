@@ -18551,7 +18551,7 @@
 							"px": [168,160],
 							"fieldInstances": [
 								{ "__identifier": "id", "__type": "Int", "__value": 0, "__tile": null, "defUid": 722, "realEditorValues": [] },
-								{ "__identifier": "activation_time", "__type": "Int", "__value": 400, "__tile": null, "defUid": 1319, "realEditorValues": [] },
+								{ "__identifier": "activation_time", "__type": "Int", "__value": 600, "__tile": null, "defUid": 1319, "realEditorValues": [{ "id": "V_Int", "params": [600] }] },
 								{ "__identifier": "toggle_color", "__type": "LocalEnum.CrystalColor", "__value": "Red", "__tile": null, "defUid": 1376, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Red"]
@@ -28787,7 +28787,7 @@
 						},
 						{
 							"__identifier": "StaticTooltip",
-							"__grid": [44,16],
+							"__grid": [40,19],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -28796,13 +28796,15 @@
 							"width": 8,
 							"height": 8,
 							"defUid": 1407,
-							"px": [352,128],
-							"fieldInstances": [{ "__identifier": "Text", "__type": "String", "__value": "See that pink sensor above? Use left click to aim and shoot at it!", "__tile": null, "defUid": 1408, "realEditorValues": [{
+							"px": [320,152],
+							"fieldInstances": [{ "__identifier": "Text", "__type": "String", "__value": "See that pink sensor with the golden center above? Use left click to aim and shoot at it!", "__tile": null, "defUid": 1408, "realEditorValues": [{
 								"id": "V_String",
-								"params": ["See that pink sensor above? Use left click to aim and shoot at it!"]
+								"params": [
+									"See that pink sensor with the golden center above? Use left click to aim and shoot at it!"
+								]
 							}] }],
-							"__worldX": 16,
-							"__worldY": 128
+							"__worldX": -16,
+							"__worldY": 152
 						}
 					]
 				},
