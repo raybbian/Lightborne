@@ -68,6 +68,10 @@ pub fn reset_light_inventory(
             inventory.current_color = old_color;
         }
     }
+    // if select none, make sure to select some
+    if old_color.is_none() && allowed_cols[LightColor::Green] {
+        inventory.current_color = Some(LightColor::Green);
+    }
 }
 
 #[derive(Message)]

@@ -54,7 +54,7 @@ impl MergedTile for OneWayMarker {
             )]))
             .insert(Friction::new(0.))
             .insert(CollisionLayers::new(
-                Layers::Terrain,
+                Layers::Platform,
                 [
                     Layers::PlayerCollider,
                     Layers::LightRay,

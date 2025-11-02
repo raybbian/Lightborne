@@ -9,6 +9,7 @@ use crate::{
         LevelSystems,
     },
     ldtk::{LdtkLevelParam, LevelExt},
+    shared::GameState,
     ui::tooltip::TooltipSpawner,
 };
 
@@ -18,11 +19,13 @@ pub struct HintRestartPlugin;
 
 impl Plugin for HintRestartPlugin {
     fn build(&self, app: &mut App) {
+        app.init_resource::<HintRestartTimer>();
+        app.add_systems(OnEnter(GameState::InGame), reset_restart_hint_timer);
         app.add_systems(Update, hint_restart_button.in_set(LevelSystems::Simulation));
     }
 }
 
-#[derive(Deref, DerefMut)]
+#[derive(Resource, Deref, DerefMut)]
 pub struct HintRestartTimer(Timer);
 
 impl Default for HintRestartTimer {
@@ -34,9 +37,14 @@ impl Default for HintRestartTimer {
     }
 }
 
+pub fn reset_restart_hint_timer(mut hint_reset_timer: ResMut<HintRestartTimer>) {
+    hint_reset_timer.reset();
+    hint_reset_timer.unpause()
+}
+
 pub fn hint_restart_button(
     mut tooltip_spawner: TooltipSpawner,
-    mut triggered: Local<HintRestartTimer>,
+    mut triggered: ResMut<HintRestartTimer>,
     lyra: Single<(Entity, &PlayerLightInventory), With<Lyra>>,
     time: Res<Time>,
     shard_mods: Res<CrystalShardMods>,
@@ -55,7 +63,7 @@ pub fn hint_restart_button(
     let can_shoot = inventory
         .sources
         .iter()
-        .any(|(color, has_shot)| allowed_colors[color] && *has_shot);
+        .any(|(color, has_shot)| (allowed_colors[color] || shard_mods.0[color]) && *has_shot);
 
     if !can_shoot && has_color {
         triggered.tick(time.delta());

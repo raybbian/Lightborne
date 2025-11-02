@@ -127,7 +127,7 @@ pub fn flip_player_direction(
     //     return;
     // }
 
-    const PLAYER_FACING_EPSILON: f32 = 0.01;
+    const PLAYER_FACING_EPSILON: f32 = 0.5;
     if lin_vel.0.x < -PLAYER_FACING_EPSILON {
         player_sprite.flip_x = true;
     } else if lin_vel.0.x > PLAYER_FACING_EPSILON {

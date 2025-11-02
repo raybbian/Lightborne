@@ -67,6 +67,12 @@ pub struct Lyra;
 #[derive(Component)]
 pub struct LyraHurtBox;
 
+#[derive(Component)]
+pub enum LyraWallCaster {
+    Left,
+    Right,
+}
+
 pub fn lyra_spawn_transform(ldtk_level_param: &LdtkLevelParam) -> Vec2 {
     let Some(lyra_transform) = ldtk_level_param.cur_level().and_then(|level| {
         level
@@ -119,7 +125,7 @@ pub fn spawn_lyra(
         .entity(player)
         .insert(CollisionLayers::new(
             Layers::PlayerCollider,
-            [Layers::Terrain, Layers::BlueCrystal],
+            [Layers::Terrain, Layers::BlueCrystal, Layers::Platform],
         ))
         .insert(CharacterController)
         .insert(RigidBody::Dynamic)
@@ -139,9 +145,11 @@ pub fn spawn_lyra(
             )
             .with_max_distance(0.5)
             .with_max_hits(10)
-            .with_query_filter(
-                SpatialQueryFilter::default().with_mask([Layers::Terrain, Layers::BlueCrystal]),
-            ),
+            .with_query_filter(SpatialQueryFilter::default().with_mask([
+                Layers::Terrain,
+                Layers::BlueCrystal,
+                Layers::Platform,
+            ])),
         )
         .insert(LockedAxes::ROTATION_LOCKED)
         .insert(Friction {
@@ -185,6 +193,40 @@ pub fn spawn_lyra(
         .observe(handle_start_end_markers)
         .observe(on_player_intersect_shard)
         .observe(kill_player_on_danger);
+
+    commands
+        .spawn(
+            ShapeCaster::new(
+                Collider::rectangle(0.5, 15.8),
+                Vec2::new(5.75, -2.0),
+                0.0,
+                Dir2::X,
+            )
+            .with_max_distance(0.5)
+            .with_max_hits(10)
+            .with_query_filter(
+                SpatialQueryFilter::default().with_mask([Layers::Terrain, Layers::BlueCrystal]),
+            ),
+        )
+        .insert(LyraWallCaster::Right)
+        .insert(ChildOf(player));
+
+    commands
+        .spawn(
+            ShapeCaster::new(
+                Collider::rectangle(0.5, 15.8),
+                Vec2::new(-5.75, -2.0),
+                0.0,
+                Dir2::NEG_X,
+            )
+            .with_max_distance(0.5)
+            .with_max_hits(10)
+            .with_query_filter(
+                SpatialQueryFilter::default().with_mask([Layers::Terrain, Layers::BlueCrystal]),
+            ),
+        )
+        .insert(LyraWallCaster::Left)
+        .insert(ChildOf(player));
 
     commands.trigger(SnapToLyra);
 }

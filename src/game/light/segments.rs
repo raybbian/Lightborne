@@ -119,6 +119,7 @@ pub fn play_light_beam(
                 Layers::LightSensor,
                 Layers::Spike,
                 Layers::BlueCrystal,
+                Layers::Platform,
             ],
         ),
         // LightColor::Black => {
@@ -131,6 +132,7 @@ pub fn play_light_beam(
                 Layers::LightSensor,
                 Layers::WhiteRay,
                 Layers::Spike,
+                Layers::Platform,
             ],
         ),
         _ => CollisionLayers::new(
@@ -141,6 +143,7 @@ pub fn play_light_beam(
                 Layers::WhiteRay,
                 Layers::Spike,
                 Layers::BlueCrystal,
+                Layers::Platform,
             ],
         ),
     };

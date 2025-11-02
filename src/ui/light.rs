@@ -86,8 +86,8 @@ pub fn spawn_light_icons(
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::Center,
-            padding: UiRect::all(Val::Vw(1.)),
-            row_gap: Val::Vw(1.),
+            padding: UiRect::all(Val::Px(16.)),
+            row_gap: Val::Px(16.),
             ..default()
         })
         .insert(ChildOf(overlay))
@@ -103,8 +103,8 @@ pub fn spawn_light_icons(
         let icon = commands
             .spawn(ImageNode::from(icons[val].clone()))
             .insert(Node {
-                width: Val::Vw(5.),
-                height: Val::Vw(5.),
+                width: Val::Px(64.),
+                height: Val::Px(64.),
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
                 ..default()
@@ -114,8 +114,8 @@ pub fn spawn_light_icons(
 
         commands
             .spawn(Node {
-                width: Val::Vw(5.),
-                height: Val::Vw(5.),
+                width: Val::Px(64.),
+                height: Val::Px(64.),
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
                 ..default()
@@ -126,7 +126,7 @@ pub fn spawn_light_icons(
             )))
             .insert(TextLayout::new_with_justify(Justify::Right))
             .insert(Text::new(text))
-            .insert(ui_font.text_font().with_font_size(24.))
+            .insert(ui_font.text_font().with_font_size(32.))
             .insert(ChildOf(icon));
 
         icon

@@ -92,30 +92,30 @@ fn build_rects_by_row(width: i32, height: i32, tiles: &HashSet<GridCoords>) -> V
     rects
 }
 
-fn transpose_coords_set(tiles: &HashSet<GridCoords>) -> HashSet<GridCoords> {
-    tiles
-        .iter()
-        .map(|&GridCoords { x, y }| GridCoords { x: y, y: x })
-        .collect()
-}
-
-fn build_rects_by_column(width: i32, height: i32, tiles: &HashSet<GridCoords>) -> Vec<Rect> {
-    let tset = transpose_coords_set(tiles);
-    let mut rects_t = build_rects_by_row(height, width, &tset);
-
-    for r in &mut rects_t {
-        let left = r.bottom;
-        let right = r.top;
-        let bottom = r.left;
-        let top = r.right;
-        r.left = left;
-        r.right = right;
-        r.bottom = bottom;
-        r.top = top;
-    }
-
-    rects_t
-}
+// fn transpose_coords_set(tiles: &HashSet<GridCoords>) -> HashSet<GridCoords> {
+//     tiles
+//         .iter()
+//         .map(|&GridCoords { x, y }| GridCoords { x: y, y: x })
+//         .collect()
+// }
+//
+// fn build_rects_by_column(width: i32, height: i32, tiles: &HashSet<GridCoords>) -> Vec<Rect> {
+//     let tset = transpose_coords_set(tiles);
+//     let mut rects_t = build_rects_by_row(height, width, &tset);
+//
+//     for r in &mut rects_t {
+//         let left = r.bottom;
+//         let right = r.top;
+//         let bottom = r.left;
+//         let top = r.right;
+//         r.left = left;
+//         r.right = right;
+//         r.bottom = bottom;
+//         r.top = top;
+//     }
+//
+//     rects_t
+// }
 
 pub fn spawn_merged_tiles<Tile>(
     mut commands: Commands,
@@ -166,12 +166,12 @@ pub fn spawn_merged_tiles<Tile>(
 
         for (compare_data, tile_coords) in level_tiles.iter() {
             let rects_h = build_rects_by_row(width, height, tile_coords);
-            let rects_v = build_rects_by_column(width, height, tile_coords);
+            // let rects_v = build_rects_by_column(width, height, tile_coords);
 
             commands.entity(level_entity).with_children(|level| {
                 for r in rects_h.iter() {
                     let extent = Vec2::new(
-                        (r.right - r.left + 1) as f32 * grid - 0.1,
+                        (r.right - r.left + 1) as f32 * grid,
                         (r.top - r.bottom + 1) as f32 * grid,
                     )
                     .abs();
@@ -184,20 +184,20 @@ pub fn spawn_merged_tiles<Tile>(
                     Tile::bundle(&mut level.spawn_empty(), center, extent, compare_data);
                 }
                 //cover gaps because sadge
-                for r in rects_v.iter() {
-                    let extent = Vec2::new(
-                        (r.right - r.left + 1) as f32 * grid,
-                        (r.top - r.bottom + 1) as f32 * grid - 0.1,
-                    )
-                    .abs();
-
-                    let center = Vec2::new(
-                        (r.left + r.right + 1) as f32 * grid / 2.0,
-                        (r.bottom + r.top + 1) as f32 * grid / 2.0,
-                    );
-
-                    Tile::bundle(&mut level.spawn_empty(), center, extent, compare_data);
-                }
+                // for r in rects_v.iter() {
+                //     let extent = Vec2::new(
+                //         (r.right - r.left + 1) as f32 * grid,
+                //         (r.top - r.bottom + 1) as f32 * grid - 0.1,
+                //     )
+                //     .abs();
+                //
+                //     let center = Vec2::new(
+                //         (r.left + r.right + 1) as f32 * grid / 2.0,
+                //         (r.bottom + r.top + 1) as f32 * grid / 2.0,
+                //     );
+                //
+                //     Tile::bundle(&mut level.spawn_empty(), center, extent, compare_data);
+                // }
             });
         }
     });

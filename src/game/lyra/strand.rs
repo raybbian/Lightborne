@@ -304,8 +304,11 @@ pub fn add_player_strand(
         }
 
         if physics {
-            let query_filter =
-                SpatialQueryFilter::default().with_mask([Layers::Terrain, Layers::BlueCrystal]);
+            let query_filter = SpatialQueryFilter::default().with_mask([
+                Layers::Terrain,
+                Layers::BlueCrystal,
+                Layers::Platform,
+            ]);
             commands.entity(new_id).insert(
                 RayCaster::new(Vec2::ZERO, Dir2::NEG_Y)
                     .with_solidness(true)

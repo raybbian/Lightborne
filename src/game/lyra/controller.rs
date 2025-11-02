@@ -2,7 +2,10 @@ use avian2d::{math::*, prelude::*};
 use bevy::{ecs::query::Has, prelude::*};
 
 use crate::{
-    game::{lyra::Lyra, LevelSystems},
+    game::{
+        lyra::{Lyra, LyraWallCaster},
+        LevelSystems,
+    },
     shared::PlayState,
 };
 
@@ -107,10 +110,10 @@ pub fn keyboard_input(
     if keyboard_input.just_released(KeyCode::Space) {
         movement_writer.write(MovementAction::JumpCut);
     }
-    if keyboard_input.just_pressed(KeyCode::ShiftLeft) {
+    if keyboard_input.just_pressed(KeyCode::ControlLeft) {
         movement_writer.write(MovementAction::Crouch);
     }
-    if keyboard_input.just_released(KeyCode::ShiftLeft) {
+    if keyboard_input.just_released(KeyCode::ControlLeft) {
         movement_writer.write(MovementAction::Stand);
     }
 }
@@ -130,78 +133,99 @@ pub fn update_grounded(
 }
 
 pub fn movement(
-    time: Res<Time>,
     mut movement_reader: MessageReader<MovementAction>,
-    mut controllers: Query<(
-        &mut MovementInfo,
-        &mut LinearVelocity,
-        &ShapeHits,
-        Has<Grounded>,
-    )>,
+    lyra: Single<
+        (
+            &mut MovementInfo,
+            &mut LinearVelocity,
+            &ShapeHits,
+            Has<Grounded>,
+        ),
+        With<Lyra>,
+    >,
+    wall_casters: Query<(&ShapeHits, &LyraWallCaster), Without<Lyra>>,
 ) {
-    let delta = time.delta_secs() * 64.;
-    for (mut movement_info, mut linear_velocity, shape_hits, is_grounded) in &mut controllers {
-        if is_grounded {
-            movement_info.coyote_time_ticks = COYOTE_TIME_TICKS;
-        }
-
-        let mut moved = false;
-        let mut crouch = false;
-        for event in movement_reader.read() {
-            match event {
-                MovementAction::Move(direction) => {
-                    linear_velocity.x += *direction * PLAYER_MOVE_VEL * 64. * delta;
-                    moved = true;
-                }
-                MovementAction::Jump => {
-                    movement_info.should_jump_ticks = SHOULD_JUMP_TICKS;
-                }
-                MovementAction::JumpCut => {
-                    if linear_velocity.y > 0. {
-                        linear_velocity.y /= 3.;
-                        movement_info.jump_boost_ticks = 0;
-                        movement_info.should_jump_ticks = 0;
-                    }
-                }
-                MovementAction::Crouch => crouch = true,
-                MovementAction::Stand => crouch = false,
-            }
-        }
-
-        if movement_info.should_jump_ticks > 0 && movement_info.coyote_time_ticks > 0 {
-            movement_info.jump_boost_ticks = JUMP_BOOST_TICKS;
-        }
-
-        let too_close = shape_hits.iter().any(|hit| hit.distance < 0.25);
-        if movement_info.jump_boost_ticks > 0 {
-            linear_velocity.y = PLAYER_JUMP_VEL * 64.;
-        } else if too_close && linear_velocity.y < 0.5 {
-            linear_velocity.y = 0.45;
-        } else if is_grounded && linear_velocity.y < 0.5 {
-            linear_velocity.y = 0.;
-        } else {
-            linear_velocity.y -= PLAYER_GRAVITY * 64. * delta;
-        }
-
-        linear_velocity.y = linear_velocity
-            .y
-            .clamp(-PLAYER_MAX_Y_VEL * 64., PLAYER_MAX_Y_VEL * 64.);
-
-        let crouch_modif = if crouch { 0.5 } else { 1.0 };
-        linear_velocity.x = linear_velocity.x.clamp(
-            -PLAYER_MAX_H_VEL * 64. * crouch_modif,
-            PLAYER_MAX_H_VEL * 64. * crouch_modif,
-        );
-
-        if !moved {
-            linear_velocity.x *= 0.6;
-            if linear_velocity.x.abs() < 0.1 {
-                linear_velocity.x = 0.;
-            }
-        }
-
-        movement_info.should_jump_ticks -= 1;
-        movement_info.jump_boost_ticks -= 1;
-        movement_info.coyote_time_ticks -= 1;
+    let (mut movement_info, mut linear_velocity, shape_hits, is_grounded) = lyra.into_inner();
+    if is_grounded {
+        movement_info.coyote_time_ticks = COYOTE_TIME_TICKS;
     }
+
+    let mut moved = false;
+    for event in movement_reader.read() {
+        match event {
+            MovementAction::Move(direction) => {
+                linear_velocity.x += *direction * PLAYER_MOVE_VEL * 64.;
+                moved = true;
+            }
+            MovementAction::Jump => {
+                movement_info.should_jump_ticks = SHOULD_JUMP_TICKS;
+            }
+            MovementAction::JumpCut => {
+                if linear_velocity.y > 0. {
+                    linear_velocity.y /= 3.;
+                    movement_info.jump_boost_ticks = 0;
+                    movement_info.should_jump_ticks = 0;
+                }
+            }
+            MovementAction::Crouch => movement_info.crouched = true,
+            MovementAction::Stand => movement_info.crouched = false,
+        }
+    }
+
+    if movement_info.should_jump_ticks > 0 && movement_info.coyote_time_ticks > 0 {
+        movement_info.jump_boost_ticks = JUMP_BOOST_TICKS;
+    }
+
+    let too_close = shape_hits.iter().any(|hit| hit.distance < 0.25);
+    if movement_info.jump_boost_ticks > 0 {
+        linear_velocity.y = PLAYER_JUMP_VEL * 64.;
+    } else if too_close && linear_velocity.y < 0.5 {
+        linear_velocity.y = 0.45;
+    } else if is_grounded && linear_velocity.y < 0.5 {
+        linear_velocity.y = 0.;
+    } else {
+        linear_velocity.y -= PLAYER_GRAVITY * 64.;
+    }
+
+    linear_velocity.y = linear_velocity
+        .y
+        .clamp(-PLAYER_MAX_Y_VEL * 64., PLAYER_MAX_Y_VEL * 64.);
+
+    if !moved {
+        linear_velocity.x *= 0.6;
+        if linear_velocity.x.abs() < 0.1 {
+            linear_velocity.x = 0.;
+        }
+    }
+
+    for (wall_hits, side) in wall_casters.iter() {
+        let too_close = wall_hits.iter().any(|hit| hit.distance < 0.25);
+        let any_hit = wall_hits.iter().next().is_some();
+        match side {
+            LyraWallCaster::Left => {
+                if too_close && linear_velocity.x < 0.5 {
+                    linear_velocity.x = 0.45;
+                } else if any_hit && linear_velocity.x < 0.5 {
+                    linear_velocity.x = 0.;
+                }
+            }
+            LyraWallCaster::Right => {
+                if too_close && linear_velocity.x > -0.5 {
+                    linear_velocity.x = -0.45;
+                } else if any_hit && linear_velocity.x > -0.5 {
+                    linear_velocity.x = 0.;
+                }
+            }
+        }
+    }
+
+    let crouch_modif = if movement_info.crouched { 0.5 } else { 1.0 };
+    linear_velocity.x = linear_velocity.x.clamp(
+        -PLAYER_MAX_H_VEL * 64. * crouch_modif,
+        PLAYER_MAX_H_VEL * 64. * crouch_modif,
+    );
+
+    movement_info.should_jump_ticks -= 1;
+    movement_info.jump_boost_ticks -= 1;
+    movement_info.coyote_time_ticks -= 1;
 }

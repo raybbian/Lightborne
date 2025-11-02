@@ -111,8 +111,13 @@ pub enum Layers {
     BlueRay,
     DangerBox,
     Spike,
+
+    // all terrain types, gotta be separate for casters though
     Terrain,
+    Platform,
     BlueCrystal,
+
+    // non collision based, just sensors
     LightSensor,
     SensorBox,
     // BlackRay,
