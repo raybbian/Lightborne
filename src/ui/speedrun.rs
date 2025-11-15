@@ -56,6 +56,7 @@ pub fn spawn_speedrun_timer(
             padding: UiRect::all(Val::Px(32.)),
             ..default()
         })
+        .insert(Visibility::Hidden)
         .with_child((
             Text::new(speedrun_timer.timer.elapsed().hhmmssxxx()),
             SpeedrunUiMarker,

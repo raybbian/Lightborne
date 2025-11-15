@@ -14,7 +14,7 @@ use crate::{
     asset::LoadResource,
     shared::{GameState, PlayState},
     ui::{
-        leaderboard::LeaderboardUiPlugin, level_select::LevelSelectPlugin,
+        leaderboard::LeaderboardUiPlugin, level_select::LevelSelectPlugin, light::LightUiPlugin,
         loading::LoadingUiPlugin, scroll::ScrollPlugin, settings::SettingsPlugin,
         speedrun::SpeedrunTimerPlugin, start_menu::StartMenuPlugin,
     },
@@ -23,6 +23,7 @@ use crate::{
 pub mod follow;
 mod leaderboard;
 pub mod level_select;
+mod light;
 mod loading;
 mod pause;
 mod scroll;
@@ -47,6 +48,7 @@ impl Plugin for UiPlugin {
         app.add_plugins(StartMenuPlugin);
         app.add_plugins(SettingsPlugin);
         app.add_plugins(LevelSelectPlugin);
+        app.add_plugins(LightUiPlugin);
         app.add_systems(
             PreUpdate,
             button_sfx
