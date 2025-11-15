@@ -1,9 +1,10 @@
-use std::f32::consts::PI;
+use std::{collections::HashSet, f32::consts::PI};
 
 use avian2d::prelude::*;
 use bevy::{input::mouse::MouseWheel, prelude::*};
 use enum_map::{enum_map, EnumMap};
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     // asset::LoadResource,
@@ -20,7 +21,8 @@ use crate::{
         lyra::Lyra,
         Layers, LevelSystems,
     },
-    shared::{GameState, ResetLevels},
+    save::SaveParam,
+    shared::{ResetLevels, UiState},
 };
 
 const NUM_INCREMENTS: i32 = 16; // The number of angle increments for light beam alignment
@@ -31,9 +33,9 @@ impl Plugin for BeamControllerPlugin {
     fn build(&self, app: &mut App) {
         // app.register_type::<BeamSourceAssets>();
         // app.load_resource::<BeamSourceAssets>();
-        app.init_resource::<PlayerLightSaveData>();
+        app.init_resource::<PlayerLightProgress>();
         app.add_message::<BeamAction>();
-        app.add_systems(OnExit(GameState::Loading), init_player_light_save_data);
+        app.add_systems(OnExit(UiState::Leaderboard), init_player_light_save_data);
         app.add_systems(
             Update,
             (handle_color_switch, handle_shoot_inputs, preview_light_path)
@@ -69,17 +71,33 @@ pub enum BeamAction {
     Collect,
 }
 
-#[derive(Resource, Default)]
-pub struct PlayerLightSaveData {
-    pub unlocked: EnumMap<LightColor, bool>,
+#[derive(Resource, Default, Serialize, Deserialize, Clone)]
+pub struct PlayerLightProgress {
+    pub unlocked: HashSet<LightColor>,
 }
 
 pub fn init_player_light_save_data(
-    mut light_save_data: ResMut<PlayerLightSaveData>,
+    mut light_save_data: ResMut<PlayerLightProgress>,
     config: Res<Config>,
+    save_param: SaveParam,
 ) {
-    for (_, unlocked) in light_save_data.unlocked.iter_mut() {
-        *unlocked = config.debug_config.unlock_beams;
+    if let Some(save_data) = save_param.get_save_data() {
+        *light_save_data = save_data.light.clone();
+        info!(
+            "Found save data with light colors {:?}",
+            save_data.light.unlocked
+        )
+    } else {
+        *light_save_data = PlayerLightProgress {
+            unlocked: HashSet::new(),
+        }
+    }
+
+    if config.debug_config.unlock_beams {
+        light_save_data.unlocked.insert(LightColor::White);
+        light_save_data.unlocked.insert(LightColor::Green);
+        light_save_data.unlocked.insert(LightColor::Purple);
+        light_save_data.unlocked.insert(LightColor::Blue);
     }
 }
 
@@ -156,10 +174,12 @@ impl PlayerLightInventory {
     }
 }
 
-impl From<&PlayerLightSaveData> for PlayerLightInventory {
-    fn from(value: &PlayerLightSaveData) -> Self {
+impl From<&PlayerLightProgress> for PlayerLightInventory {
+    fn from(value: &PlayerLightProgress) -> Self {
         let mut inventory = PlayerLightInventory::new();
-        inventory.allowed = value.unlocked;
+        for (color, allowed) in inventory.allowed.iter_mut() {
+            *allowed = value.unlocked.contains(&color);
+        }
         inventory
     }
 }

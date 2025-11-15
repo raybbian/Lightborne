@@ -73,7 +73,7 @@ fn spawn_start_menu(mut commands: Commands, ui_font: Res<UiFont>, assets: Res<St
         .insert(ChildOf(container))
         .observe(
             |_: On<UiClick>, mut next_ui_state: ResMut<NextState<UiState>>| {
-                next_ui_state.set(UiState::LevelSelect);
+                next_ui_state.set(UiState::Leaderboard);
             },
         );
 

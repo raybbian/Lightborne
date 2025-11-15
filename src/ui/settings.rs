@@ -59,6 +59,7 @@ fn spawn_settings(mut commands: Commands, ui_font: Res<UiFont>) {
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::Center,
             padding: UiRect::all(Val::Px(96.0)),
+            overflow: Overflow::scroll_y(),
             column_gap: Val::Px(32.),
             row_gap: Val::Px(32.),
             ..default()
@@ -98,7 +99,6 @@ fn spawn_settings(mut commands: Commands, ui_font: Res<UiFont>) {
         .insert(ChildOf(container))
         .observe(
             |_: On<UiClick>, mut next_ui_state: ResMut<NextState<UiState>>| {
-                // TODO: fixme go back to main menu or gameplay
                 next_ui_state.set(UiState::StartMenu);
             },
         );

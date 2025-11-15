@@ -4,6 +4,7 @@ use bevy::{
 };
 
 use enum_map::Enum;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     asset::LoadResource,
@@ -176,7 +177,7 @@ impl Plugin for LightBeamPlugin {
 // }
 
 /// [`Enum`] for each of the light colors.
-#[derive(Enum, Clone, Copy, Default, PartialEq, Debug, Eq, Hash)]
+#[derive(Enum, Clone, Copy, Default, PartialEq, Debug, Eq, Hash, Serialize, Deserialize)]
 pub enum LightColor {
     #[default]
     Green,

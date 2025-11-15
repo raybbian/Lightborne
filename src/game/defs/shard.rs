@@ -15,12 +15,14 @@ use crate::{
         light::LightColor,
         lighting::LineLight2d,
         lyra::{
-            beam::{BeamAction, PlayerLightInventory, PlayerLightSaveData},
+            beam::{BeamAction, PlayerLightInventory, PlayerLightProgress},
+            indicator::LightIndicators,
             Lyra,
         },
         Layers,
     },
     ldtk::{LdtkLevelParam, LevelExt},
+    save::Save,
     shared::{AnimationState, PlayState},
     sound::{BgmMarker, Fade, FadeSettings, BGM_VOLUME},
 };
@@ -277,11 +279,12 @@ pub fn on_shard_text_read_finish(
     _: On<Callback>,
     mut commands: Commands,
     ldtk_level_param: LdtkLevelParam,
-    mut light_save_data: ResMut<PlayerLightSaveData>,
+    mut light_save_data: ResMut<PlayerLightProgress>,
     lyra: Single<(&Transform, &mut PlayerLightInventory), With<Lyra>>,
     q_bgm: Query<Entity, With<BgmMarker>>,
     mut ev_beam_action: MessageWriter<BeamAction>,
     animation_res: Res<ShardAnimationRes>,
+    light_indicators: Res<LightIndicators>,
 ) {
     let (lyra, mut inventory) = lyra.into_inner();
     ev_beam_action.write(BeamAction::SwitchColor(animation_res.color));
@@ -290,8 +293,18 @@ pub fn on_shard_text_read_finish(
         .entity(animation_res.shard.unwrap())
         .insert(Visibility::Hidden);
 
+    let indicator_entity = light_indicators.indicators[animation_res.color.unwrap()]
+        .expect("indicator should be alive");
+
+    commands
+        .entity(indicator_entity)
+        .insert(Visibility::Visible);
     inventory.allowed[animation_res.color.unwrap()] = true;
-    light_save_data.unlocked[animation_res.color.unwrap()] = true;
+    light_save_data
+        .unlocked
+        .insert(animation_res.color.unwrap());
+
+    commands.trigger(Save);
 
     let after_zoom_out = commands.spawn(()).observe(on_shard_zoom_back_finish).id();
 

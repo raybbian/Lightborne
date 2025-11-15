@@ -16,6 +16,7 @@ toml = "0.9.8"
 avian2d = { version = "0.4.0", features = ["bevy_diagnostic"] }
 bevy_ecs_ldtk = { git = "https://github.com/Trouv/bevy_ecs_ldtk.git", rev = "refs/pull/372/head", features = ["atlas"] }
 bevy_ecs_tilemap = "0.17.0"
+thiserror = "2.0.17"
 
 [target.'cfg(all(any(target_arch = "wasm32", target_arch = "wasm64"), target_os = "unknown"))'.dependencies]
 getrandom = { version = "0.3.4", features = ["wasm_js"] }

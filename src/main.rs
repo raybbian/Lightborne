@@ -13,6 +13,7 @@ use ui::UiPlugin;
 
 use crate::asset::{AssetLoadPlugin, ResourceLoaded};
 use crate::game::GamePlugin;
+use crate::save::SavePlugin;
 use crate::shared::PlayState;
 
 mod asset;
@@ -21,6 +22,7 @@ mod camera;
 mod config;
 mod game;
 mod ldtk;
+pub mod save;
 mod shared;
 mod sound;
 mod ui;
@@ -66,6 +68,7 @@ fn main() {
     app.add_plugins(CameraPlugin);
     app.add_plugins(UiPlugin);
     app.add_plugins(GamePlugin);
+    app.add_plugins(SavePlugin);
     app.insert_state(GameState::Loading);
     app.add_sub_state::<UiState>();
     app.add_sub_state::<PlayState>();

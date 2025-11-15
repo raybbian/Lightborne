@@ -6,7 +6,7 @@ use bevy_ecs_ldtk::{
     LevelIid, LevelSelection,
 };
 
-use crate::game::setup::LevelAssets;
+use crate::game::{light::LightColor, setup::LevelAssets};
 
 pub trait LevelExt {
     const START_FLAG_IDENT: &'static str;
@@ -83,6 +83,40 @@ pub struct LdtkParam<'w> {
 impl LdtkParam<'_> {
     pub fn project(&self) -> Option<&LdtkProject> {
         self.ldtk_assets.get(self.level_assets.ldtk_file.id())
+    }
+
+    pub fn crystal_shard_pos(&self, color: LightColor) -> Option<Vec2> {
+        for level in self
+            .project()
+            .expect("Project should exist")
+            .json_data()
+            .levels
+            .iter()
+        {
+            let layers = level.layer_instances.as_ref().expect("Layers not found! (This is probably because you are using the \"Separate level files\" option.)");
+
+            for layer in layers {
+                if layer.layer_instance_type == Type::Entities {
+                    for entity in &layer.entity_instances {
+                        if entity.identifier == "CrystalShard" {
+                            let Ok(col_string) = entity.get_enum_field("light_color") else {
+                                continue;
+                            };
+                            let test_color: LightColor = col_string.into();
+                            if color != test_color {
+                                continue;
+                            }
+                            // NOTE: flip y value because ldtk shenanigans
+                            let (Some(x), Some(y)) = (entity.world_x, entity.world_y) else {
+                                panic!("Start flag entity has no coordinates! (This is probably because your LDTK world is not in free layout mode.)");
+                            };
+                            return Some(Vec2::new(x as f32, -y as f32));
+                        }
+                    }
+                }
+            }
+        }
+        None
     }
 }
 

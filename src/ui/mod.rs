@@ -1,4 +1,9 @@
-use bevy::{audio::Volume, prelude::*, ui::ui_focus_system};
+use bevy::{
+    asset::{embedded_asset, load_embedded_asset},
+    audio::Volume,
+    prelude::*,
+    ui::ui_focus_system,
+};
 
 use follow::TargetFollowingPlugin;
 // use level_select::LevelSelectPlugin;
@@ -9,17 +14,20 @@ use crate::{
     asset::LoadResource,
     shared::{GameState, PlayState},
     ui::{
-        level_select::LevelSelectPlugin, loading::LoadingUiPlugin, settings::SettingsPlugin,
+        leaderboard::LeaderboardUiPlugin, level_select::LevelSelectPlugin,
+        loading::LoadingUiPlugin, scroll::ScrollPlugin, settings::SettingsPlugin,
         speedrun::SpeedrunTimerPlugin, start_menu::StartMenuPlugin,
     },
 };
 
 pub mod follow;
+mod leaderboard;
 pub mod level_select;
 mod loading;
 mod pause;
+mod scroll;
 pub mod settings;
-mod speedrun;
+pub mod speedrun;
 mod start_menu;
 pub mod tooltip;
 
@@ -27,13 +35,12 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<UiFont>();
-        app.load_resource::<UiFont>();
         app.register_type::<UiSfx>();
         app.load_resource::<UiSfx>();
         app.add_plugins(TargetFollowingPlugin);
         app.add_plugins(TooltipPlugin);
-        // app.add_plugins(LightUiPlugin);
+        app.add_plugins(ScrollPlugin);
+        app.add_plugins(LeaderboardUiPlugin);
         app.add_plugins(PausePlugin);
         app.add_plugins(LoadingUiPlugin);
         app.add_plugins(SpeedrunTimerPlugin);
@@ -47,6 +54,11 @@ impl Plugin for UiPlugin {
                 .run_if(in_state(GameState::Ui).or(in_state(PlayState::Paused))),
         );
         app.add_systems(PreUpdate, trigger_interaction_events.after(button_sfx));
+
+        embedded_asset!(app, "Outfit-Medium.ttf");
+        app.insert_resource(UiFont {
+            font: load_embedded_asset!(app, "Outfit-Medium.ttf"),
+        });
     }
 }
 
@@ -70,21 +82,9 @@ impl FromWorld for UiSfx {
     }
 }
 
-#[derive(Resource, Asset, Clone, Reflect)]
-#[reflect(Resource)]
+#[derive(Resource)]
 pub struct UiFont {
-    #[dependency]
     font: Handle<Font>,
-}
-
-impl FromWorld for UiFont {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-
-        Self {
-            font: asset_server.load("fonts/Outfit-Medium.ttf"),
-        }
-    }
 }
 
 impl UiFont {
@@ -123,6 +123,7 @@ pub fn button_sfx(
     }
 }
 
+// TODO: switch to On<Pointer<Press>>
 #[derive(EntityEvent)]
 pub struct UiClick {
     entity: Entity,

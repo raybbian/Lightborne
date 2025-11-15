@@ -2,6 +2,7 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
 use crate::{
     asset::LoadResource,
+    save::Save,
     shared::{GameState, PlayState, UiState},
     ui::{UiButton, UiClick, UiFont, UiFontSize},
 };
@@ -100,8 +101,10 @@ fn spawn_pause(mut commands: Commands, ui_font: Res<UiFont>, _pause_assets: Res<
         .insert(ui_font.text_font().with_font_size(UiFontSize::BUTTON))
         .observe(
             |_: On<UiClick>,
+             mut commands: Commands,
              mut next_game_state: ResMut<NextState<GameState>>,
              mut next_ui_state: ResMut<NextState<UiState>>| {
+                commands.trigger(Save);
                 next_game_state.set(GameState::Ui);
                 next_ui_state.set(UiState::StartMenu);
             },

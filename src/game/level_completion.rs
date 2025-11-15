@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
-use crate::{game::Layers, ldtk::LdtkLevelParam, ui::level_select::LevelProgress};
+use crate::{game::Layers, ldtk::LdtkLevelParam, save::Save, ui::level_select::LevelProgress};
 
 pub struct LevelCompletionPlugin;
 
@@ -59,6 +59,7 @@ impl LdtkEntity for CompletionMarkerBundle {
 
 pub fn handle_start_end_markers(
     event: On<CollisionStart>,
+    mut commands: Commands,
     q_completion_markers: Query<&CompletionMarkerType>,
     ldtk_level_param: LdtkLevelParam,
     mut res_in_progress_level: ResMut<InProgressLevel>,
@@ -80,9 +81,10 @@ pub fn handle_start_end_markers(
             for level in res_levels.0.iter_mut() {
                 if unlock_next {
                     level.locked = false;
+                    commands.trigger(Save);
                     break;
                 }
-                if level.level_iid == current {
+                if level.level_iid == current.to_string() {
                     level.complete = true;
                     unlock_next = true;
                 }

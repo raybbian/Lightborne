@@ -3,10 +3,13 @@ use std::time::Duration;
 use avian2d::prelude::*;
 use avian2d::{math::PI, physics_transform::PhysicsTransformSystems};
 use bevy::prelude::*;
-use enum_map::{enum_map, EnumMap};
+use enum_map::EnumMap;
 
+use crate::asset::LoadResource;
 use crate::camera::TERRAIN_LAYER;
 use crate::game::lighting::LineLight2d;
+use crate::game::lyra::spawn_lyra;
+use crate::ldtk::LdtkParam;
 use crate::{
     camera::HIGHRES_LAYER,
     game::{
@@ -27,7 +30,8 @@ pub struct LightIndicatorPlugin;
 
 impl Plugin for LightIndicatorPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<LightIndicatorData>();
+        app.register_type::<IndicatorAssets>();
+        app.load_resource::<IndicatorAssets>();
         app.init_resource::<LightIndicators>();
         app.add_systems(
             FixedPostUpdate,
@@ -36,7 +40,10 @@ impl Plugin for LightIndicatorPlugin {
                 .in_set(LevelSystems::Simulation)
                 .after(PhysicsTransformSystems::PositionToTransform),
         );
-        app.add_systems(OnEnter(GameState::InGame), init_light_indicators);
+        app.add_systems(
+            OnEnter(GameState::InGame),
+            init_light_indicators.after(spawn_lyra),
+        );
         app.add_systems(OnExit(GameState::InGame), cleanup_light_indicators);
     }
 }
@@ -75,26 +82,24 @@ pub fn lerp_translations(
     }
 }
 
-/// A resource that stored handles to the [`Mesh2d`] and [`MeshMaterial2d`] used in the rendering
-/// of [`LightSegment`](super::segments::LightSegmentBundle)s.
-#[derive(Resource)]
-pub struct LightIndicatorData {
-    pub mesh: Mesh2d,
-    pub material_map: EnumMap<LightColor, MeshMaterial2d<ColorMaterial>>,
+#[derive(Resource, Asset, Clone, Reflect)]
+#[reflect(Resource)]
+pub struct IndicatorAssets {
+    #[dependency]
+    icons: [Handle<Image>; 4],
 }
 
-impl FromWorld for LightIndicatorData {
+impl FromWorld for IndicatorAssets {
     fn from_world(world: &mut World) -> Self {
-        let mut meshes = world.resource_mut::<Assets<Mesh>>();
-        let mesh_handle = meshes.add(Circle::new(3.0)).into();
+        let asset_server = world.resource::<AssetServer>();
 
-        let mut materials = world.resource_mut::<Assets<ColorMaterial>>();
-
-        LightIndicatorData {
-            mesh: mesh_handle,
-            material_map: enum_map! {
-                val => materials.add(val.indicator_color()).into(),
-            },
+        Self {
+            icons: [
+                asset_server.load("indicator-shard/green-shard.png"),
+                asset_server.load("indicator-shard/purple-shard.png"),
+                asset_server.load("indicator-shard/white-shard.png"),
+                asset_server.load("indicator-shard/blue-shard.png"),
+            ],
         }
     }
 }
@@ -110,21 +115,44 @@ pub struct LightShardIndicator;
 
 pub fn init_light_indicators(
     mut commands: Commands,
-    light_data: Res<LightIndicatorData>,
+    assets: Res<IndicatorAssets>,
     mut indicators: ResMut<LightIndicators>,
+    ldtk_param: LdtkParam,
+    lyra: Single<(&Transform, &PlayerLightInventory), With<Lyra>>,
 ) {
+    let (transform, inventory) = lyra.into_inner();
+    let color_ind = |color: LightColor| match color {
+        LightColor::Green => 0,
+        LightColor::Purple => 1,
+        LightColor::White => 2,
+        LightColor::Blue => 3,
+    };
     for (color, entity) in indicators.indicators.iter_mut() {
         let id = commands
-            .spawn(light_data.mesh.clone())
-            .insert(light_data.material_map[color].clone())
+            .spawn(Sprite::from_image(assets.icons[color_ind(color)].clone()))
             .insert(LightShardIndicator)
-            .insert(Transform::default())
             .insert(HIGHRES_LAYER)
             .with_child((
                 LineLight2d::point(color.lighting_color().extend(1.0), 20.0, 0.04),
                 TERRAIN_LAYER,
             ))
             .id();
+
+        if !inventory.allowed[color] {
+            commands
+                .entity(id)
+                .insert(Visibility::Hidden)
+                .insert(Transform::from_translation(
+                    ldtk_param
+                        .crystal_shard_pos(color)
+                        .expect("Crystal shard must be in level")
+                        .extend(0.),
+                ));
+        } else {
+            commands.entity(id).insert(Transform::from_translation(
+                transform.translation.with_z(transform.translation.z - 0.1),
+            ));
+        }
 
         *entity = Some(id);
     }
@@ -172,6 +200,15 @@ pub fn update_light_indicator(
     let (inventory, base_transform, linear_velocity) = lyra.into_inner();
     light_indicators.angle_offset += time.delta_secs();
 
+    for (color, entity) in light_indicators.indicators {
+        let Some(entity) = entity else {
+            continue;
+        };
+        if inventory.allowed[color] {
+            commands.entity(entity).insert(Visibility::Visible);
+        }
+    }
+
     let indicators: Vec<_> = light_indicators
         .indicators
         .iter()
@@ -189,7 +226,11 @@ pub fn update_light_indicator(
 
         if is_shooting {
             commands.entity(entity).insert(LerpTranslation {
-                to: LerpTranslationTarget::Position(base_transform.translation),
+                to: LerpTranslationTarget::Position(
+                    base_transform
+                        .translation
+                        .with_z(base_transform.translation.z - 0.1),
+                ),
                 lerp: 1.0,
             });
             return true;
@@ -235,7 +276,11 @@ pub fn update_light_indicator(
                     }
                     None => {
                         commands.entity(*entity).insert(LerpTranslation {
-                            to: LerpTranslationTarget::Position(base_transform.translation),
+                            to: LerpTranslationTarget::Position(
+                                base_transform
+                                    .translation
+                                    .with_z(base_transform.translation.z - 0.1),
+                            ),
                             lerp: 0.1,
                         });
                     }

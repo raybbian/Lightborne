@@ -6,11 +6,13 @@ use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use bevy_ecs_ldtk::ldtk::FieldValue;
 use bevy_ecs_ldtk::prelude::LdtkFields;
-use bevy_ecs_ldtk::{LevelIid, LevelSelection};
+use bevy_ecs_ldtk::LevelSelection;
+use serde::{Deserialize, Serialize};
 
 use crate::asset::LoadResource;
 use crate::config::Config;
 use crate::ldtk::LdtkParam;
+use crate::save::SaveParam;
 use crate::shared::{GameState, UiState};
 use crate::sound::{BgmTrack, ChangeBgmEvent};
 use crate::ui::{UiButton, UiClick, UiFont, UiFontSize};
@@ -23,7 +25,7 @@ impl Plugin for LevelSelectPlugin {
         app.load_resource::<LevelSelectAssets>();
         app.insert_resource(LevelPreviewStore(HashMap::new()));
         app.insert_resource(LevelProgress(Vec::new()));
-        app.add_systems(OnExit(GameState::Loading), init_levels);
+        app.add_systems(OnExit(UiState::Leaderboard), init_levels);
         app.add_systems(OnEnter(UiState::LevelSelect), spawn_level_select);
         app.add_systems(
             Update,
@@ -100,10 +102,10 @@ pub struct LevelPreviewStore(HashMap<String, (Vec2, Handle<Image>)>);
 #[derive(Component)]
 pub struct LevelSelectButtonIndex(usize, usize);
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct LevelSaveData {
     level_id: String,
-    pub level_iid: LevelIid,
+    pub level_iid: String,
     level_index: usize,
     pub complete: bool,
     pub locked: bool,
@@ -121,39 +123,68 @@ impl PartialOrd for LevelSaveData {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Serialize, Deserialize, Clone)]
 pub struct LevelProgress(pub Vec<LevelSaveData>);
 
-fn init_levels(mut res_levels: ResMut<LevelProgress>, ldtk_param: LdtkParam, config: Res<Config>) {
+impl LevelProgress {
+    pub fn solved(&self) -> usize {
+        let mut count = 0;
+        for level in self.0.iter() {
+            if level.complete {
+                count += 1;
+            }
+        }
+        count
+    }
+}
+
+fn init_levels(
+    mut res_levels: ResMut<LevelProgress>,
+    ldtk_param: LdtkParam,
+    config: Res<Config>,
+    save_param: SaveParam,
+) {
     let Some(project) = ldtk_param.project() else {
         return;
     };
-    for (i, level) in project.json_data().levels.iter().enumerate() {
-        let level_id = level
-            .get_string_field("LevelId")
-            .expect("Levels should always have a level id!");
+    if let Some(save_data) = save_param.get_save_data() {
+        *res_levels = save_data.level.clone();
+    } else {
+        *res_levels = LevelProgress(Vec::new());
+        for (i, level) in project.json_data().levels.iter().enumerate() {
+            let level_id = level
+                .get_string_field("LevelId")
+                .expect("Levels should always have a level id!");
 
-        if level_id.is_empty() {
-            panic!("Level id for a level should not be empty!");
+            if level_id.is_empty() {
+                panic!("Level id for a level should not be empty!");
+            }
+
+            let should_show = level
+                .get_bool_field("Selectable")
+                .expect("Levels should have property Selectable");
+
+            if !should_show {
+                continue;
+            }
+            res_levels.0.push(LevelSaveData {
+                level_id: level_id.to_string(),
+                level_iid: level.iid.clone(),
+                level_index: i,
+                complete: false,
+                locked: true,
+            });
         }
-
-        let should_show = level
-            .get_bool_field("Selectable")
-            .expect("Levels should have property Selectable");
-
-        if !should_show {
-            continue;
-        }
-        res_levels.0.push(LevelSaveData {
-            level_id: level_id.to_string(),
-            level_iid: LevelIid::new(level.iid.clone()),
-            level_index: i,
-            complete: config.debug_config.unlock_levels,
-            locked: !config.debug_config.unlock_levels,
-        });
+        res_levels.0.sort();
+        res_levels.0[0].locked = false;
     }
-    res_levels.0.sort();
-    res_levels.0[0].locked = false;
+
+    if config.debug_config.unlock_levels {
+        for data in res_levels.0.iter_mut() {
+            data.complete = true;
+            data.locked = false;
+        }
+    }
 }
 
 fn spawn_level_select(
@@ -178,6 +209,7 @@ fn spawn_level_select(
             padding: UiRect::all(Val::Px(96.0)),
             column_gap: Val::Px(32.),
             row_gap: Val::Px(32.),
+            overflow: Overflow::scroll_y(),
             ..default()
         })
         .insert(BackgroundColor(Color::BLACK))
@@ -316,8 +348,7 @@ fn spawn_level_select(
         .insert(ChildOf(container))
         .observe(
             |_: On<UiClick>, mut next_ui_state: ResMut<NextState<UiState>>| {
-                // TODO: go back to paused if prev was paused
-                next_ui_state.set(UiState::StartMenu);
+                next_ui_state.set(UiState::Leaderboard);
             },
         );
 }

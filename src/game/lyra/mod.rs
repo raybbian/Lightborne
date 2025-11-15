@@ -19,7 +19,7 @@ use crate::{
             animation::{LyraAnimationPlugin, PlayerAnimationType, ANIMATION_FRAMES},
             beam::{
                 on_collide_beam_source, on_leave_beam_source, BeamControllerPlugin,
-                PlayerLightInventory, PlayerLightSaveData,
+                PlayerLightInventory, PlayerLightProgress,
             },
             controller::{
                 CachedLinearVelocity, CharacterController, CharacterControllerPlugin, MovementInfo,
@@ -38,7 +38,7 @@ use crate::{
 mod animation;
 pub mod beam;
 pub mod controller;
-mod indicator;
+pub mod indicator;
 mod kill;
 mod restart_hint;
 mod strand;
@@ -93,7 +93,7 @@ pub fn spawn_lyra(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     ldtk_level_param: LdtkLevelParam,
-    player_light_save_data: Res<PlayerLightSaveData>,
+    player_light_save_data: Res<PlayerLightProgress>,
 ) {
     info!("Spawning Lyra!");
 

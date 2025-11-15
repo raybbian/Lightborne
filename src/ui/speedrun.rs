@@ -1,7 +1,9 @@
 use bevy::{prelude::*, time::Stopwatch};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    shared::{GameState, PlayState},
+    save::SaveParam,
+    shared::{GameState, PlayState, UiState},
     ui::UiFont,
     utils::hhmmss::Hhmmss,
 };
@@ -11,6 +13,10 @@ pub struct SpeedrunTimerPlugin;
 impl Plugin for SpeedrunTimerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<SpeedrunTimer>();
+        app.add_systems(
+            OnExit(UiState::Leaderboard),
+            init_speedrun_timer.before(spawn_speedrun_timer),
+        );
         app.add_systems(OnEnter(GameState::InGame), spawn_speedrun_timer);
         app.add_systems(OnExit(GameState::InGame), despawn_speedrun_timer);
         app.add_systems(
@@ -20,10 +26,19 @@ impl Plugin for SpeedrunTimerPlugin {
     }
 }
 
-#[derive(Default, Resource)]
+#[derive(Default, Resource, Serialize, Deserialize, Clone)]
 pub struct SpeedrunTimer {
-    pub enabled: bool,
-    timer: Stopwatch,
+    pub timer: Stopwatch,
+}
+
+pub fn init_speedrun_timer(mut speedrun_timer: ResMut<SpeedrunTimer>, save_param: SaveParam) {
+    if let Some(save_data) = save_param.get_save_data() {
+        *speedrun_timer = save_data.timer.clone();
+    } else {
+        *speedrun_timer = SpeedrunTimer {
+            timer: Stopwatch::new(),
+        }
+    }
 }
 
 #[derive(Component)]
@@ -34,9 +49,6 @@ pub fn spawn_speedrun_timer(
     speedrun_timer: Res<SpeedrunTimer>,
     ui_font: Res<UiFont>,
 ) {
-    if !speedrun_timer.enabled {
-        return;
-    };
     commands
         .spawn(Node {
             width: Val::Percent(100.),
