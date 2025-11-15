@@ -257,20 +257,34 @@ impl LightColor {
             // LightColor::Black => Color::srgb(0.2, 0.2, 0.2),
         }
     }
-
-    pub fn indicator_dimmed_color(&self) -> Color {
-        self.indicator_color().with_alpha(0.15)
-    }
 }
 
 /// A [`Component`] marking the start of a light ray. These are spawned in
 /// [`shoot_light`](crate::player::light::shoot_light), and simulated in
 /// [`simulate_light_sources`]
-#[derive(Component)]
+#[derive(Component, Clone)]
 #[require(Transform, Visibility, Sprite, PrevLightBeamPlayback)]
 pub struct LightBeamSource {
     pub start_pos: Vec2,
     pub start_dir: Dir2,
     pub time_traveled: f32,
     pub color: LightColor,
+}
+
+impl LightBeamSource {
+    pub fn new(start_pos: Vec2, start_dir: Dir2, color: LightColor) -> Self {
+        Self {
+            start_pos,
+            start_dir,
+            time_traveled: 0.01,
+            color,
+        }
+    }
+
+    pub fn with_time_traveled(&self, time_traveled: f32) -> Self {
+        Self {
+            time_traveled,
+            ..self.clone()
+        }
+    }
 }

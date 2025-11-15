@@ -3,7 +3,6 @@ use std::time::Duration;
 use avian2d::prelude::*;
 use bevy::{audio::Volume, prelude::*};
 use bevy_ecs_ldtk::prelude::*;
-use enum_map::EnumMap;
 
 use crate::{
     asset::LoadResource,
@@ -15,11 +14,14 @@ use crate::{
         dialogue::{Dialogue, DialogueAssets, DialogueEntry},
         light::LightColor,
         lighting::LineLight2d,
-        lyra::{beam::BeamAction, Lyra},
+        lyra::{
+            beam::{BeamAction, PlayerLightInventory, PlayerLightSaveData},
+            Lyra,
+        },
         Layers,
     },
     ldtk::{LdtkLevelParam, LevelExt},
-    shared::{AnimationState, PlayState, ResetLevels},
+    shared::{AnimationState, PlayState},
     sound::{BgmMarker, Fade, FadeSettings, BGM_VOLUME},
 };
 
@@ -29,12 +31,9 @@ impl Plugin for CrystalShardPlugin {
     fn build(&self, app: &mut App) {
         app.register_type::<ShardAssets>();
         app.load_resource::<ShardAssets>();
-        app.init_resource::<CrystalShardMods>();
         app.init_resource::<ShardAnimationRes>();
         app.register_ldtk_entity::<CrystalShardBundle>("CrystalShard");
         app.add_observer(on_add_crystal_shard);
-        app.add_observer(reset_shard_visibility);
-        app.add_observer(reset_shard_effects_cache);
         app.add_observer(start_shard_animation);
     }
 }
@@ -87,6 +86,7 @@ pub fn on_add_crystal_shard(
     q_crystal_shard: Query<&CrystalShard>,
     shard_assets: Res<ShardAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    inventory: Single<&PlayerLightInventory, With<Lyra>>,
 ) {
     let Ok(shard) = q_crystal_shard.get(event.entity) else {
         return;
@@ -111,13 +111,19 @@ pub fn on_add_crystal_shard(
         // LightColor::Black => 4,
     };
 
+    let visibility = if inventory.allowed[shard.light_color] {
+        Visibility::Hidden
+    } else {
+        Visibility::Visible
+    };
+
     let start_index = shard_row(shard) * CRYSTAL_SHARD_FRAMES;
     commands
         .entity(event.entity)
         .insert(LineLight2d::point(
             shard.light_color.lighting_color().extend(1.0),
             40.0,
-            0.015,
+            0.025,
         ))
         .insert(Collider::rectangle(12., 12.))
         .insert(CollisionLayers::new(
@@ -133,30 +139,13 @@ pub fn on_add_crystal_shard(
             }),
             ..default()
         })
+        .insert(visibility)
         .insert(AnimationConfig::new(
             start_index,
             start_index + CRYSTAL_SHARD_FRAMES - 1,
             6,
             true,
         ));
-}
-
-#[derive(Resource, Default)]
-/// Sets a value to true if the light color was obtained from a crystal in the current level
-pub struct CrystalShardMods(pub EnumMap<LightColor, bool>);
-
-pub fn reset_shard_visibility(
-    _: On<ResetLevels>,
-    mut q_shards: Query<&mut Visibility, With<CrystalShard>>,
-) {
-    for mut visibility in q_shards.iter_mut() {
-        *visibility = Visibility::Visible;
-    }
-}
-pub fn reset_shard_effects_cache(_: On<ResetLevels>, mut shard_mods: ResMut<CrystalShardMods>) {
-    for (_, is_temporary) in shard_mods.0.iter_mut() {
-        *is_temporary = false;
-    }
 }
 
 pub fn on_player_intersect_shard(
@@ -288,18 +277,21 @@ pub fn on_shard_text_read_finish(
     _: On<Callback>,
     mut commands: Commands,
     ldtk_level_param: LdtkLevelParam,
-    lyra: Single<&Transform, With<Lyra>>,
+    mut light_save_data: ResMut<PlayerLightSaveData>,
+    lyra: Single<(&Transform, &mut PlayerLightInventory), With<Lyra>>,
     q_bgm: Query<Entity, With<BgmMarker>>,
     mut ev_beam_action: MessageWriter<BeamAction>,
     animation_res: Res<ShardAnimationRes>,
-    mut shard_mods: ResMut<CrystalShardMods>,
 ) {
+    let (lyra, mut inventory) = lyra.into_inner();
     ev_beam_action.write(BeamAction::SwitchColor(animation_res.color));
 
     commands
         .entity(animation_res.shard.unwrap())
         .insert(Visibility::Hidden);
-    shard_mods.0[animation_res.color.unwrap()] = true;
+
+    inventory.allowed[animation_res.color.unwrap()] = true;
+    light_save_data.unlocked[animation_res.color.unwrap()] = true;
 
     let after_zoom_out = commands.spawn(()).observe(on_shard_zoom_back_finish).id();
 

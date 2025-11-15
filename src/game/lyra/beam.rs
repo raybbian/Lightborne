@@ -1,26 +1,26 @@
 use std::f32::consts::PI;
 
-use avian2d::prelude::SpatialQuery;
+use avian2d::prelude::*;
 use bevy::{input::mouse::MouseWheel, prelude::*};
 use enum_map::{enum_map, EnumMap};
 use itertools::Itertools;
 
 use crate::{
-    asset::LoadResource,
+    // asset::LoadResource,
     camera::HIGHRES_LAYER,
+    config::Config,
     game::{
         cursor::CursorWorldCoords,
-        defs::{mirror::Mirror, shard::CrystalShardMods},
+        defs::mirror::Mirror,
         light::{
-            segments::{play_light_beam, PrevLightBeamPlayback},
+            segments::{play_light_beam, LightBeamSourceDespawn, PrevLightBeamPlayback},
             LightBeamSource, LightColor,
         },
         lighting::LineLight2d,
         lyra::Lyra,
-        LevelSystems,
+        Layers, LevelSystems,
     },
-    ldtk::{LdtkLevelParam, LevelExt},
-    shared::ResetLevels,
+    shared::{GameState, ResetLevels},
 };
 
 const NUM_INCREMENTS: i32 = 16; // The number of angle increments for light beam alignment
@@ -29,9 +29,11 @@ pub struct BeamControllerPlugin;
 
 impl Plugin for BeamControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<BeamSourceAssets>();
-        app.load_resource::<BeamSourceAssets>();
+        // app.register_type::<BeamSourceAssets>();
+        // app.load_resource::<BeamSourceAssets>();
+        app.init_resource::<PlayerLightSaveData>();
         app.add_message::<BeamAction>();
+        app.add_systems(OnExit(GameState::Loading), init_player_light_save_data);
         app.add_systems(
             Update,
             (handle_color_switch, handle_shoot_inputs, preview_light_path)
@@ -51,26 +53,9 @@ impl Plugin for BeamControllerPlugin {
 pub fn reset_light_inventory(
     _: On<ResetLevels>,
     mut inventory: Single<&mut PlayerLightInventory, With<Lyra>>,
-    ldtk_level_param: LdtkLevelParam,
 ) {
-    let allowed_cols = ldtk_level_param
-        .cur_level()
-        .expect("Cur level should exist")
-        .raw()
-        .allowed_colors();
-    let old_color = inventory.current_color;
-
-    **inventory = PlayerLightInventory::new();
-
-    // if the new level has the current color as an allowed color, preserve it
-    if let Some(color) = old_color {
-        if allowed_cols[color] {
-            inventory.current_color = old_color;
-        }
-    }
-    // if select none, make sure to select some
-    if old_color.is_none() && allowed_cols[LightColor::Green] {
-        inventory.current_color = Some(LightColor::Green);
+    for (_, source) in inventory.collectible.iter_mut() {
+        *source = None;
     }
 }
 
@@ -81,6 +66,55 @@ pub enum BeamAction {
     Snap(bool),
     Cancel,
     Shoot,
+    Collect,
+}
+
+#[derive(Resource, Default)]
+pub struct PlayerLightSaveData {
+    pub unlocked: EnumMap<LightColor, bool>,
+}
+
+pub fn init_player_light_save_data(
+    mut light_save_data: ResMut<PlayerLightSaveData>,
+    config: Res<Config>,
+) {
+    for (_, unlocked) in light_save_data.unlocked.iter_mut() {
+        *unlocked = config.debug_config.unlock_beams;
+    }
+}
+
+pub fn on_collide_beam_source(
+    event: On<CollisionStart>,
+    mut inventory: Single<&mut PlayerLightInventory, With<Lyra>>,
+    q_beam_source: Query<&LightBeamSource>,
+) {
+    let Ok(beam_source) = q_beam_source.get(event.collider2) else {
+        return;
+    };
+    inventory.collectible[beam_source.color]
+        .as_mut()
+        .unwrap()
+        .in_reach = true;
+}
+
+pub fn on_leave_beam_source(
+    event: On<CollisionEnd>,
+    mut inventory: Single<&mut PlayerLightInventory, With<Lyra>>,
+    q_beam_source: Query<&LightBeamSource>,
+) {
+    let Ok(beam_source) = q_beam_source.get(event.collider2) else {
+        return;
+    };
+    inventory.collectible[beam_source.color]
+        .as_mut()
+        .unwrap()
+        .in_reach = false;
+}
+
+#[derive(Debug)]
+pub struct LightInventorySource {
+    in_reach: bool,
+    entity: Entity,
 }
 
 #[derive(Component, Default, Debug)]
@@ -89,8 +123,9 @@ pub struct PlayerLightInventory {
     pub snapping: bool,
     pub should_shoot: bool,
     pub current_color: Option<LightColor>,
-    /// Is true if the color is available
-    pub sources: EnumMap<LightColor, bool>,
+    /// Is true if the color is unlocked
+    pub allowed: EnumMap<LightColor, bool>,
+    pub collectible: EnumMap<LightColor, Option<LightInventorySource>>,
 }
 
 impl PlayerLightInventory {
@@ -100,18 +135,32 @@ impl PlayerLightInventory {
             snapping: false,
             should_shoot: false,
             current_color: None,
-            sources: enum_map! {
-                LightColor::Green =>true,
-                LightColor::Blue => true,
-                LightColor::Purple => true,
-                LightColor::White =>true,
-                // LightColor::Black => true,
+            allowed: enum_map! {
+                _ => false,
+            },
+            collectible: enum_map! {
+                _ => None,
             },
         }
     }
 
     pub fn can_shoot(&self) -> bool {
-        self.should_shoot && self.current_color.is_some_and(|color| self.sources[color])
+        self.should_shoot
+            && self
+                .current_color
+                .is_some_and(|color| self.can_shoot_color(color))
+    }
+
+    pub fn can_shoot_color(&self, color: LightColor) -> bool {
+        self.allowed[color] && self.collectible[color].is_none()
+    }
+}
+
+impl From<&PlayerLightSaveData> for PlayerLightInventory {
+    fn from(value: &PlayerLightSaveData) -> Self {
+        let mut inventory = PlayerLightInventory::new();
+        inventory.allowed = value.unlocked;
+        inventory
     }
 }
 
@@ -121,8 +170,6 @@ pub fn handle_color_switch(
     mut ev_scroll: MessageReader<MouseWheel>,
     mut beam_actions: MessageWriter<BeamAction>,
     inventory: Single<&PlayerLightInventory, With<Lyra>>,
-    shard_modifs: Res<CrystalShardMods>,
-    ldtk_level_param: LdtkLevelParam,
 ) {
     static COLOR_BINDS: [(KeyCode, LightColor); 4] = [
         (KeyCode::Digit1, LightColor::Green),
@@ -141,18 +188,6 @@ pub fn handle_color_switch(
         // Some(LightColor::Black) => 4,
     };
 
-    let mut allowed_colors = ldtk_level_param
-        .cur_level()
-        .expect("Cur level should exist")
-        .raw()
-        .allowed_colors();
-
-    for (color, allowed) in shard_modifs.0.iter() {
-        if *allowed {
-            allowed_colors[color] = true;
-        }
-    }
-
     for scroll in ev_scroll.read() {
         let sign = -(scroll.y.signum() as i32);
         let mut new_index = cur_index + sign;
@@ -160,14 +195,14 @@ pub fn handle_color_switch(
         // suspicious algorithm to cycle through available colors with the scroll wheel
         // basically skips disallowed colors until you find the next one
         let mut count = 0;
-        while !allowed_colors[COLOR_BINDS[new_index.rem_euclid(4) as usize].1]
+        while !inventory.allowed[COLOR_BINDS[new_index.rem_euclid(4) as usize].1]
             && count < COLOR_BINDS.len()
         {
             new_index += sign;
             count += 1;
         }
         cur_index = new_index;
-        if allowed_colors[COLOR_BINDS[new_index.rem_euclid(4) as usize].1] {
+        if inventory.allowed[COLOR_BINDS[new_index.rem_euclid(4) as usize].1] {
             beam_actions.write(BeamAction::SwitchColor(Some(
                 COLOR_BINDS[cur_index.rem_euclid(4) as usize].1,
             )));
@@ -175,7 +210,7 @@ pub fn handle_color_switch(
     }
 
     for (key, color) in COLOR_BINDS {
-        if keys.just_pressed(key) && allowed_colors[color] {
+        if keys.just_pressed(key) && inventory.allowed[color] {
             beam_actions.write(BeamAction::SwitchColor(Some(color)));
         }
     }
@@ -201,36 +236,40 @@ pub fn handle_shoot_inputs(
     if keys.just_released(KeyCode::ShiftLeft) {
         beam_actions.write(BeamAction::Snap(false));
     }
-}
-
-#[derive(Resource, Reflect, Asset, Clone)]
-#[reflect(Resource)]
-pub struct BeamSourceAssets {
-    #[dependency]
-    compass: Handle<Image>,
-    #[dependency]
-    compass_gold: Handle<Image>,
-}
-
-impl FromWorld for BeamSourceAssets {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-
-        Self {
-            compass: asset_server.load("light/compass.png"),
-            compass_gold: asset_server.load("light/compass-gold.png"),
-        }
+    if keys.just_pressed(KeyCode::KeyE) {
+        beam_actions.write(BeamAction::Collect);
     }
 }
+
+// #[derive(Resource, Reflect, Asset, Clone)]
+// #[reflect(Resource)]
+// pub struct BeamSourceAssets {
+//     #[dependency]
+//     compass: Handle<Image>,
+//     #[dependency]
+//     compass_gold: Handle<Image>,
+// }
+//
+// impl FromWorld for BeamSourceAssets {
+//     fn from_world(world: &mut World) -> Self {
+//         let asset_server = world.resource::<AssetServer>();
+//
+//         Self {
+//             compass: asset_server.load("light/compass.png"),
+//             compass_gold: asset_server.load("light/compass-gold.png"),
+//         }
+//     }
+// }
 
 pub fn process_beam_actions(
     mut commands: Commands,
     mut beam_actions: MessageReader<BeamAction>,
     lyra: Single<(&Transform, &mut PlayerLightInventory), With<Lyra>>,
     cursor: Single<&CursorWorldCoords>,
-    beam_assets: Res<BeamSourceAssets>,
+    // beam_assets: Res<BeamSourceAssets>,
 ) {
-    let (player_transform, mut player_inventory) = lyra.into_inner();
+    let (player_transform, player_inventory) = lyra.into_inner();
+    let player_inventory = player_inventory.into_inner();
     for action in beam_actions.read() {
         match action {
             BeamAction::Shoot => {
@@ -253,30 +292,35 @@ pub fn process_beam_actions(
                 // NOTE: hardcode here should be okay
                 let mut source_transform = Transform::from_translation(ray_pos.extend(3.));
                 source_transform.rotate_z(ray_dir.to_angle());
-                let mut source_sprite = Sprite::from_image(beam_assets.compass.clone());
-                source_sprite.color = Color::srgb(2.0, 2.0, 2.0);
-                let mut outer_source_sprite = Sprite::from_image(beam_assets.compass_gold.clone());
-                outer_source_sprite.color = shoot_color.light_beam_color().mix(&Color::BLACK, 0.4);
+                // let mut source_sprite = Sprite::from_image(beam_assets.compass.clone());
+                // source_sprite.color = Color::srgb(2.0, 2.0, 2.0);
+                // let mut outer_source_sprite = Sprite::from_image(beam_assets.compass_gold.clone());
+                // outer_source_sprite.color = shoot_color.light_beam_color().mix(&Color::BLACK, 0.4);
 
-                commands
-                    .spawn(LightBeamSource {
-                        start_pos: ray_pos,
-                        start_dir: ray_dir,
-                        time_traveled: 0.0,
-                        color: shoot_color,
-                    })
+                let source = commands
+                    .spawn(LightBeamSource::new(ray_pos, ray_dir, shoot_color))
+                    .insert(Collider::rectangle(12., 12.))
+                    .insert(Sensor)
+                    .insert(CollisionLayers::new(
+                        Layers::SensorBox,
+                        [Layers::PlayerHurtbox],
+                    ))
                     .insert(PrevLightBeamPlayback::default())
                     .insert(HIGHRES_LAYER)
-                    .insert(source_sprite)
+                    // .insert(source_sprite)
                     .insert(source_transform)
-                    .with_child((outer_source_sprite, HIGHRES_LAYER))
+                    // .with_child((outer_source_sprite, HIGHRES_LAYER))
                     .with_child(LineLight2d::point(
                         shoot_color.lighting_color().extend(1.0),
                         30.0,
                         0.02,
-                    ));
+                    ))
+                    .id();
 
-                player_inventory.sources[shoot_color] = false;
+                player_inventory.collectible[shoot_color] = Some(LightInventorySource {
+                    in_reach: false,
+                    entity: source,
+                });
                 player_inventory.should_shoot = false;
                 player_inventory.previewing = false;
             }
@@ -293,6 +337,16 @@ pub fn process_beam_actions(
             }
             BeamAction::SwitchColor(color) => {
                 player_inventory.current_color = *color;
+            }
+            BeamAction::Collect => {
+                for (_, source) in player_inventory.collectible.iter_mut() {
+                    if let Some(s) = source {
+                        if s.in_reach {
+                            commands.entity(s.entity).insert(LightBeamSourceDespawn);
+                            // set source to none once actually despawned
+                        }
+                    }
+                }
             }
         }
     }
@@ -326,12 +380,9 @@ pub fn preview_light_path(
     }
     let ray_dir = Dir2::new_unchecked(ray_dir);
 
-    let dummy_source = LightBeamSource {
-        start_pos: ray_pos,
-        start_dir: ray_dir,
-        time_traveled: 10000.0, // LOL
-        color: shoot_color,
-    };
+    let dummy_source =
+        LightBeamSource::new(ray_pos, ray_dir, shoot_color).with_time_traveled(10000.);
+
     let playback = play_light_beam(
         &spatial_query,
         &dummy_source,

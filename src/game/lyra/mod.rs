@@ -17,7 +17,10 @@ use crate::{
         lighting::LineLight2d,
         lyra::{
             animation::{LyraAnimationPlugin, PlayerAnimationType, ANIMATION_FRAMES},
-            beam::{BeamControllerPlugin, PlayerLightInventory},
+            beam::{
+                on_collide_beam_source, on_leave_beam_source, BeamControllerPlugin,
+                PlayerLightInventory, PlayerLightSaveData,
+            },
             controller::{
                 CachedLinearVelocity, CharacterController, CharacterControllerPlugin, MovementInfo,
             },
@@ -73,12 +76,12 @@ pub enum LyraWallCaster {
     Right,
 }
 
-pub fn lyra_spawn_transform(ldtk_level_param: &LdtkLevelParam) -> Vec2 {
+pub fn lyra_spawn_transform(ldtk_level_param: &LdtkLevelParam) -> Vec3 {
     let Some(lyra_transform) = ldtk_level_param.cur_level().and_then(|level| {
         level
             .raw()
             .start_flag_pos()
-            .map(|pos| Vec2::new(pos.x, pos.y + LYRA_RESPAWN_EPSILON))
+            .map(|pos| Vec3::new(pos.x, pos.y + LYRA_RESPAWN_EPSILON, 100.))
     }) else {
         panic!("Current level must exist and it must have a start flag");
     };
@@ -90,6 +93,7 @@ pub fn spawn_lyra(
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     ldtk_level_param: LdtkLevelParam,
+    player_light_save_data: Res<PlayerLightSaveData>,
 ) {
     info!("Spawning Lyra!");
 
@@ -97,7 +101,7 @@ pub fn spawn_lyra(
     // NOTE: actual z value doesn't matter because lyra is rendered on a separate layer
     let player = commands
         .spawn(Lyra)
-        .insert(Transform::from_translation(lyra_transform.extend(0.)))
+        .insert(Transform::from_translation(lyra_transform))
         .id();
 
     let texture_atlas_layout = texture_atlas_layouts.add(TextureAtlasLayout::from_grid(
@@ -162,7 +166,9 @@ pub fn spawn_lyra(
             combine_rule: CoefficientCombine::Min,
         })
         .insert(CachedLinearVelocity(Vec2::ZERO))
-        .insert(PlayerLightInventory::new())
+        .insert(PlayerLightInventory::from(
+            player_light_save_data.into_inner(),
+        ))
         .insert(PlayerAnimationType::Idle)
         .insert(PassThroughOneWayPlatform::ByNormal)
         .insert(AnimationConfig::from(PlayerAnimationType::Idle));
@@ -188,6 +194,8 @@ pub fn spawn_lyra(
             40.0,
             0.01,
         ))
+        .observe(on_collide_beam_source)
+        .observe(on_leave_beam_source)
         .observe(hide_tooltip_signs)
         .observe(display_tooltip_signs)
         .observe(handle_start_end_markers)
@@ -239,7 +247,7 @@ pub fn spawn_lyra_cam(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
 ) {
-    let (lyra_image, lyra_projection) = build_render_target(36, 36);
+    let (lyra_image, lyra_projection) = build_render_target(50, 50);
     let lyra_handle = images.add(lyra_image);
 
     // NOTE: lyra cam doesn't have pixelperfectcam because childing it to lyra makes it snap
@@ -262,7 +270,7 @@ pub fn spawn_lyra_cam(
         .with_child((
             Sprite::from_image(lyra_handle.clone()),
             HIGHRES_LAYER,
-            Transform::from_xyz(0., 0., 5.),
+            Transform::default(),
         ));
 }
 

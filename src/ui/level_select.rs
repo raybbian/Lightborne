@@ -23,10 +23,7 @@ impl Plugin for LevelSelectPlugin {
         app.load_resource::<LevelSelectAssets>();
         app.insert_resource(LevelPreviewStore(HashMap::new()));
         app.insert_resource(LevelProgress(Vec::new()));
-        app.add_systems(
-            OnEnter(UiState::LevelSelect),
-            init_levels.before(spawn_level_select),
-        );
+        app.add_systems(OnExit(GameState::Loading), init_levels);
         app.add_systems(OnEnter(UiState::LevelSelect), spawn_level_select);
         app.add_systems(
             Update,
@@ -128,9 +125,6 @@ impl PartialOrd for LevelSaveData {
 pub struct LevelProgress(pub Vec<LevelSaveData>);
 
 fn init_levels(mut res_levels: ResMut<LevelProgress>, ldtk_param: LdtkParam, config: Res<Config>) {
-    if !res_levels.0.is_empty() {
-        return;
-    }
     let Some(project) = ldtk_param.project() else {
         return;
     };

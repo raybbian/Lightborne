@@ -116,8 +116,8 @@ pub fn start_kill_animation(
                 commands.trigger(ResetLevels);
 
                 let lyra_transform = lyra_spawn_transform(&ldtk_level_param);
-                *transform = Transform::from_translation(lyra_transform.extend(0.));
-                *position = Position(lyra_transform);
+                *transform = Transform::from_translation(lyra_transform);
+                *position = Position(lyra_transform.truncate());
                 info!("Moving lyra to {}", lyra_transform);
 
                 commands.trigger(SnapToLyra);

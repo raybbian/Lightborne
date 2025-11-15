@@ -13,6 +13,7 @@ use crate::{
             HitByLight, LightBeamSource, LightColor, LIGHT_SPEED,
         },
         lighting::LineLight2d,
+        lyra::beam::PlayerLightInventory,
         particle::spark::SparkExplosionEvent,
         Layers,
     },
@@ -98,8 +99,11 @@ impl LightBeamPlayback {
 
 #[derive(Default, Debug, Component)]
 pub struct PrevLightBeamPlayback {
-    pub intersections: Vec<Option<LightBeamIntersection>>,
+    pub intersections: Vec<LightBeamIntersection>,
 }
+
+#[derive(Component)]
+pub struct LightBeamSourceDespawn;
 
 const LIGHT_MAX_SEGMENTS: usize = 15;
 
@@ -157,7 +161,6 @@ pub fn play_light_beam(
         elapsed_time: 0.0,
     };
 
-    // for _ in 0..source.color.num_bounces() + 1 {
     let num_segments = source.color.num_bounces() + 1;
 
     let mut i = 0;
@@ -235,10 +238,11 @@ pub fn simulate_light_sources(
     for (mut source, mut prev_playback) in q_light_sources.iter_mut() {
         let playback = play_light_beam(&spatial_query, &source, &q_mirrors);
         let mut pts: Vec<Vec2> = playback.iter_points(&source).collect();
+        source.time_traveled = playback.elapsed_time;
 
         let mut i = 0;
         loop {
-            let prev_x = prev_playback.intersections.get(i).cloned().flatten();
+            let prev_x = prev_playback.intersections.get(i).cloned();
             let new_x = playback.intersections.get(i).cloned();
 
             let is_same_intersection = match (prev_x, new_x) {
@@ -265,43 +269,34 @@ pub fn simulate_light_sources(
 
                 // handle remove before add because it could be the case that both are true
                 if remove_intersection {
-                    pts[i + 1] = prev_x.unwrap().point;
-                    commands.trigger(HitByLight {
-                        entity: prev_x.unwrap().entity,
-                        color: source.color,
-                        hit: false,
-                    });
-                    prev_playback.intersections[i] = None;
-                    source.time_traveled = prev_x.unwrap().time;
+                    let prev_x = prev_x.unwrap();
+                    pts[i + 1] = prev_x.point;
+                    source.time_traveled = prev_x.time;
 
-                    // unhit all future lights as well
-                    for j in i + 1..prev_playback.intersections.len() {
-                        let Some(intersection) = prev_playback.intersections[j] else {
-                            continue;
-                        };
+                    // unhit current + future lights
+                    for j in i..prev_playback.intersections.len() {
                         commands.trigger(HitByLight {
-                            entity: intersection.entity,
+                            entity: prev_playback.intersections[j].entity,
                             color: source.color,
                             hit: false,
                         });
                     }
+                    //leaves [0, i-1]
+                    prev_playback.intersections.truncate(i);
                 }
 
                 if add_intersection {
                     let new_x = new_x.unwrap();
                     pts[i + 1] = new_x.point;
+                    source.time_traveled = new_x.time;
+
                     commands.trigger(HitByLight {
                         entity: new_x.entity,
                         color: source.color,
                         hit: true,
                     });
-                    if i >= prev_playback.intersections.len() {
-                        assert!(i == prev_playback.intersections.len());
-                        prev_playback.intersections.push(Some(new_x));
-                    } else {
-                        prev_playback.intersections[i] = Some(new_x);
-                    }
-                    source.time_traveled = new_x.time;
+                    assert!(i == prev_playback.intersections.len());
+                    prev_playback.intersections.push(new_x);
                 }
 
                 if play_sound {
@@ -331,12 +326,11 @@ pub fn simulate_light_sources(
                         .with_child((AudioPlayer::new(audio), PlaybackSettings::DESPAWN));
                 }
 
-                prev_playback.intersections.truncate(i + 1);
                 break;
             } else {
                 // keep on updating the previous intersection buffer because this could be a moving
                 // platform
-                prev_playback.intersections[i] = new_x;
+                prev_playback.intersections[i] = new_x.unwrap();
             }
             i += 1;
         }
@@ -424,9 +418,22 @@ pub fn simulate_light_sources(
     }
 }
 
-pub fn tick_light_sources(mut q_light_sources: Query<&mut LightBeamSource>, time: Res<Time>) {
-    for mut source in q_light_sources.iter_mut() {
-        source.time_traveled += LIGHT_SPEED * time.delta_secs() * 64.;
+pub fn tick_light_sources(
+    mut commands: Commands,
+    mut q_light_sources: Query<(Entity, &mut LightBeamSource, Has<LightBeamSourceDespawn>)>,
+    mut lyra: Single<&mut PlayerLightInventory>,
+    time: Res<Time>,
+) {
+    for (entity, mut source, despawning) in q_light_sources.iter_mut() {
+        if despawning {
+            source.time_traveled -= LIGHT_SPEED * time.delta_secs() * 64.;
+            if source.time_traveled <= 0.0 {
+                commands.entity(entity).despawn();
+                lyra.collectible[source.color] = None;
+            }
+        } else {
+            source.time_traveled += LIGHT_SPEED * time.delta_secs() * 64.;
+        }
     }
 }
 

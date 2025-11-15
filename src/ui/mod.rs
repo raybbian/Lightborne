@@ -9,14 +9,13 @@ use crate::{
     asset::LoadResource,
     shared::{GameState, PlayState},
     ui::{
-        level_select::LevelSelectPlugin, light::LightUiPlugin, loading::LoadingUiPlugin,
-        settings::SettingsPlugin, speedrun::SpeedrunTimerPlugin, start_menu::StartMenuPlugin,
+        level_select::LevelSelectPlugin, loading::LoadingUiPlugin, settings::SettingsPlugin,
+        speedrun::SpeedrunTimerPlugin, start_menu::StartMenuPlugin,
     },
 };
 
 pub mod follow;
 pub mod level_select;
-mod light;
 mod loading;
 mod pause;
 pub mod settings;
@@ -34,7 +33,7 @@ impl Plugin for UiPlugin {
         app.load_resource::<UiSfx>();
         app.add_plugins(TargetFollowingPlugin);
         app.add_plugins(TooltipPlugin);
-        app.add_plugins(LightUiPlugin);
+        // app.add_plugins(LightUiPlugin);
         app.add_plugins(PausePlugin);
         app.add_plugins(LoadingUiPlugin);
         app.add_plugins(SpeedrunTimerPlugin);

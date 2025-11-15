@@ -5,16 +5,14 @@ use bevy_ecs_ldtk::{
     prelude::LdtkFields,
     LevelIid, LevelSelection,
 };
-use enum_map::{enum_map, EnumMap};
 
-use crate::game::{light::LightColor, setup::LevelAssets};
+use crate::game::setup::LevelAssets;
 
 pub trait LevelExt {
     const START_FLAG_IDENT: &'static str;
     fn start_flag_pos(&self) -> Option<Vec2>;
     fn level_box(&self) -> Rect;
     fn level_id(&self) -> &String;
-    fn allowed_colors(&self) -> EnumMap<LightColor, bool>;
 }
 
 impl LevelExt for Level {
@@ -39,17 +37,6 @@ impl LevelExt for Level {
         None
     }
 
-    fn allowed_colors(&self) -> EnumMap<LightColor, bool> {
-        let allowed_colors = self
-            .iter_enums_field("AllowedColors")
-            .expect("AllowedColors should be enum array level field.")
-            .map(|color_str| color_str.into())
-            .collect::<Vec<LightColor>>();
-
-        enum_map! {
-            val => allowed_colors.contains(&val),
-        }
-    }
     fn level_id(&self) -> &String {
         let level_id = self
             .get_string_field("LevelId")

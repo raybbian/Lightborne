@@ -4,11 +4,9 @@ use bevy::prelude::*;
 
 use crate::{
     game::{
-        defs::shard::CrystalShardMods,
         lyra::{beam::PlayerLightInventory, Lyra},
         LevelSystems,
     },
-    ldtk::{LdtkLevelParam, LevelExt},
     shared::GameState,
     ui::tooltip::TooltipSpawner,
 };
@@ -47,23 +45,14 @@ pub fn hint_restart_button(
     mut triggered: ResMut<HintRestartTimer>,
     lyra: Single<(Entity, &PlayerLightInventory), With<Lyra>>,
     time: Res<Time>,
-    shard_mods: Res<CrystalShardMods>,
-    ldtk_level_param: LdtkLevelParam,
 ) {
     let (lyra, inventory) = lyra.into_inner();
 
-    let allowed_colors = ldtk_level_param
-        .cur_level()
-        .expect("Cur level must exist")
-        .raw()
-        .allowed_colors();
-
-    let has_color = allowed_colors.iter().any(|(_, allowed)| *allowed)
-        || shard_mods.0.iter().any(|(_, allowed)| *allowed);
+    let has_color = inventory.allowed.iter().any(|(_, allowed)| *allowed);
     let can_shoot = inventory
-        .sources
+        .collectible
         .iter()
-        .any(|(color, has_shot)| (allowed_colors[color] || shard_mods.0[color]) && *has_shot);
+        .any(|(c, avail)| avail.is_none() && inventory.allowed[c]);
 
     if !can_shoot && has_color {
         triggered.tick(time.delta());

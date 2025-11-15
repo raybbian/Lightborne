@@ -48,9 +48,9 @@ impl MergedTile for OneWayMarker {
             .insert(Transform::from_xyz(center.x, center.y, 0.))
             .insert(DustSurface::Wood)
             .insert(Collider::compound(vec![(
-                Vec2::new(0.0, 3.0),
+                Vec2::new(0.0, 3.75),
                 Rotation::default(),
-                Collider::rectangle(extent.x, 2.0),
+                Collider::rectangle(extent.x, 0.5),
             )]))
             .insert(Friction::new(0.))
             .insert(CollisionLayers::new(
@@ -164,7 +164,7 @@ impl CollisionHooks for OneWayPlatformHooks<'_, '_> {
             }
             // Default behaviour is "by normal".
             Ok((other_transform, PassThroughOneWayPlatform::ByNormal)) => {
-                const PLAYER_HALF_HEIGHT: f32 = 10.0;
+                const PLAYER_HALF_HEIGHT: f32 = 10.25;
                 if other_transform.compute_transform().translation.y
                     - platform_transform.compute_transform().translation.y
                     > PLAYER_HALF_HEIGHT

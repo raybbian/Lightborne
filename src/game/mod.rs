@@ -89,6 +89,11 @@ impl Plugin for GamePlugin {
             LevelSystems::Simulation
                 .run_if(in_state(PlayState::Playing).or(in_state(AnimationState::InputLocked))),
         );
+        app.configure_sets(
+            FixedPostUpdate,
+            LevelSystems::Simulation
+                .run_if(in_state(PlayState::Playing).or(in_state(AnimationState::InputLocked))),
+        );
         app.insert_gizmo_config(
             PhysicsGizmos::default(),
             GizmoConfig {
