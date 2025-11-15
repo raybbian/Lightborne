@@ -16,8 +16,9 @@ impl Plugin for SettingsPlugin {
 #[derive(Component)]
 struct SettingsUiMarker;
 
-const CONTROLS: [(&str, &str); 8] = [
+const CONTROLS: [(&str, &str); 9] = [
     ("Restart", "R"),
+    ("Pick Up Shard", "E"),
     ("Jump", "Space"),
     ("Movement", "WASD"),
     ("Sneak", "Control"),
@@ -64,6 +65,7 @@ fn spawn_settings(mut commands: Commands, ui_font: Res<UiFont>) {
             row_gap: Val::Px(32.),
             ..default()
         })
+        .insert(GlobalZIndex(1000))
         .insert(BackgroundColor(Color::BLACK))
         .id();
 

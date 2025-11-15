@@ -60,7 +60,7 @@ pub fn hint_restart_button(
             // pause timer so it doesn't continue even after reset
             triggered.pause();
             tooltip_spawner.spawn_tooltip(
-                "Stuck? Press R to restart",
+                "Stuck? Press E to pick up crystal shard, or press R to restart!",
                 lyra,
                 Vec3::new(0., 20., 0.),
             );

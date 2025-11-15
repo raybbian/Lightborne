@@ -309,8 +309,9 @@ pub fn process_beam_actions(
 
                 let shoot_color = player_inventory.current_color.unwrap();
 
-                // NOTE: hardcode here should be okay
-                let mut source_transform = Transform::from_translation(ray_pos.extend(3.));
+                let mut source_transform = Transform::from_translation(
+                    ray_pos.extend(player_transform.translation.z - 0.2),
+                );
                 source_transform.rotate_z(ray_dir.to_angle());
                 // let mut source_sprite = Sprite::from_image(beam_assets.compass.clone());
                 // source_sprite.color = Color::srgb(2.0, 2.0, 2.0);
@@ -327,7 +328,6 @@ pub fn process_beam_actions(
                     ))
                     .insert(PrevLightBeamPlayback::default())
                     .insert(HIGHRES_LAYER)
-                    // .insert(source_sprite)
                     .insert(source_transform)
                     // .with_child((outer_source_sprite, HIGHRES_LAYER))
                     .with_child(LineLight2d::point(

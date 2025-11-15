@@ -7,7 +7,7 @@ use bevy::{
 };
 
 use crate::{
-    save::{CurrentUser, SaveParam},
+    save::{CurrentUser, SaveFile},
     shared::UiState,
     ui::{UiButton, UiClick, UiFont, UiFontSize},
     utils::hhmmss::Hhmmss,
@@ -37,14 +37,17 @@ pub struct LeaderboardUserInput;
 pub fn spawn_leaderboard_ui(
     mut commands: Commands,
     ui_font: Res<UiFont>,
-    current_user: Res<CurrentUser>,
-    save_param: SaveParam,
+    mut current_user: ResMut<CurrentUser>,
+    save_file: Res<SaveFile>,
 ) {
+    current_user.0 = "".to_string();
     let container = commands
         .spawn(LeaderboardUi)
         .insert(Node {
             width: Val::Percent(100.),
             height: Val::Percent(100.),
+            max_width: Val::Percent(100.),
+            max_height: Val::Percent(100.),
             justify_content: JustifyContent::SpaceBetween,
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
@@ -55,6 +58,9 @@ pub fn spawn_leaderboard_ui(
             overflow: Overflow::scroll_y(),
             ..default()
         })
+        .insert(GlobalZIndex(1000))
+        // NOTE: required because GameState::InGame spawns levels
+        // probably that cover the ui invisibly
         .insert(BackgroundColor(Color::BLACK))
         .id();
 
@@ -66,7 +72,8 @@ pub fn spawn_leaderboard_ui(
     let center_container = commands
         .spawn(Node {
             width: Val::Percent(100.),
-            height: Val::Percent(100.0),
+            height: Val::Auto,
+            flex_grow: 1.0,
             row_gap: Val::Px(48.),
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
@@ -139,7 +146,8 @@ pub fn spawn_leaderboard_ui(
         .spawn(Node {
             width: Val::Percent(100.),
             max_width: Val::Px(1280.),
-            height: Val::Percent(100.),
+            height: Val::Auto,
+            flex_grow: 1.,
             justify_content: JustifyContent::Start,
             flex_direction: FlexDirection::Column,
             align_items: AlignItems::Center,
@@ -150,7 +158,7 @@ pub fn spawn_leaderboard_ui(
         .insert(ChildOf(center_container))
         .id();
 
-    let mut top_entries: Vec<_> = save_param.save_file.data.iter().collect();
+    let mut top_entries: Vec<_> = save_file.data.iter().collect();
     top_entries.sort_by_key(|(_, data)| {
         (
             data.level.solved(),

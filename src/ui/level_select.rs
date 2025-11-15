@@ -202,6 +202,8 @@ fn spawn_level_select(
         .insert(Node {
             width: Val::Percent(100.),
             height: Val::Percent(100.),
+            max_width: Val::Percent(100.),
+            max_height: Val::Percent(100.),
             justify_content: JustifyContent::SpaceBetween,
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
@@ -209,9 +211,9 @@ fn spawn_level_select(
             padding: UiRect::all(Val::Px(96.0)),
             column_gap: Val::Px(32.),
             row_gap: Val::Px(32.),
-            overflow: Overflow::scroll_y(),
             ..default()
         })
+        .insert(GlobalZIndex(1000))
         .insert(BackgroundColor(Color::BLACK))
         .id();
 
@@ -223,7 +225,8 @@ fn spawn_level_select(
     let center_container = commands
         .spawn(Node {
             width: Val::Percent(100.),
-            height: Val::Percent(100.),
+            height: Val::Auto,
+            flex_grow: 1.0,
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
             justify_content: JustifyContent::Center,

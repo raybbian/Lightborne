@@ -1,9 +1,11 @@
-use std::{collections::HashMap, fs, path::Path};
+use std::collections::HashMap;
 
 #[cfg(not(target_arch = "wasm32"))]
 use bevy::tasks::IoTaskPool;
 use bevy::{ecs::system::SystemParam, prelude::*};
 use serde::{Deserialize, Serialize};
+#[cfg(not(target_arch = "wasm32"))]
+use std::{fs, path::Path};
 
 use crate::{
     game::lyra::beam::PlayerLightProgress,
@@ -72,7 +74,7 @@ pub fn init_save(mut commands: Commands) {
     }
     #[cfg(target_arch = "wasm32")]
     {
-        commands.insert_resource(SaveFile::defaut());
+        commands.insert_resource(SaveFile::default());
     }
 }
 
@@ -96,10 +98,10 @@ pub fn on_save(
             timer,
         },
     );
-    let save_file = save_param.save_file.clone();
 
     #[cfg(not(target_arch = "wasm32"))]
     {
+        let save_file = save_param.save_file.clone();
         IoTaskPool::get()
             .spawn(async move {
                 if let Ok(serialized) = toml::to_string_pretty(&save_file) {
