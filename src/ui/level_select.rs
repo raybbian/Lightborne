@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::asset::LoadResource;
 use crate::config::Config;
+use crate::game::light::LightColor;
 use crate::ldtk::LdtkParam;
 use crate::save::SaveParam;
 use crate::shared::{GameState, UiState};
@@ -102,13 +103,20 @@ pub struct LevelPreviewStore(HashMap<String, (Vec2, Handle<Image>)>);
 #[derive(Component)]
 pub struct LevelSelectButtonIndex(usize, usize);
 
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct LevelSolution {
+    pub light_order: Vec<LightColor>,
+}
+
 #[derive(PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct LevelSaveData {
-    level_id: String,
+    pub level_id: String,
     pub level_iid: String,
     level_index: usize,
+    pub sorted_level_index: usize,
     pub complete: bool,
     pub locked: bool,
+    pub solutions_used: Vec<LevelSolution>,
 }
 
 impl Ord for LevelSaveData {
@@ -171,11 +179,16 @@ fn init_levels(
                 level_id: level_id.to_string(),
                 level_iid: level.iid.clone(),
                 level_index: i,
+                sorted_level_index: 0,
                 complete: false,
                 locked: true,
+                solutions_used: Vec::new(),
             });
         }
         res_levels.0.sort();
+        for (i, level) in res_levels.0.iter_mut().enumerate() {
+            level.sorted_level_index = i;
+        }
         res_levels.0[0].locked = false;
     }
 
@@ -260,6 +273,8 @@ fn spawn_level_select(
             level_index: index,
             complete,
             locked,
+            solutions_used: _,
+            sorted_level_index: _,
         },
     ) in sorted_levels.0.iter().enumerate()
     {

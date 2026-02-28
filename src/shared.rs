@@ -34,5 +34,12 @@ pub enum UiState {
     StartMenu,
 }
 
+#[derive(SubStates, Default, Debug, Clone, PartialEq, Eq, Hash)]
+#[source(UiState = UiState::Leaderboard)]
+pub enum LeaderboardState {
+    #[default]
+    Wreckcon,
+}
+
 #[derive(Event)]
 pub struct ResetLevels;

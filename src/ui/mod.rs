@@ -49,6 +49,7 @@ impl Plugin for UiPlugin {
         app.add_plugins(SettingsPlugin);
         app.add_plugins(LevelSelectPlugin);
         app.add_plugins(LightUiPlugin);
+        app.add_systems(Update, change_scaling);
         app.add_systems(
             PreUpdate,
             button_sfx
@@ -148,4 +149,15 @@ impl UiFontSize {
     pub const HEADER: f32 = 64.;
     pub const BUTTON: f32 = 48.;
     pub const TEXT: f32 = 32.;
+}
+
+fn change_scaling(input: Res<ButtonInput<KeyCode>>, mut ui_scale: ResMut<UiScale>) {
+    if input.just_pressed(KeyCode::Equal) {
+        let scale = (ui_scale.0 + 0.25).min(8.);
+        ui_scale.0 = scale;
+    }
+    if input.just_pressed(KeyCode::Minus) {
+        let scale = (ui_scale.0 - 0.25).max(1. / 4.);
+        ui_scale.0 = scale;
+    }
 }

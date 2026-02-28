@@ -14,7 +14,7 @@ use ui::UiPlugin;
 use crate::asset::{AssetLoadPlugin, ResourceLoaded};
 use crate::game::GamePlugin;
 use crate::save::SavePlugin;
-use crate::shared::PlayState;
+use crate::shared::{LeaderboardState, PlayState};
 
 mod asset;
 mod callback;
@@ -73,6 +73,7 @@ fn main() {
     app.add_sub_state::<UiState>();
     app.add_sub_state::<PlayState>();
     app.add_sub_state::<AnimationState>();
+    app.add_sub_state::<LeaderboardState>();
 
     #[cfg(feature = "dev_mode")]
     app.add_plugins(FpsOverlayPlugin {

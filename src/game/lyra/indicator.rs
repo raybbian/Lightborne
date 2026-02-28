@@ -26,7 +26,7 @@ pub const LYRA_SHARD_HEIGHT_DELTA: f32 = 4.;
 pub const LYRA_SHARD_Y_OFFSET: f32 = -4.;
 pub const LYRA_SHARD_PEAK_SHIFT_RATE: f32 = 1.2;
 pub const LYRA_SHARD_MOVING_DELAY_MILLIS: u64 = 250;
-pub const LYRA_SHARD_HOLD_X: f32 = 4.;
+pub const LYRA_SHARD_HOLD_X: f32 = 0.;
 pub const LYRA_SHARD_HOLD_Y: f32 = -2.;
 
 pub struct LightIndicatorPlugin;

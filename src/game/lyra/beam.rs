@@ -2,6 +2,7 @@ use std::{collections::HashSet, f32::consts::PI};
 
 use avian2d::prelude::*;
 use bevy::{input::mouse::MouseWheel, prelude::*};
+use bevy_ecs_ldtk::LevelIid;
 use enum_map::{enum_map, EnumMap};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
@@ -147,6 +148,9 @@ pub struct PlayerLightInventory {
     /// Is true if the color is unlocked
     pub allowed: EnumMap<LightColor, bool>,
     pub collectible: EnumMap<LightColor, Option<LightInventorySource>>,
+
+    pub use_iid: Option<LevelIid>,
+    pub use_order: Vec<LightColor>,
 }
 
 impl PlayerLightInventory {
@@ -162,6 +166,8 @@ impl PlayerLightInventory {
             collectible: enum_map! {
                 _ => None,
             },
+            use_iid: None,
+            use_order: Vec::new(),
         }
     }
 
@@ -348,6 +354,7 @@ pub fn process_beam_actions(
                 });
                 player_inventory.should_shoot = false;
                 player_inventory.previewing = false;
+                player_inventory.use_order.push(shoot_color);
             }
             BeamAction::Snap(val) => {
                 player_inventory.snapping = *val;
@@ -369,11 +376,18 @@ pub fn process_beam_actions(
                 player_inventory.current_color = *color;
             }
             BeamAction::Collect => {
-                for (_, source) in player_inventory.collectible.iter_mut() {
+                for (collect_col, source) in player_inventory.collectible.iter_mut() {
                     if let Some(s) = source {
                         if s.in_reach {
                             commands.entity(s.entity).insert(LightBeamSourceDespawn);
                             // set source to none once actually despawned
+                            if let Some(pos) = player_inventory
+                                .use_order
+                                .iter()
+                                .position(|col| *col == collect_col)
+                            {
+                                player_inventory.use_order.remove(pos);
+                            }
                         }
                     }
                 }
