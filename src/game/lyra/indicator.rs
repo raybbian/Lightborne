@@ -7,6 +7,7 @@ use enum_map::EnumMap;
 
 use crate::asset::LoadResource;
 use crate::camera::TERRAIN_LAYER;
+use crate::game::light::LightBeamSource;
 use crate::game::lighting::LineLight2d;
 use crate::game::lyra::spawn_lyra;
 use crate::ldtk::LdtkParam;
@@ -25,6 +26,8 @@ pub const LYRA_SHARD_HEIGHT_DELTA: f32 = 4.;
 pub const LYRA_SHARD_Y_OFFSET: f32 = -4.;
 pub const LYRA_SHARD_PEAK_SHIFT_RATE: f32 = 1.2;
 pub const LYRA_SHARD_MOVING_DELAY_MILLIS: u64 = 250;
+pub const LYRA_SHARD_HOLD_X: f32 = 4.;
+pub const LYRA_SHARD_HOLD_Y: f32 = -2.;
 
 pub struct LightIndicatorPlugin;
 
@@ -190,14 +193,28 @@ impl Default for ShardMovingState {
     }
 }
 
+#[derive(Component)]
+pub struct WasChilded;
+
 pub fn update_light_indicator(
-    lyra: Single<(&PlayerLightInventory, &Transform, &LinearVelocity), With<Lyra>>,
+    lyra: Single<
+        (
+            Entity,
+            &PlayerLightInventory,
+            &Transform,
+            &LinearVelocity,
+            &Sprite,
+        ),
+        With<Lyra>,
+    >,
+    q_transforms: Query<(&Transform, Has<WasChilded>), (Without<Lyra>, Without<LightBeamSource>)>,
+    q_beam_sources: Query<(&Transform, &LightBeamSource)>,
     mut commands: Commands,
     mut light_indicators: ResMut<LightIndicators>,
     time: Res<Time>,
     mut shard_moving_state: Local<ShardMovingState>,
 ) {
-    let (inventory, base_transform, linear_velocity) = lyra.into_inner();
+    let (lyra_entity, inventory, base_transform, linear_velocity, lyra_sprite) = lyra.into_inner();
     light_indicators.angle_offset += time.delta_secs();
 
     for (color, entity) in light_indicators.indicators {
@@ -212,28 +229,84 @@ pub fn update_light_indicator(
     let indicators: Vec<_> = light_indicators
         .indicators
         .iter()
-        .filter_map(|(c, entity)| {
-            if !inventory.can_shoot_color(c) {
-                return None;
-            }
-            entity.map(|e| (c, e))
-        })
+        .filter_map(|(c, e)| e.and_then(|e| Some((c, e))))
         .collect();
 
     let handle_shooting = |commands: &mut Commands, c: LightColor, entity: Entity| -> bool {
-        let is_shooting =
-            inventory.current_color.is_some_and(|color| color == c) && inventory.can_shoot();
-
+        let is_selected = inventory.current_color.is_some_and(|color| color == c);
+        let is_shooting = is_selected && inventory.can_shoot();
+        let Ok((indicator_transform, was_childed)) = q_transforms.get(entity) else {
+            return false;
+        };
+        // TODO: fixme use inverse transforms instead
         if is_shooting {
+            if !was_childed {
+                commands
+                    .entity(entity)
+                    .insert(Transform::from_translation(
+                        (indicator_transform.translation - base_transform.translation).with_z(1.),
+                    ))
+                    .insert(WasChilded)
+                    .insert(ChildOf(lyra_entity));
+            }
+            let mult = if lyra_sprite.flip_x { -1. } else { 1. };
             commands.entity(entity).insert(LerpTranslation {
-                to: LerpTranslationTarget::Position(
-                    base_transform
-                        .translation
-                        .with_z(base_transform.translation.z - 0.1),
-                ),
-                lerp: 1.0,
+                to: LerpTranslationTarget::Position(Vec3::new(
+                    mult * LYRA_SHARD_HOLD_X,
+                    LYRA_SHARD_HOLD_Y,
+                    0.,
+                )),
+                lerp: 0.2,
             });
             return true;
+        } else if !inventory.can_shoot_color(c) {
+            if was_childed {
+                commands
+                    .entity(entity)
+                    .remove::<ChildOf>()
+                    .remove::<WasChilded>()
+                    .insert(Transform::from_translation(
+                        base_transform.translation + indicator_transform.translation,
+                    ));
+            }
+            let Some((source_transform, _)) =
+                q_beam_sources.iter().find(|(_, source)| source.color == c)
+            else {
+                return true;
+            };
+            commands.entity(entity).insert(LerpTranslation {
+                to: LerpTranslationTarget::Position(
+                    source_transform
+                        .translation
+                        .with_z(source_transform.translation.z + 1.),
+                ),
+                lerp: 0.2,
+            });
+            return true;
+        } else if is_selected {
+            if !was_childed {
+                commands
+                    .entity(entity)
+                    .insert(Transform::from_translation(
+                        (indicator_transform.translation - base_transform.translation).with_z(1.),
+                    ))
+                    .insert(WasChilded)
+                    .insert(ChildOf(lyra_entity));
+            }
+            commands.entity(entity).insert(LerpTranslation {
+                to: LerpTranslationTarget::Position(Vec3::new(0., 13., 0.)),
+                lerp: 0.2,
+            });
+            return true;
+        }
+        if was_childed {
+            commands
+                .entity(entity)
+                .remove::<ChildOf>()
+                .remove::<WasChilded>()
+                .insert(Transform::from_translation(
+                    base_transform.translation + indicator_transform.translation,
+                ));
         }
         false
     };

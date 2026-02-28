@@ -18,7 +18,10 @@ use crate::{
             LightBeamSource, LightColor,
         },
         lighting::LineLight2d,
-        lyra::Lyra,
+        lyra::{
+            indicator::{LYRA_SHARD_HOLD_X, LYRA_SHARD_HOLD_Y},
+            Lyra,
+        },
         Layers, LevelSystems,
     },
     save::SaveParam,
@@ -284,11 +287,11 @@ pub fn handle_shoot_inputs(
 pub fn process_beam_actions(
     mut commands: Commands,
     mut beam_actions: MessageReader<BeamAction>,
-    lyra: Single<(&Transform, &mut PlayerLightInventory), With<Lyra>>,
+    lyra: Single<(&Transform, &mut PlayerLightInventory, &Sprite), With<Lyra>>,
     cursor: Single<&CursorWorldCoords>,
     // beam_assets: Res<BeamSourceAssets>,
 ) {
-    let (player_transform, player_inventory) = lyra.into_inner();
+    let (player_transform, player_inventory, lyra_sprite) = lyra.into_inner();
     let player_inventory = player_inventory.into_inner();
     for action in beam_actions.read() {
         match action {
@@ -296,8 +299,10 @@ pub fn process_beam_actions(
                 if !player_inventory.can_shoot() {
                     continue;
                 }
+                let mult = if lyra_sprite.flip_x { -1. } else { 1. };
+                let desired_shard_pos = Vec3::new(mult * LYRA_SHARD_HOLD_X, LYRA_SHARD_HOLD_Y, 0.);
 
-                let ray_pos = player_transform.translation.truncate();
+                let ray_pos = (player_transform.translation + desired_shard_pos).truncate();
                 let mut ray_dir = (cursor.pos - ray_pos).normalize_or_zero();
                 if player_inventory.snapping {
                     ray_dir = snap_ray(ray_dir);
@@ -348,6 +353,11 @@ pub fn process_beam_actions(
                 player_inventory.snapping = *val;
             }
             BeamAction::Preview => {
+                if player_inventory.current_color == None
+                    || !player_inventory.can_shoot_color(player_inventory.current_color.unwrap())
+                {
+                    continue;
+                }
                 player_inventory.previewing = true;
                 player_inventory.should_shoot = true;
             }
@@ -377,21 +387,25 @@ pub struct LightPreviewGizmos;
 
 pub fn preview_light_path(
     spatial_query: SpatialQuery,
-    lyra: Single<(&Transform, &PlayerLightInventory), With<Lyra>>,
+    lyra: Single<(&Transform, &PlayerLightInventory, &Sprite), With<Lyra>>,
     cursor: Single<&CursorWorldCoords>,
     mut gizmos: Gizmos,
     q_mirror: Query<&Mirror>,
     // q_black_ray: Query<(Entity, &BlackRayComponent)>,
 ) {
-    let (transform, inventory) = lyra.into_inner();
+    let (transform, inventory, lyra_sprite) = lyra.into_inner();
     if !inventory.can_shoot() || !inventory.previewing {
         return;
     }
 
     let shoot_color = inventory.current_color.unwrap();
 
-    let ray_pos = transform.translation.truncate();
+    let mult = if lyra_sprite.flip_x { -1. } else { 1. };
+    let desired_shard_pos = Vec3::new(mult * LYRA_SHARD_HOLD_X, LYRA_SHARD_HOLD_Y, 0.);
+
+    let ray_pos = (transform.translation + desired_shard_pos).truncate();
     let mut ray_dir = (cursor.pos - ray_pos).normalize_or_zero();
+
     if inventory.snapping {
         ray_dir = snap_ray(ray_dir);
     }
