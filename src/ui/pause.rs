@@ -257,7 +257,7 @@ pub fn check_save_state(save: &SaveData) -> [bool; 10] {
     out[8] = save.level.0.iter().any(|lvl| {
         lvl.solutions_used
             .iter()
-            .any(|sol| sol.light_order.iter().count() < DESIRED_COUNTS[lvl.sorted_level_index])
+            .any(|sol| sol.light_order.len() < DESIRED_COUNTS[lvl.sorted_level_index])
     });
 
     let official_sols: [Vec<Vec<LightColor>>; 15] = [

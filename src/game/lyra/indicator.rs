@@ -196,6 +196,7 @@ impl Default for ShardMovingState {
 #[derive(Component)]
 pub struct WasChilded;
 
+#[allow(clippy::type_complexity)]
 pub fn update_light_indicator(
     lyra: Single<
         (
@@ -278,7 +279,7 @@ pub fn update_light_indicator(
                 to: LerpTranslationTarget::Position(
                     source_transform
                         .translation
-                        .with_z(source_transform.translation.z + 1.),
+                        .with_z(source_transform.translation.z + 0.01),
                 ),
                 lerp: 0.2,
             });

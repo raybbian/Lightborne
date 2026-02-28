@@ -360,7 +360,7 @@ pub fn process_beam_actions(
                 player_inventory.snapping = *val;
             }
             BeamAction::Preview => {
-                if player_inventory.current_color == None
+                if player_inventory.current_color.is_none()
                     || !player_inventory.can_shoot_color(player_inventory.current_color.unwrap())
                 {
                     continue;
